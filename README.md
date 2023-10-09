@@ -55,63 +55,62 @@ export default async function Page({ params: { id } } : { params: { id: number }
 
 ## Props
 
-```
-| Name                                  | Type       | Default                                           | Description                                         |
-| ------------------------------------- | ---------- | ------------------------------------------------- | --------------------------------------------------- |
-| `allowAddToCart`                      | `boolean?` | undefined                                         |                                                    |
-| `btnNameAddToCart`                    | `string?`  | undefined                                         |                                                    |
-| `classNameAlertSellerEditable`        | `string?`  | `'alert alert-light'`                             |                                                    |
-| `classNameButtonSubmit`               | `string?`  | `'btn btn-primary w-100 merchi-embed-form_button-submit'` |                                                    |
-| `classNameButtonGroupAdd`             | `string?`  | `'btn btn-white'`                                 |                                                    |
-| `classNameButtonGroupRemove`          | `string?`  | `'btn btn-danger'`                                |                                                    |
-| `classNameButtonsSubmitContainer`     | `string?`  | `'merchi-product-buttons-submit-container'`       |                                                    |
-| `classNameFileUploadContainer`        | `string?`  | `'merchi-input-file-container'`                   |                                                    |
-| `classNameFileUpload`                 | `string?`  | `'merchi-embed-form_dropzone'`                    |                                                    |
-| `classNameFilePreviewContainer`       | `string?`  | `'uploaded-variation-file'`                       |                                                    |
-| `classNameFileUploadTextContainer`    | `string?`  | `'merchi-embed-form_dropzone-text-container'`     |                                                    |
-| `classNameFilePreviewIconWrapper`     | `string?`  | `'uploaded-variation-file-icon-wrapper'`          |                                                    |
-| `classNameFileUploadButton`           | `string?`  | `'btn btn-sm btn-link ml-auto'`                   |                                                    |
-| `classNameFileUploadIcon`             | `string?`  | `'merchi-embed-form_dropzone-icon'`               |                                                    |
-| `classNameFileUploadIconSecond`       | `string?`  | `'merchi-embed-form_dropzone-icon-plus'`          |                                                    |
-| `classNameFileUploadIconContainer`    | `string?`  | `'merchi-embed-form_dropzone-icon-container'`     |                                                    |
-| `classNameFileListItem`               | `string?`  | `'list-group-item no-z-index-hover'`              |                                                    |
-| `classNameFileButtonDownload`         | `string?`  | `'btn btn-sm btn-secondary'`                      |                                                    |
-| `classNameFileButtonDelete`           | `string?`  | `'btn btn-sm btn-danger ml-2'`                    |                                                    |
-| `classNameFileListItemContainer`      | `string?`  | `'list-group'`                                    |                                                    |
-| `classNameGroupsContainer`            | `string?`  | `'merchi-embed-form_product-group-container'`     |                                                    |
-| `classNameGroupPriceContainer`        | `string?`  | `'merchi-embed-form_product-group-total-cost'`    |                                                    |
-| `classNameInput`                      | `string?`  | `'form-control'`                                  |                                                    |
-| `classNameInventoryStatus`            | `string?`  | `'flex-fill'`                                     |                                                    |
-| `classNameInputContainer`             | `string?`  | `'merchi-embed-form_product-group-input-qty-container'` |                                              |
-| `classNameOptionContainer`            | `string?`  | `'merchi-embed-form_checkbox_radio-item'`         |                                                    |
-| `classNameOptionInput`                | `string?`  | `'merchi-embed-form_checkbox_radio-input'`        |                                                    |
-| `classNameOptionLabel`                | `string?`  | `'merchi-embed-form_checkbox_radio-label'`        |                                                    |
-| `classNameOptionSuper`                | `string?`  | `'merchi-embed-form_checkbox_radio-super'`        |                                                    |
-| `classNameOptionsCheckboxRadioContainer`| `string?` | `''`                                              |                                                   |
-| `classNameOptionImage`                | `string?`  | `'merchi-embed-form_image-select-option-item-img'`|                                                    |
-| `classNameOptionImageContainer`       | `string?`  | `'merchi-embed-form_image-select-option-item-container'` |                                             |
-| `classNameOptionColour`               | `string?`  | `'merchi-embed-form_color-select-indicator'`      |                                                    |
-| `classNameOptionColourContainer`      | `string?`  | `'merchi-embed-form_color-select-item'`           |                                                    |
-| `classNameProductTitle`               | `string?`  | `'merchi-product-title'`                          |                                                    |
-| `classNameProductOriginTitle`         | `string?`  | `'merchi-product-origin-title'`                   |                                                    |
-| `classNameProductTotalContainer`      | `string?`  | `'merchi-embed-form_summary-product-cost-container'` |                                                 |
-| `classNameProductTotal`               | `string?`  | `'merchi-embed-form_summary-product-cost'`        |                                                    |
-| `classNameQuantityLabelContainer`     | `string?`  | `'merchi-embed-form_quantity-label-container'`    |                                                    |
-| `classNameUnitPrice`                  | `string?`  | undefined                                         |                                                    |
-| `currentUser`                         | `User?`    | undefined                                         |                                                    |
-| `hideCost`                            | `boolean?` | undefined                                         |                                                    |
-| `hideCalculatedPrice`                 | `boolean?` | undefined                                         |                                                    |
-| `hideQuantityField`                   | `boolean?` | undefined                                         |                                                    |
-| `hideRequestQuotationButton`          | `boolean?` | undefined                                         |                                                    |
-| `hidePaymentUpfrontButton`            | `boolean?` | undefined                                         |                                                    |
-| `initProduct`                         | `Product`  | undefined                                         |                                                    |
-| `isCartItem`                          | `boolean?` | undefined                                         |                                                    |
-| `onAddToCart`                         | `() => void?` | undefined                                      |                                                    |
-| `onBuyNow`                            | `() => void?` | undefined                                      |                                                    |
-| `onGetQuote`                          | `() => void?` | undefined                                      |                                                    |
-| `productFormId`                       | `string?`  | undefined                                         |                                                    |
-| `showCurrency`                        | `boolean?` | undefined                                         |                                                    |
-| `showCurrencyCode`                    | `boolean?` | undefined                                         |                                                    |
-| `showUnitPrice`                       | `boolean?` | undefined                                         |                                                    |
-
-```
+| Name                                       | Type           | Default                                              | Description                                         |
+| ------------------------------------------ | -------------- | ---------------------------------------------------- | --------------------------------------------------- |
+| `allowAddToCart`                           | `boolean?`     | undefined                                            |                                                    |
+| `btnNameAddToCart`                         | `string?`      | undefined                                            |                                                    |
+| `classNameAlertSellerEditable`             | `string?`      | `'alert alert-light'`                                |                                                    |
+| `classNameButtonSubmit`                    | `string?`      | `'btn btn-primary w-100 merchi-embed-form_button-submit'`|                                                  |
+| `classNameButtonGroupAdd`                  | `string?`      | `'btn btn-white'`                                    |                                                    |
+| `classNameButtonGroupRemove`               | `string?`      | `'btn btn-danger'`                                   |                                                    |
+| `classNameButtonsSubmitContainer`          | `string?`      | `'merchi-product-buttons-submit-container'`          |                                                    |
+| `classNameFileUploadContainer`             | `string?`      | `'merchi-input-file-container'`                      |                                                    |
+| `classNameFileUpload`                      | `string?`      | `'merchi-embed-form_dropzone'`                       |                                                    |
+| `classNameFilePreviewContainer`            | `string?`      | `'uploaded-variation-file'`                          |                                                    |
+| `classNameFileUploadTextContainer`         | `string?`      | `'merchi-embed-form_dropzone-text-container'`        |                                                    |
+| `classNameFilePreviewIconWrapper`          | `string?`      | `'uploaded-variation-file-icon-wrapper'`             |                                                    |
+| `classNameFileUploadButton`                | `string?`      | `'btn btn-sm btn-link ml-auto'`                      |                                                    |
+| `classNameFileUploadIcon`                  | `string?`      | `'merchi-embed-form_dropzone-icon'`                  |                                                    |
+| `classNameFileUploadIconSecond`            | `string?`      | `'merchi-embed-form_dropzone-icon-plus'`             |                                                    |
+| `classNameFileUploadIconContainer`         | `string?`      | `'merchi-embed-form_dropzone-icon-container'`        |                                                    |
+| `classNameFileListItem`                    | `string?`      | `'list-group-item no-z-index-hover'`                 |                                                    |
+| `classNameFileButtonDownload`              | `string?`      | `'btn btn-sm btn-secondary'`                         |                                                    |
+| `classNameFileButtonDelete`                | `string?`      | `'btn btn-sm btn-danger ml-2'`                       |                                                    |
+| `classNameFileListItemContainer`           | `string?`      | `'list-group'`                                       |                                                    |
+| `classNameGroupsContainer`                 | `string?`      | `'merchi-embed-form_product-group-container'`        |                                                    |
+| `classNameGroupPriceContainer`             | `string?`      | `'merchi-embed-form_product-group-total-cost'`       |                                                    |
+| `classNameInput`                           | `string?`      | `'form-control'`                                     |                                                    |
+| `classNameInventoryStatus`                 | `string?`      | `'flex-fill'`                                        |                                                    |
+| `classNameInputContainer`                  | `string?`      | `'merchi-embed-form_product-group-input-qty-container'`|                                                  |
+| `classNameOptionContainer`                 | `string?`      | `'merchi-embed-form_checkbox_radio-item'`            |                                                    |
+| `classNameOptionInput`                     | `string?`      | `'merchi-embed-form_checkbox_radio-input'`           |                                                    |
+| `classNameOptionLabel`                     | `string?`      | `'merchi-embed-form_checkbox_radio-label'`           |                                                    |
+| `classNameOptionSuper`                     | `string?`      | `'merchi-embed-form_checkbox_radio-super'`           |                                                    |
+| `classNameOptionsCheckboxRadioContainer`   | `string?`      | `''`                                                 |                                                    |
+| `classNameOptionImage`                     | `string?`      | `'merchi-embed-form_image-select-option-item-img'`   |                                                    |
+| `classNameOptionImageContainer`            | `string?`      | `'merchi-embed-form_image-select-option-item-container'`|                                                 |
+| `classNameOptionColour`                    | `string?`      | `'merchi-embed-form_color-select-indicator'`         |                                                    |
+| `classNameOptionColourContainer`           | `string?`      | `'merchi-embed-form_color-select-item'`              |                                                    |
+| `classNameProductTitle`                    | `string?`      | `'merchi-product-title'`                             |                                                    |
+| `classNameProductOriginTitle`              | `string?`      | `'merchi-product-origin-title'`                      |                                                    |
+| `classNameProductTotalContainer`           | `string?`      | `'merchi-embed-form_summary-product-cost-container'` |                                                    |
+| `classNameProductTotal`                    | `string?`      | `'merchi-embed-form_summary-product-cost'`           |                                                    |
+| `classNameQuantityLabelContainer`          | `string?`      | `'merchi-embed-form_quantity-label-container'`       |                                                    |
+| `classNameUnitPrice`                       | `string?`      | undefined                                           |                                                    |
+| `control`                                  | `any`          | undefined                                           |                                                    |
+| `currentUser`                              | `any?`         | undefined                                           |                                                    |
+| `hideCost`                                 | `boolean?`     | undefined                                           |                                                    |
+| `hideCalculatedPrice`                      | `boolean?`     | undefined                                           |                                                    |
+| `hideQuantityField`                        | `boolean?`     | undefined                                           |                                                    |
+| `hideRequestQuotationButton`               | `boolean?`     | undefined                                           |                                                    |
+| `hidePaymentUpfrontButton`                 | `boolean?`     | undefined                                           |                                                    |
+| `isCartItem`                               | `boolean?`     | undefined                                           |                                                    |
+| `initProduct`                              | `any`          | undefined                                           |                                                    |
+| `onAddToCart`                              | `() => void?`  | undefined                                           |                                                    |
+| `onBuyNow`                                 | `() => void?`  | undefined                                           |                                                    |
+| `onGetQuote`                               | `() => void?`  | undefined                                           |                                                    |
+| `product`                                  | `any`          | undefined                                           |                                                    |
+| `productFormId`                            | `string?`      | undefined                                           |                                                    |
+| `showCurrency`                             | `boolean?`     | undefined                                           |                                                    |
+| `showCurrencyCode`                         | `boolean?`     | undefined                                           |                                                    |
+| `showUnitPrice`                            | `boolean?`     | undefined                                           |                                                    |
