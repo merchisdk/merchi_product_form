@@ -1,4 +1,4 @@
-# nerchi_product_form
+# merchi_product_form
 
 Merchi product form for Next.js
 
