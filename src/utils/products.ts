@@ -1,5 +1,5 @@
 import { ProductType } from "./types";
-import productNotFound from '../../public/product-not-found.png';
+import productNotFound from '../images/product-not-found.png';
 
 export const supplierProductCreationTypes: Array<number> = [
   ProductType.SUPPLIER_MOD,
