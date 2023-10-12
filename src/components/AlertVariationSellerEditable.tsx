@@ -1,5 +1,5 @@
 'use client';
-import { supplierSellerEditableProductTypes } from '../utils';
+import { supplierSellerEditableProductTypes } from './utils';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faClipboardCheck } from '@fortawesome/free-solid-svg-icons';
 import { useMerchiFormContext } from './MerchiProductFormProvider';

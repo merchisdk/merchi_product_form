@@ -1,5 +1,5 @@
 import { encodeMerchiApiData } from './helpers';
-import { urlSearchParams } from '@/utils/url';
+import { urlSearchParams } from '../utils/url';
 
 export async function fetchJobQuote(jobJson: any) {
   const formData = encodeMerchiApiData(jobJson);

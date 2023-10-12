@@ -1,7 +1,7 @@
 'use client';
 import { createContext, ReactNode, useContext, useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { fetchJobQuote } from './actions/jobs';
+import { fetchJobQuote } from '../actions/jobs';
 
 type FormMethods = ReturnType<typeof useForm>;
 

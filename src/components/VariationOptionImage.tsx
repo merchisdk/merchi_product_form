@@ -2,10 +2,11 @@
 import Tooltip from './Tooltip';
 import { optionImageUrl, variationFieldOptionCostDetail } from './utils';
 import IconCheckedOrNoStock from './icons/IconCheckedOrNoStock';
-import defaultOptionImage from './images/product-not-found.png';
 import { useMerchiFormContext } from './MerchiProductFormProvider';
 import InputHiddenStatic from './InputHiddenStatic';
 import VariationFieldOptionDefaultInputs from './VariationFieldOptionDefaultInputs';
+
+const defaultOptionImage = require('../images/product-not-found.png').default;
 
 interface Props {
   doClick: () => void;
