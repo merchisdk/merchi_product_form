@@ -30,7 +30,8 @@
   },
   "homepage": "https://github.com/merchisdk/merchi_product_form#readme",
   "files": [
-    "lib"
+    "lib",
+    "src"
   ],
   "peerDependencies": {
     "react": "^18.2.0",
