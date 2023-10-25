@@ -1,3 +1,4 @@
+'use client';
 import * as React from 'react';
 import { useController } from 'react-hook-form';
 import { useMerchiFormContext } from './MerchiProductFormProvider';
