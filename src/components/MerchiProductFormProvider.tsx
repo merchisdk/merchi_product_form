@@ -1,11 +1,12 @@
 'use client';
 import { createContext, ReactNode, useContext, useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { fetchJobQuote } from './actions/jobs';
+import { fetchJobQuote } from '../actions/jobs';
 
 type FormMethods = ReturnType<typeof useForm>;
 
 interface IMerchiProductForm {
+  apiHost?: string;
   allowAddToCart?: boolean;
   btnNameAddToCart?: string;
   classNameAlertSellerEditable?: string;
@@ -70,6 +71,7 @@ interface IMerchiProductForm {
   showCurrency?: boolean;
   showCurrencyCode?: boolean;
   showUnitPrice?: boolean;
+  version?: string;
 }
 
 const MerchiProductFormContext = createContext<IMerchiProductForm>({
@@ -141,6 +143,8 @@ const MerchiProductFormContext = createContext<IMerchiProductForm>({
 export const useMerchiFormContext = () => useContext(MerchiProductFormContext);
 
 export const MerchiProductFormProvider = ({
+  apiHost = 'https://api.merchi.co/',
+  version = 'v6',
   allowAddToCart,
   btnNameAddToCart,
   classNameAlertSellerEditable = 'alert alert-light',
@@ -198,6 +202,7 @@ export const MerchiProductFormProvider = ({
   showCurrencyCode,
   showUnitPrice,
 }: {
+  apiHost?: string;
   allowAddToCart?: boolean;
   btnNameAddToCart?: string;
   classNameAlertSellerEditable?: string;
@@ -254,6 +259,7 @@ export const MerchiProductFormProvider = ({
   showCurrency?: boolean;
   showCurrencyCode?: boolean;
   showUnitPrice?: boolean;
+  version?: string;
 }) => {
   const hookForm = useForm({ defaultValues: initProduct.defaultJob || {} });
   const [client, setClient] = useState(currentUser)
@@ -266,7 +272,7 @@ export const MerchiProductFormProvider = ({
     const r = await fetchJobQuote({
       ...values,
       product: { id: initProduct.id },
-    });
+    }, `${apiHost}${version}`);
     setJob(r);
     setLoading(false);
   }

@@ -1,7 +1,7 @@
 import { cloneDeepWith, orderBy } from 'lodash';
-import { formatCurrency } from '@/utils/currency';
+import { formatCurrency } from '../utils/currency';
 import { ProductType } from './types';
-import pngOptionNotFound from './images/product-not-found.png';
+import pngOptionNotFound from '../images/product-not-found.png';
 import { FieldType } from './types';
 
 function renderSingleCostIndication(
@@ -144,11 +144,12 @@ function buildEmptyVariation(variationField: any): object {
     unitCostTotal: 0,
     cost: onceOffCost,
     selectableOptions: selectableOptions,
-    variationField: cloneDeepWith(variationField, (value: any, key: string) => {
-      if (key === 'merchi') {
+    variationField: cloneDeepWith(variationField, (value: any, key?: string | number) => {
+      if (typeof key === 'string' && key === 'merchi') {
         return value;
       }
     }),
+
   };
 
   return result;

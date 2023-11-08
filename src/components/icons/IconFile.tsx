@@ -1,5 +1,4 @@
 'use client';
-import Image from 'next/image';
 import { faCircleNotch, faFilePdf } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
@@ -22,6 +21,7 @@ interface FileIconProps {
 
 function IconFile({ file }: FileIconProps) {
   const fileUrl = file ? String(file.viewUrl) : '';
+
   return file.id ? isPdf(file) ?
     <IconContainer
       className='avatar avatar-md align-middle bg-secondary text-dark shadow'
