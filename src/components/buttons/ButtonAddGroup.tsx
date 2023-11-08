@@ -1,6 +1,4 @@
 'use client';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-// import { faCircleNotch, faPlus } from '@fortawesome/free-solid-svg-icons';
 import { CgSpinner } from 'react-icons/cg';
 import { FaPlus } from 'react-icons/fa';
 

@@ -69,11 +69,16 @@ function MerchiProductForm(props: Props) {
   return (
     <MerchiProductFormProvider {...props}>
       {!hideTitle && <ProductTitle />}
-      {!!(!isDownloadableProduct && !isSupplierMOD && !hasGroups && !hideQuantityField) &&
-        <InputProductQuantity />
-      }
-      <VariationsGroups />
-      <Variations />
+      {!!(
+        !isDownloadableProduct &&
+        !isSupplierMOD &&
+        !hasGroups &&
+        !hideQuantityField
+      ) && <InputProductQuantity />}
+      <div className='merchi-embed-form_variantion-container'>
+        <VariationsGroups />
+        <Variations />
+      </div>
       <ProductTotalCost />
       {!hideSubmitButtons && <ProductButtonsSubmit />}
     </MerchiProductFormProvider>

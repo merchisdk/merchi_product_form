@@ -46,7 +46,11 @@ function ProductButtonsSubmit() {
                 !hideRequestQuotationButton &&
                 onGetQuote
               ) && (
-                <button disabled={loading} className={classNameButtonSubmit} onClick={onGetQuote}>
+                <button
+                  disabled={loading}
+                  className={classNameButtonSubmit}
+                  onClick={onGetQuote}
+                >
                   {loading ? 'Loading...' : 'Get Quote'}
                 </button>
               )}

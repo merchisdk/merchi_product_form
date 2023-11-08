@@ -262,7 +262,7 @@ export const MerchiProductFormProvider = ({
   version?: string;
 }) => {
   const hookForm = useForm({ defaultValues: initProduct.defaultJob || {} });
-  const [client, setClient] = useState(currentUser)
+  const [client, setClient] = useState(currentUser);
   const [job, setJob] = useState<any>(initProduct.defaultJob || {});
   const [loading, setLoading] = useState(false);
   const { control, getValues } = hookForm;

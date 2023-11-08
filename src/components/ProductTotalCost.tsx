@@ -21,9 +21,13 @@ function ProductTotalCost() {
       <>
         <strong className='mb-0'>Total</strong>
         {loading ? (
-          <CgSpinner fontSize='1.25rem' className='animate_spin ml-1' />
+          <div style={{ height: '52px' }}>
+            <CgSpinner fontSize='1.25rem' className='animate_spin ml-1' />
+          </div>
         ) : cost !== null && cost !== undefined ? (
-          <div style={{ display: 'flex', flexDirection: 'column' }}>
+          <div
+            style={{ display: 'flex', flexDirection: 'column', height: '52px' }}
+          >
             <strong>{currencyTotalCostShowIncTax(job)}</strong>
             {isSupplierMOD && <small>approximate</small>}
             {Boolean(!loading && showShipping) && <small>+ shipping</small>}
