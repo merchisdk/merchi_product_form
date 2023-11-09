@@ -1,6 +1,6 @@
 {
   "name": "merchi-product-form",
-  "version": "0.0.2j",
+  "version": "0.0.2k",
   "description": "A React component for Merchi product forms",
   "main": "lib/index.js",
   "module": "src/index.tsx",
@@ -29,10 +29,7 @@
     "url": "https://github.com/merchisdk/merchi_product_form/issues"
   },
   "homepage": "https://github.com/merchisdk/merchi_product_form#readme",
-  "files": [
-    "lib",
-    "src"
-  ],
+  "files": [ "lib" ],
   "peerDependencies": {
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
