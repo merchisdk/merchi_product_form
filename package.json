@@ -1,6 +1,6 @@
 {
   "name": "merchi-product-form",
-  "version": "0.0.2k",
+  "version": "0.0.2l",
   "description": "A React component for Merchi product forms",
   "main": "lib/index.js",
   "module": "src/index.tsx",

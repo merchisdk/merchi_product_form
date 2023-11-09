@@ -1,11 +1,11 @@
 'use client';
-import { useState, useRef, useEffect } from 'react';
+import React from 'react';
 
 function Collapse({ isOpen, children }: any) {
-  const [height, setHeight] = useState(isOpen ? 'auto' : '0');
-  const ref = useRef(null);
+  const [height, setHeight] = React.useState(isOpen ? 'auto' : '0');
+  const ref = React.useRef(null);
 
-  useEffect(() => {
+  React.useEffect(() => {
     setHeight(isOpen ? `${(ref as any).current.scrollHeight}px` : '0');
   }, [isOpen]);
 
