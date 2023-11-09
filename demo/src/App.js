@@ -1,30 +1,48 @@
 import logo from './logo.svg';
-import MerchiProductForm from '../../src/';
+import MerchiProductForm from 'merchi-product-form';
 import './App.css';
 import { useEffect } from 'react';
 import { useState } from 'react';
 
+function urlSearchParams(inputParams) {
+  const params = { ...inputParams };  // Create a shallow copy to prevent mutation
+  
+  Object.keys(params).forEach(key => {
+    if (params[key] === undefined || params[key] === null || params[key] === "") {
+      delete params[key];
+    } else if (Array.isArray(params[key])) {
+      params[key] = params[key].join(',');
+    } else if (typeof params[key] === 'object') {
+      params[key] = JSON.stringify(params[key]);
+    }
+  });
+
+  return new URLSearchParams(params).toString();
+}
+
 function App() {
   const [product, setProduct] = useState({});
   const [loading, setLoading] = useState(false);
+  const urlParmas = urlSearchParams({
+    embed: {
+      domain: {
+        company: {},
+        logo: {},
+      },
+      featureImage: {},
+      images: {},
+    },
+  });
   async function fetchProduct() {
     setLoading(true);
-    const url = `https://api.merchi.co/v6/products/46518/`;
+    const url = `https://api.merchi.co/v6/products/118600/?${urlParmas}`;
     try {
-      const response = await fetch(url, {
-        embed: {
-          domain: {
-            company: {},
-            logo: {},
-          },
-          featureImage: {},
-          images: {},
-        },
-      });
+      const response = await fetch(url, {});
       if (!response.ok) {
         throw new Error(`HTTP error! Status: ${response.status}`);
       }
       const responseJson = await response.json();
+      console.log(responseJson)
       setProduct(responseJson.product);
       setLoading(false);
     } catch (e) {
@@ -51,7 +69,7 @@ function App() {
           Merchi
         </a>
       </header>
-      <MerchiProductForm initProduct={product} />
+      {product.id && <MerchiProductForm initProduct={product} />}
     </div>
   );
 }
