@@ -1,6 +1,6 @@
 {
   "name": "merchi-product-form",
-  "version": "0.0.2j",
+  "version": "0.0.3a",
   "description": "A React component for Merchi product forms",
   "main": "lib/index.js",
   "module": "src/index.tsx",
@@ -30,8 +30,7 @@
   },
   "homepage": "https://github.com/merchisdk/merchi_product_form#readme",
   "files": [
-    "lib",
-    "src"
+    "lib"
   ],
   "peerDependencies": {
     "react": "^18.2.0",
@@ -68,6 +67,7 @@
     "react-addons-css-transition-group": "^15.6.2",
     "react-country-region-selector": "^3.6.1",
     "react-dom": "^18.2.0",
+    "react-tooltip": "^4.2.4",
     "react-dropzone": "^14.2.3",
     "react-geosuggest": "^2.14.1",
     "react-google-recaptcha": "^3.1.0",
