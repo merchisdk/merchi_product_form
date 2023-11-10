@@ -1,5 +1,5 @@
 'use client';
-import Tooltip from './Tooltip';
+import TooltipElement from './TooltipElement';
 import { variationFieldOptionCostDetail } from './utils';
 import VariationFieldOptionDefaultInputs from './VariationFieldOptionDefaultInputs';
 import IconCheckedOrNoStock from './icons/IconCheckedOrNoStock';
@@ -43,13 +43,13 @@ function VariationOptionColour({
           style={{ backgroundColor: color }}
         />
       </div>
-      <Tooltip
+      <TooltipElement
         tooltip={
           String(value) + `${!isAvailable ? ' - insufficient stock' : ''}`
         }
       >
         <p className='merchi-embed-form_color-select-description'>{value}</p>
-      </Tooltip>
+      </TooltipElement>
       {sellerProductEditable && <small className='d-block'>{optionCost}</small>}
       <VariationFieldOptionDefaultInputs optionName={name} option={option} />
     </div>

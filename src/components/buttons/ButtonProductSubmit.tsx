@@ -1,5 +1,4 @@
-import * as React from 'react';
-import Tooltip from '../Tooltip';
+import TooltipElement from '../TooltipElement';
 import { useMerchiFormContext } from '../MerchiProductFormProvider';
 
 interface Props {
@@ -17,11 +16,11 @@ function ButtonProductSubmit({ onClick, text }: Props) {
   const { needsInventory, inventoriesOpen } = product;
   const { inventorySufficient } = job;
   return needsInventory && !inventoriesOpen && !inventorySufficient ? (
-    <Tooltip tooltip='Insufficient inventory'>
+    <TooltipElement tooltip='Insufficient inventory'>
       <button className={classNameButtonSubmit} disabled={true}>
         {text}
       </button>
-    </Tooltip>
+    </TooltipElement>
   ) : (
     <button
       className={classNameButtonSubmit}
