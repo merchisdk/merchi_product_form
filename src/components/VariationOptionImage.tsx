@@ -1,5 +1,5 @@
 'use client';
-import Tooltip from './Tooltip';
+import TooltipElement from './TooltipElement';
 import { optionImageUrl, variationFieldOptionCostDetail } from './utils';
 import IconCheckedOrNoStock from './icons/IconCheckedOrNoStock';
 import { useMerchiFormContext } from './MerchiProductFormProvider';
@@ -48,9 +48,9 @@ function VariationOptionImage({
             backgroundImage: `url(${optionImageUrl(option)})`,
           }}
         />
-        <Tooltip tooltip={tooltip}>
+        <TooltipElement tooltip={tooltip}>
           <div className='image-select-title'>{option.value}</div>
-        </Tooltip>
+        </TooltipElement>
         {sellerProductEditable && (
           <small className='d-block'>{optionCost}</small>
         )}

@@ -1,5 +1,5 @@
 'use client';
-import Tooltip from '../Tooltip';
+import TooltipElement from '../TooltipElement';
 
 interface Props {
   className?: string;
@@ -15,11 +15,11 @@ function IconCountryFlag(
   const style = {borderRadius: '2px'}
   return (
     tooltip ?
-      <Tooltip tooltip={tooltip}>
-  	    <span className={c} style={style} />
-      </Tooltip>
-    : <span className={c} style={style} />
-    );
+      <TooltipElement tooltip={tooltip}>
+  	    <span className={c} style={style}></span>
+      </TooltipElement>
+    : <span className={c} style={style}></span>
+  );
 }
 
 export default IconCountryFlag;
