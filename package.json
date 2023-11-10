@@ -1,6 +1,6 @@
 {
   "name": "merchi-product-form",
-  "version": "0.0.2l",
+  "version": "0.0.2m",
   "description": "A React component for Merchi product forms",
   "main": "lib/index.js",
   "module": "src/index.tsx",
@@ -29,7 +29,9 @@
     "url": "https://github.com/merchisdk/merchi_product_form/issues"
   },
   "homepage": "https://github.com/merchisdk/merchi_product_form#readme",
-  "files": [ "lib" ],
+  "files": [
+    "lib"
+  ],
   "peerDependencies": {
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
@@ -41,12 +43,12 @@
     "@babel/preset-react": "^7.22.15",
     "@babel/preset-typescript": "^7.23.0",
     "@types/lodash": "^4.14.199",
-    "@types/react-tooltip": "^4.2.4",
-    "@types/uuid": "^9.0.5",
-    "typescript": "^5.1.6",
     "@types/node": "20.5.0",
     "@types/react": "18.2.20",
-    "@types/react-dom": "18.2.7"
+    "@types/react-dom": "18.2.7",
+    "@types/react-tooltip": "^4.2.4",
+    "@types/uuid": "^9.0.5",
+    "typescript": "^5.1.6"
   },
   "dependencies": {
     "@draft-js-plugins/video": "^4.1.3",
