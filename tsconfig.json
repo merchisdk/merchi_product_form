@@ -2,12 +2,15 @@
   "compilerOptions": {
     "outDir": "./lib",
     "module": "CommonJS",
-    "target": "es6",
+    "target": "es5",
     "jsx": "react-jsx",
     "strict": true,
     "skipLibCheck": true,
+    "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
+    "moduleResolution": "node",
+    "isolatedModules": true,
     "resolveJsonModule": true
   },
   "include": [

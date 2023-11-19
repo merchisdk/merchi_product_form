@@ -3,10 +3,11 @@ import MerchiProductForm from 'merchi-product-form';
 import './App.css';
 import { useEffect } from 'react';
 import { useState } from 'react';
+import { Tooltip } from 'react-tooltip';
 
 function urlSearchParams(inputParams) {
   const params = { ...inputParams };  // Create a shallow copy to prevent mutation
-  
+
   Object.keys(params).forEach(key => {
     if (params[key] === undefined || params[key] === null || params[key] === "") {
       delete params[key];
@@ -23,6 +24,7 @@ function urlSearchParams(inputParams) {
 function App() {
   const [product, setProduct] = useState({});
   const [loading, setLoading] = useState(false);
+  console.log('debug here in app', Tooltip);
   const urlParmas = urlSearchParams({
     embed: {
       domain: {
@@ -42,7 +44,6 @@ function App() {
         throw new Error(`HTTP error! Status: ${response.status}`);
       }
       const responseJson = await response.json();
-      console.log(responseJson)
       setProduct(responseJson.product);
       setLoading(false);
     } catch (e) {

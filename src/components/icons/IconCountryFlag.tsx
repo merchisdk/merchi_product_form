@@ -8,7 +8,7 @@ interface Props {
 }
 
 function IconCountryFlag(
-  { 
+  {
     className, countryCode, tooltip
   }: Props) {
   const c = `fi fi-${countryCode} ${className ? className : ''}`;
