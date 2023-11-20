@@ -1,12 +1,12 @@
 {
   "name": "merchi-product-form",
-  "version": "0.0.3ab",
+  "version": "0.0.3af",
   "description": "A React component for Merchi product forms",
   "main": "lib/index.js",
   "module": "src/index.tsx",
   "types": "lib/index.d.ts",
   "scripts": {
-    "build": "tsc",
+    "build": "babel src --out-dir lib --extensions .ts,.tsx --source-maps inline --verbose",
     "start": "react-scripts start",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
@@ -35,17 +35,19 @@
   "devDependencies": {
     "@babel/cli": "^7.23.0",
     "@babel/core": "^7.23.0",
-    "@babel/preset-env": "^7.22.20",
-    "@babel/preset-react": "^7.22.15",
-    "@babel/preset-typescript": "^7.23.0",
+    "@babel/preset-env": "^7.23.3",
+    "@babel/preset-react": "^7.23.3",
+    "@babel/preset-typescript": "^7.23.3",
     "@types/lodash": "^4.14.199",
     "@types/node": "20.5.0",
     "@types/react": "18.2.20",
     "@types/react-dom": "18.2.7",
     "@types/uuid": "^9.0.5",
-    "typescript": "^5.1.6",
+    "@babel/plugin-transform-react-jsx": "^7.22.15",
+    "@babel/plugin-transform-runtime": "^7.23.3",
     "eslint": "8.47.0",
-    "eslint-config-next": "13.4.16"
+    "eslint-config-next": "13.4.16",
+    "typescript": "^5.1.6"
   },
   "peerDependencies": {
     "react": "^17.0.0 || ^18.0.0",
@@ -67,9 +69,9 @@
     "react-dropzone": "^14.2.3",
     "react-geosuggest": "^2.14.1",
     "react-hook-form": "^7.45.4",
-    "react-tooltip": "^5.23.0",
     "react-icons": "^4.10.1",
     "react-medium-image-zoom": "^5.1.8",
+    "react-tooltip": "^5.23.0",
     "react-transition": "^1.0.3",
     "react-transition-group": "^4.4.5",
     "sass": "^1.66.1",

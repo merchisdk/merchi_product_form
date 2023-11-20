@@ -1,9 +1,7 @@
 import logo from './logo.svg';
 import MerchiProductForm from 'merchi-product-form';
 import './App.css';
-import { useEffect } from 'react';
-import { useState } from 'react';
-import { Tooltip } from 'react-tooltip';
+import { useEffect, useState } from 'react';
 
 function urlSearchParams(inputParams) {
   const params = { ...inputParams };  // Create a shallow copy to prevent mutation
@@ -24,7 +22,6 @@ function urlSearchParams(inputParams) {
 function App() {
   const [product, setProduct] = useState({});
   const [loading, setLoading] = useState(false);
-  console.log('debug here in app', Tooltip);
   const urlParmas = urlSearchParams({
     embed: {
       domain: {
