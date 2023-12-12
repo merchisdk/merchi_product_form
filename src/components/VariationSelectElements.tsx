@@ -43,23 +43,20 @@ function VariationFieldOptionElement({
   const { sellerProductEditable } = variationField;
   const { id } = option;
   const inputId = `${name}.options.id-${id}`;
-  const activeIds = (field.value || '').split(',');
+  const activeIds = field.value ? field.value.split(',') : [];
   const isActive = activeIds.includes(String(id));
-  function doOnClick() {
-    document.getElementById(inputId)!.click(); //TODO: LOGIC FOR RADIO IS BROKEN.
-  }
   const isAvailable = selectableOptions[index]
     ? selectableOptions[index].available
     : true;
   const optionInputType = optionType(variation);
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const doClick = () => {
     let updatedIds = [...activeIds];
 
     if (sellerProductEditable || optionInputType === 'checkbox') {
       // Checkbox Logic
-      if (e.target.checked && !updatedIds.includes(String(id))) {
+      if (!updatedIds.includes(String(id))) {
         updatedIds.push(String(id));
-      } else if (!e.target.checked) {
+      } else {
         updatedIds = updatedIds.filter(
           (existingId) => existingId !== String(id)
         );
@@ -68,7 +65,7 @@ function VariationFieldOptionElement({
       // Radio Logic
       updatedIds = [String(id)];
     }
-    field.onChange(updatedIds.join(','));
+    field.onChange(updatedIds.length ? updatedIds.join(',') : '');
 
     getQuote();
   };
@@ -81,12 +78,12 @@ function VariationFieldOptionElement({
         type={optionInputType}
         id={inputId}
         name={`${name}.value`}
-        onChange={handleChange}
+        onChange={() => true}
         disabled={disabled}
       />
       {inputType === 'image' ? (
         <VariationOptionImage
-          doClick={doOnClick}
+          doClick={doClick}
           isChecked={isActive}
           isAvailable={isAvailable}
           name={`${optionName}.variationField.options[${index}]`}
@@ -95,7 +92,7 @@ function VariationFieldOptionElement({
         />
       ) : (
         <VariationOptionColour
-          doClick={doOnClick}
+          doClick={doClick}
           isChecked={isActive}
           isAvailable={isAvailable}
           name={`${optionName}.variationField.options[${index}]`}
