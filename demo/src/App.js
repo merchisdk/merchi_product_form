@@ -1,12 +1,11 @@
 import logo from './logo.svg';
 import MerchiProductForm from 'merchi-product-form';
 import './App.css';
-import { useEffect } from 'react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 function urlSearchParams(inputParams) {
   const params = { ...inputParams };  // Create a shallow copy to prevent mutation
-  
+
   Object.keys(params).forEach(key => {
     if (params[key] === undefined || params[key] === null || params[key] === "") {
       delete params[key];
@@ -42,7 +41,6 @@ function App() {
         throw new Error(`HTTP error! Status: ${response.status}`);
       }
       const responseJson = await response.json();
-      console.log(responseJson)
       setProduct(responseJson.product);
       setLoading(false);
     } catch (e) {

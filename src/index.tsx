@@ -26,6 +26,7 @@ import {
   VariationInputTextarea
 } from './components/VariationInput';
 import VariationSelect from './components/VariationSelect';
+import TooltipElement from './components/TooltipElement';
 import {
   VariationSelectColour,
   VariationSelectImage,
@@ -57,6 +58,7 @@ export {
   VariationSelectColour,
   VariationSelectImage,
   Variations,
+  TooltipElement,
 };
 
 export default MerchiProductForm;
