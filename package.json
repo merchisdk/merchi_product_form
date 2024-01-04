@@ -1,6 +1,6 @@
 {
   "name": "merchi-product-form",
-  "version": "0.0.6e",
+  "version": "0.0.6f",
   "description": "A React component for Merchi product forms",
   "main": "lib/index.js",
   "module": "src/index.tsx",
@@ -51,7 +51,9 @@
   },
   "peerDependencies": {
     "react": "^18.0.0",
-    "react-dom": "^18.0.0"
+    "react-dom": "^18.0.0",
+    "react-dropzone": "^14.2.3",
+    "react-hook-form": "^7.45.4"
   },
   "dependencies": {
     "@draft-js-plugins/video": "^4.1.3",

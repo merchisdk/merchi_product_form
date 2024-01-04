@@ -30,8 +30,10 @@ function DropzoneInput({
   } = useMerchiFormContext();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  console.log('Inside the dropzone');
 
   const handleFileChange = async (acceptedFiles: File[], _: any, __: any) => {
+    console.log(' inside dropzone handleChange');
     setError(null);
     for (const file of acceptedFiles) {
       try {
