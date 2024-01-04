@@ -42,5 +42,3 @@ globals.css.map
 yarn.lock
 package-lock.json
 
-# output compiled js
-/lib
