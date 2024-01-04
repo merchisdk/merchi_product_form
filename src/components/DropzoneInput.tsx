@@ -39,6 +39,7 @@ function DropzoneInput({
 
         const response = await uploadFileToServer(file);
         const data = await response.json();
+        console.log(data.file, 'did the file download');
         onUploadSuccess(data.file);
         setLoading(false);
       } catch (error: any) {

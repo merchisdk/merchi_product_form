@@ -66,6 +66,7 @@ function MerchiProductForm(props: Props) {
   const hasGroups = groupVariationFields && groupVariationFields.length;
   const isSupplierMOD = isProductSupplierMOD(initProduct);
   const isDownloadableProduct = isProductFileDownload(initProduct);
+  console.log(' Merchi form working ');
   return (
     <MerchiProductFormProvider {...props}>
       {!hideTitle && <ProductTitle />}

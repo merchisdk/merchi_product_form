@@ -188,6 +188,7 @@ function VariationFileInput({ disabled, name, variation }: Props) {
   const _allowFileMultiple = determineBoolean(allowFileMultiple);
   const _showFilePreview = determineBoolean(showFilePreview);
   function handleUploadSuccess(fs: any) {
+    console.log('trying to append the file,', fs);
     if (_allowFileMultiple) {
       append(fs);
     } else {
