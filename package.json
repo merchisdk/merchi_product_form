@@ -1,6 +1,6 @@
 {
   "name": "merchi-product-form",
-  "version": "0.0.6f",
+  "version": "1.0.1",
   "description": "A React component for Merchi product forms",
   "main": "lib/index.js",
   "module": "src/index.tsx",
@@ -21,9 +21,11 @@
     "product",
     "form",
     "component",
+    "merch",
+    "merchandise",
     "library"
   ],
-  "author": "Merchi SDK <james@unitix.com.au>",
+  "author": "Merchi SDK <james@merchi.co>",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/merchisdk/merchi_product_form/issues"
@@ -32,6 +34,10 @@
   "files": [
     "lib"
   ],
+  "peerDependencies": {
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0"
+  },
   "devDependencies": {
     "@babel/cli": "^7.23.0",
     "@babel/core": "^7.23.0",
@@ -48,12 +54,6 @@
     "eslint": "8.47.0",
     "eslint-config-next": "13.4.16",
     "typescript": "^5.1.6"
-  },
-  "peerDependencies": {
-    "react": "^18.0.0",
-    "react-dom": "^18.0.0",
-    "react-dropzone": "^14.2.3",
-    "react-hook-form": "^7.45.4"
   },
   "dependencies": {
     "@draft-js-plugins/video": "^4.1.3",

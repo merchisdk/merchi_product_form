@@ -75,6 +75,7 @@ interface IMerchiProductForm {
 }
 
 const MerchiProductFormContext = createContext<IMerchiProductForm>({
+  apiHost: '',
   allowAddToCart: false,
   btnNameAddToCart: undefined,
   classNameAlertSellerEditable: undefined,
@@ -138,6 +139,7 @@ const MerchiProductFormContext = createContext<IMerchiProductForm>({
   showCurrency: false,
   showCurrencyCode: false,
   showUnitPrice: false,
+  version: 'v6',
 });
 
 export const useMerchiFormContext = () => useContext(MerchiProductFormContext);
@@ -299,6 +301,7 @@ export const MerchiProductFormProvider = ({
     <MerchiProductFormContext.Provider
       value={
         {
+          apiHost,
           allowAddToCart,
           btnNameAddToCart,
           classNameAlertSellerEditable,
@@ -363,6 +366,7 @@ export const MerchiProductFormProvider = ({
           showCurrency,
           showCurrencyCode,
           showUnitPrice,
+          version,
         } as any
       }
     >
