@@ -1,12 +1,13 @@
 {
   "name": "merchi-product-form",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "A React component for Merchi product forms",
   "main": "lib/index.js",
   "module": "src/index.tsx",
   "types": "lib/index.d.ts",
   "scripts": {
-    "build": "babel src --out-dir lib --extensions .ts,.tsx --source-maps inline --verbose",
+    "build": "babel src --out-dir lib --extensions .ts,.tsx --source-maps inline --verbose --copy-files && yarn copy-assets",
+    "copy-assets": "copyfiles -u 1 src/**/*.png lib",
     "start": "react-scripts start",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
@@ -51,6 +52,7 @@
     "@types/react": "18.2.20",
     "@types/react-dom": "18.2.7",
     "@types/uuid": "^9.0.5",
+    "copyfiles": "^2.4.1",
     "eslint": "8.47.0",
     "eslint-config-next": "13.4.16",
     "typescript": "^5.1.6"
