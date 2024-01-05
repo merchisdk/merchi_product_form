@@ -1,5 +1,5 @@
 import { ProductType } from "./types";
-import productNotFound from '../images/product-not-found.png';
+const productNotFound = require('../images/product-not-found.png').default;
 
 export const supplierProductCreationTypes: Array<number> = [
   ProductType.SUPPLIER_MOD,
