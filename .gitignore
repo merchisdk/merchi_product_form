@@ -5,6 +5,9 @@
 /.pnp
 .pnp.js
 
+# output compiled js
+/lib
+
 # testing
 /coverage
 
@@ -41,6 +44,3 @@ globals.css.map
 #lockfile
 yarn.lock
 package-lock.json
-
-# output compiled js
-/lib
