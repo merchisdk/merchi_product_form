@@ -1,8 +1,8 @@
 import { cloneDeepWith, orderBy } from 'lodash';
 import { formatCurrency } from '../utils/currency';
 import { ProductType } from './types';
-import pngOptionNotFound from '../images/product-not-found.png';
 import { FieldType } from './types';
+const pngOptionNotFound = require('../images/product-not-found.png').default;
 
 function renderSingleCostIndication(
   cost: any,
