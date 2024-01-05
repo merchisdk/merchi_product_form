@@ -1,16 +1,14 @@
-'use client';
 import { useState } from 'react';
-import { useMerchiFormContext } from './MerchiProductFormProvider';
-import { uploadFileToServer } from '../actions/files';
 import { Accept, useDropzone } from 'react-dropzone';
 import { CgSpinner } from 'react-icons/cg';
 import { FaRegImage, FaPlus } from 'react-icons/fa';
+import { useMerchiFormContext } from './MerchiProductFormProvider'; 
 
 interface Props {
   accept?: string;
   disabled?: boolean;
   multiple?: boolean;
-  onUploadSuccess: (file: any) => void;
+  onUploadSuccess: (files: any) => void;
   placeholder?: string;
 }
 
@@ -22,27 +20,37 @@ function DropzoneInput({
   placeholder = 'Drop files:',
 }: Props) {
   const {
+    apiHost,
     classNameFileUpload,
     classNameFileUploadTextContainer,
     classNameFileUploadIcon,
     classNameFileUploadIconSecond,
     classNameFileUploadIconContainer,
+    version,
   } = useMerchiFormContext();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  console.log('Inside the dropzone');
 
   const handleFileChange = async (acceptedFiles: File[], _: any, __: any) => {
-    console.log(' inside dropzone handleChange');
     setError(null);
     for (const file of acceptedFiles) {
       try {
         setLoading(true);
+        const formData = new FormData();
+        formData.append('0', file);
 
-        const response = await uploadFileToServer(file);
-        const data = await response.json();
-        console.log(data.file, 'did the file download');
-        onUploadSuccess(data.file);
+        const response = await fetch(`${apiHost}/${version}/public-upload-job-files/`, {
+          method: 'POST',
+          body: formData
+        });
+
+        let data;
+        if (!response.ok) {
+          throw new Error(`Server responded with ${response.status}: ${response.statusText}`);
+        } else {
+          data = await response.json();
+          onUploadSuccess(data.file);
+        }
         setLoading(false);
       } catch (error: any) {
         setError(error);
