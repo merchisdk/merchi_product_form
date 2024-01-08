@@ -6,7 +6,7 @@ import { fetchJobQuote } from '../actions/jobs';
 type FormMethods = ReturnType<typeof useForm>;
 
 interface IMerchiProductForm {
-  apiHost?: string;
+  apiUrl?: string;
   allowAddToCart?: boolean;
   btnNameAddToCart?: string;
   classNameAlertSellerEditable?: string;
@@ -71,11 +71,10 @@ interface IMerchiProductForm {
   showCurrency?: boolean;
   showCurrencyCode?: boolean;
   showUnitPrice?: boolean;
-  version?: string;
 }
 
 const MerchiProductFormContext = createContext<IMerchiProductForm>({
-  apiHost: '',
+  apiUrl: '',
   allowAddToCart: false,
   btnNameAddToCart: undefined,
   classNameAlertSellerEditable: undefined,
@@ -139,14 +138,12 @@ const MerchiProductFormContext = createContext<IMerchiProductForm>({
   showCurrency: false,
   showCurrencyCode: false,
   showUnitPrice: false,
-  version: 'v6',
 });
 
 export const useMerchiFormContext = () => useContext(MerchiProductFormContext);
 
 export const MerchiProductFormProvider = ({
-  apiHost = 'https://api.merchi.co/',
-  version = 'v6',
+  apiUrl = 'https://api.merchi.co/v6/',
   allowAddToCart,
   btnNameAddToCart,
   classNameAlertSellerEditable = 'alert alert-light',
@@ -204,7 +201,7 @@ export const MerchiProductFormProvider = ({
   showCurrencyCode,
   showUnitPrice,
 }: {
-  apiHost?: string;
+  apiUrl?: string;
   allowAddToCart?: boolean;
   btnNameAddToCart?: string;
   classNameAlertSellerEditable?: string;
@@ -261,7 +258,6 @@ export const MerchiProductFormProvider = ({
   showCurrency?: boolean;
   showCurrencyCode?: boolean;
   showUnitPrice?: boolean;
-  version?: string;
 }) => {
   const hookForm = useForm({ defaultValues: initProduct.defaultJob || {} });
   const [client, setClient] = useState(currentUser);
@@ -274,7 +270,7 @@ export const MerchiProductFormProvider = ({
     const r = await fetchJobQuote({
       ...values,
       product: { id: initProduct.id },
-    }, `${apiHost}${version}`);
+    }, apiUrl);
     setJob(r);
     setLoading(false);
   }
@@ -301,7 +297,7 @@ export const MerchiProductFormProvider = ({
     <MerchiProductFormContext.Provider
       value={
         {
-          apiHost,
+          apiUrl,
           allowAddToCart,
           btnNameAddToCart,
           classNameAlertSellerEditable,
@@ -366,7 +362,6 @@ export const MerchiProductFormProvider = ({
           showCurrency,
           showCurrencyCode,
           showUnitPrice,
-          version,
         } as any
       }
     >

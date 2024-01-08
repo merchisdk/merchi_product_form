@@ -57,6 +57,7 @@ export default async function Page({ params: { id } } : { params: { id: number }
 
 | Name                                       | Type           | Default                                              | Description                                         |
 | ------------------------------------------ | -------------- | ---------------------------------------------------- | --------------------------------------------------- |
+| `apiUrl`                                   | `string?`      | `'https://api.merchi.co/v6/'`                        | The api url for merchi                              |
 | `allowAddToCart`                           | `boolean?`     | undefined                                            | Controls if the add to cart button is shown         |
 | `btnNameAddToCart`                         | `string?`      | undefined                                            | The text on the add to cart button                  |
 | `classNameAlertSellerEditable`             | `string?`      | `'alert alert-light'`                                | Class for the seller editable alert element         |

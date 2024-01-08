@@ -20,13 +20,12 @@ function DropzoneInput({
   placeholder = 'Drop files:',
 }: Props) {
   const {
-    apiHost,
+    apiUrl,
     classNameFileUpload,
     classNameFileUploadTextContainer,
     classNameFileUploadIcon,
     classNameFileUploadIconSecond,
     classNameFileUploadIconContainer,
-    version,
   } = useMerchiFormContext();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -39,7 +38,7 @@ function DropzoneInput({
         const formData = new FormData();
         formData.append('0', file);
 
-        const response = await fetch(`${apiHost}/${version}/public-upload-job-files/`, {
+        const response = await fetch(`${apiUrl}/public-upload-job-files/`, {
           method: 'POST',
           body: formData
         });
