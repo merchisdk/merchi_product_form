@@ -63,6 +63,7 @@ interface IMerchiProductForm {
   onAddToCart?: () => void;
   onBuyNow?: () => void;
   onGetQuote?: () => void;
+  onSubmit?: (jobData: any) => void;
   product: any;
   productFormId?: string;
   setClient: (client: any) => void;
@@ -131,6 +132,7 @@ const MerchiProductFormContext = createContext<IMerchiProductForm>({
   onAddToCart() {},
   onBuyNow() {},
   onGetQuote() {},
+  onSubmit() {},
   product: {},
   productFormId: undefined,
   setClient() {},
@@ -199,6 +201,7 @@ export const MerchiProductFormProvider = ({
   onAddToCart,
   onBuyNow,
   onGetQuote,
+  onSubmit,
   productFormId,
   showCurrency,
   showCurrencyCode,
@@ -258,6 +261,7 @@ export const MerchiProductFormProvider = ({
   onAddToCart?: (job: any) => void;
   onBuyNow?: (job: any) => void;
   onGetQuote?: (job: any) => void;
+  onSubmit?: (job: any) => void;
   productFormId?: string;
   showCurrency?: boolean;
   showCurrencyCode?: boolean;
@@ -268,7 +272,8 @@ export const MerchiProductFormProvider = ({
   const [client, setClient] = useState(currentUser);
   const [job, setJob] = useState<any>(initProduct.defaultJob || {});
   const [loading, setLoading] = useState(false);
-  const { control, getValues } = hookForm;
+  const { control, getValues, handleSubmit } = hookForm;
+  const doSubmit = onSubmit ? handleSubmit(onSubmit) : undefined;
   async function getQuote() {
     setLoading(true);
     const values = await getValues();
@@ -370,7 +375,11 @@ export const MerchiProductFormProvider = ({
         } as any
       }
     >
-      {children}
+      {productFormId ? (
+        <form id={productFormId} onSubmit={doSubmit}>
+          {children}
+        </form>
+      ) : children}
     </MerchiProductFormContext.Provider>
   );
 };

@@ -54,6 +54,7 @@ interface Props {
   initProduct: any;
   onBuyNow: (job: any) => void;
   onGetQuote: (job: any) => void;
+  onSubmit?: (job: any) => void;
 }
 
 function MerchiProductForm(props: Props) {
