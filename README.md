@@ -110,6 +110,7 @@ export default async function Page({ params: { id } } : { params: { id: number }
 | `onAddToCart`                              | `() => void?`  | undefined                                            | An action to be applied to the add to cart button |
 | `onBuyNow`                                 | `() => void?`  | undefined                                            | An action to be added to the buy now button       |
 | `onGetQuote`                               | `() => void?`  | undefined                                            | An action to be added to the get quote button     |
+| `onSubmit`                                 | `(data) => void?`| undefined                                          | An callback which returns the most recent job data|
 | `productFormId`                            | `string?`      | undefined                                            | An option id to be applied to the product form    |
 | `showCurrency`                             | `boolean?`     | undefined                                            | Show the currency icon to the user                |
 | `showCurrencyCode`                         | `boolean?`     | undefined                                            | Show the currency code to the user                |
