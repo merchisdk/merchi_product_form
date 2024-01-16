@@ -98,13 +98,14 @@ export default async function Page({ params: { id } } : { params: { id: number }
 | `classNameProductTotal`                    | `string?`      | `'merchi-embed-form_summary-product-cost'`           | Class for the product total cost element            |
 | `classNameQuantityLabelContainer`          | `string?`      | `'merchi-embed-form_quantity-label-container'`       | Class for the product quantity label element        |
 | `classNameUnitPrice`                       | `string?`      | undefined                                            | Class for the unit price element                    |
-| `currentUser`                              | `User?`         | undefined                                           | A Merchi client json object to be used as client    |
+| `currentUser`                              | `User?`        | undefined                                            | A Merchi client json object to be used as client    |
 | `hideCost`                                 | `boolean?`     | undefined                                            | Hide the cost. Used for quote requests              |
 | `hideCalculatedPrice`                      | `boolean?`     | undefined                                            | Hide calculated price. Used for quote requests      |
 | `hideQuantityField`                        | `boolean?`     | undefined                                            | Hide Quantity field. Used for quote requests        |
 | `hideRequestQuotationButton`               | `boolean?`     | undefined                                            | Hide request quote button                           |
 | `hidePaymentUpfrontButton`                 | `boolean?`     | undefined                                            | Hide buy now button                                 |
 | `isCartItem`                               | `boolean?`     | undefined                                            | Used if the product form in being used in cart item context |
+| `initJob`                                  | `job | cartItem`| undefined                                           | The Merchi job or cartItem to be used for the form|
 | `initProduct`                              | `Product`      | undefined                                            | The Merchi product to be used for the form        |
 | `onAddToCart`                              | `() => void?`  | undefined                                            | An action to be applied to the add to cart button |
 | `onBuyNow`                                 | `() => void?`  | undefined                                            | An action to be added to the buy now button       |
