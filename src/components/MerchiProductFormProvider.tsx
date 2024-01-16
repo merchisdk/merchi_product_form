@@ -57,6 +57,7 @@ interface IMerchiProductForm {
   hidePaymentUpfrontButton?: boolean;
   hookForm: FormMethods;
   isCartItem?: boolean;
+  initJob?: any;
   job: any;
   loading: boolean;
   onAddToCart?: () => void;
@@ -124,6 +125,7 @@ const MerchiProductFormContext = createContext<IMerchiProductForm>({
   hidePaymentUpfrontButton: false,
   hookForm: {} as any,
   isCartItem: false,
+  initJob: undefined,
   job: {},
   loading: false,
   onAddToCart() {},
@@ -192,6 +194,7 @@ export const MerchiProductFormProvider = ({
   hideRequestQuotationButton,
   hidePaymentUpfrontButton,
   isCartItem,
+  initJob,
   initProduct,
   onAddToCart,
   onBuyNow,
@@ -250,6 +253,7 @@ export const MerchiProductFormProvider = ({
   hideRequestQuotationButton?: boolean;
   hidePaymentUpfrontButton?: boolean;
   isCartItem?: boolean;
+  initJob?: any;
   initProduct: any;
   onAddToCart?: (job: any) => void;
   onBuyNow?: (job: any) => void;
@@ -259,7 +263,8 @@ export const MerchiProductFormProvider = ({
   showCurrencyCode?: boolean;
   showUnitPrice?: boolean;
 }) => {
-  const hookForm = useForm({ defaultValues: initProduct.defaultJob || {} });
+  const defaultJob = initJob || initProduct.defaultJob;
+  const hookForm = useForm({ defaultValues: defaultJob || {} });
   const [client, setClient] = useState(currentUser);
   const [job, setJob] = useState<any>(initProduct.defaultJob || {});
   const [loading, setLoading] = useState(false);

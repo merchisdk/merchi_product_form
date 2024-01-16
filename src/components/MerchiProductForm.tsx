@@ -50,6 +50,7 @@ interface Props {
   hideQuantityField?: boolean;
   hideSubmitButtons?: boolean;
   hideTitle?: boolean;
+  initJob?: any;
   initProduct: any;
   onBuyNow: (job: any) => void;
   onGetQuote: (job: any) => void;
@@ -66,7 +67,6 @@ function MerchiProductForm(props: Props) {
   const hasGroups = groupVariationFields && groupVariationFields.length;
   const isSupplierMOD = isProductSupplierMOD(initProduct);
   const isDownloadableProduct = isProductFileDownload(initProduct);
-  console.log(' Merchi form working ');
   return (
     <MerchiProductFormProvider {...props}>
       {!hideTitle && <ProductTitle />}
