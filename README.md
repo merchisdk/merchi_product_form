@@ -90,7 +90,7 @@ export default async function Page({ params: { id } } : { params: { id: number }
 | `classNameOptionsCheckboxRadioContainer`   | `string?`      | `''`                                                 | Class for the option checkbox/radio container       |
 | `classNameOptionImage`                     | `string?`      | `'merchi-embed-form_image-select-option-item-img'`   | Class for the variation image select element        |
 | `classNameOptionImageContainer`            | `string?`      | `'merchi-embed-form_image-select-option-item-container'`| Class for the variation image container element  |
-| `classNameOptionColour`                    | `string?`      | `'merchi-embed-form_color-select'`                   | Class for the variation colour element              |
+| `classNameOptionColour`                    | `string?`      | `'merchi-embed-form_color-select-option'`            | Class for the variation colour element              |
 | `classNameOptionColourContainer`           | `string?`      | `'merchi-embed-form_color-select-item'`              | Class for the variation colour container element    |
 | `classNameProductTitle`                    | `string?`      | `'merchi-product-title'`                             | Class for the product title element                 |
 | `classNameProductOriginTitle`              | `string?`      | `'merchi-product-origin-title'`                      | Class for the product origin title element          |
