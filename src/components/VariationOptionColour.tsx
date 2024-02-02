@@ -1,4 +1,5 @@
 'use client';
+import * as React from 'react';
 import TooltipElement from './TooltipElement';
 import { variationFieldOptionCostDetail } from './utils';
 import VariationFieldOptionDefaultInputs from './VariationFieldOptionDefaultInputs';
@@ -27,21 +28,15 @@ function VariationOptionColour({
     classNameOptionColourContainer,
   } = useMerchiFormContext();
   const { colour: color, value } = option;
-  const containerClass = `merchi-embed-form_color-select-option ${
-    isChecked ? 'image-checked' : ''
-  } ${isAvailable ? 'cursor-pointer' : 'option-no-inventory'}`;
+  const containerClass = `${classNameOptionColour} ${isChecked ? 'image-checked' : ''} ${isAvailable ? 'cursor-pointer' : 'option-no-inventory'}`;
   const optionCost = variationFieldOptionCostDetail(option);
   return (
     <div
       className={classNameOptionColourContainer}
       onClick={isAvailable ? doClick : undefined}
     >
-      <div className={containerClass}>
+      <div className={containerClass} style={{ backgroundColor: color }}>
         <IconCheckedOrNoStock isChecked={isChecked} noStock={!isAvailable} />
-        <div
-          className={classNameOptionColour}
-          style={{ backgroundColor: color }}
-        />
       </div>
       <TooltipElement
         tooltip={
