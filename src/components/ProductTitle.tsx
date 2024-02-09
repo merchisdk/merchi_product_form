@@ -6,6 +6,8 @@ function ProductTitle() {
   const {
     classNameProductTitle,
     classNameProductOriginTitle,
+    hideCountry,
+    hideDomainName,
     product,
   } = useMerchiFormContext();
   const { domain, name } = product;
@@ -15,11 +17,13 @@ function ProductTitle() {
     <div>
       <div className={classNameProductOriginTitle}>
         <h5>
-          <IconCountryFlag
-            countryCode={country.toLowerCase()}
-            tooltip={`Country of origin ${countryName}`}
-          />{' '}
-          {domain.emailDomain}
+          {!hideCountry &&
+            <IconCountryFlag
+              countryCode={country.toLowerCase()}
+              tooltip={`Country of origin ${countryName}`}
+            />
+          }
+          {!hideDomainName && ` ${domain.emailDomain}`}
         </h5>
       </div>
       <div>

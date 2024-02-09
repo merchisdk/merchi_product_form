@@ -51,10 +51,13 @@ interface IMerchiProductForm {
   currentUser?: any;
   getQuote: any;
   hideCost?: boolean;
+  hideCountry?: boolean;
   hideCalculatedPrice?: boolean;
+  hideDomainName?: boolean;
   hideQuantityField?: boolean;
   hideRequestQuotationButton?: boolean;
   hidePaymentUpfrontButton?: boolean;
+  hideTitle?: boolean;
   hookForm: FormMethods;
   isCartItem?: boolean;
   initJob?: any;
@@ -72,6 +75,8 @@ interface IMerchiProductForm {
   showAlert: (alert: any) => void;
   showCurrency?: boolean;
   showCurrencyCode?: boolean;
+  showFeatureDeadline?: boolean;
+  showGroupBuyStatus?: boolean;
   showUnitPrice?: boolean;
 }
 
@@ -120,10 +125,13 @@ const MerchiProductFormContext = createContext<IMerchiProductForm>({
   currentUser: {},
   getQuote() {},
   hideCost: false,
+  hideCountry: false,
+  hideDomainName: false,
   hideCalculatedPrice: false,
   hideQuantityField: false,
   hideRequestQuotationButton: false,
   hidePaymentUpfrontButton: false,
+  hideTitle: false,
   hookForm: {} as any,
   isCartItem: false,
   initJob: undefined,
@@ -141,6 +149,8 @@ const MerchiProductFormContext = createContext<IMerchiProductForm>({
   showAlert(alert) {},
   showCurrency: false,
   showCurrencyCode: false,
+  showFeatureDeadline: false,
+  showGroupBuyStatus: false,
   showUnitPrice: false,
 });
 
@@ -191,10 +201,13 @@ export const MerchiProductFormProvider = ({
   children,
   currentUser,
   hideCost,
+  hideCountry = false,
   hideCalculatedPrice,
+  hideDomainName = false,
   hideQuantityField,
   hideRequestQuotationButton,
   hidePaymentUpfrontButton,
+  hideTitle = false,
   isCartItem,
   initJob,
   initProduct,
@@ -205,6 +218,8 @@ export const MerchiProductFormProvider = ({
   productFormId,
   showCurrency,
   showCurrencyCode,
+  showFeatureDeadline,
+  showGroupBuyStatus,
   showUnitPrice,
 }: {
   apiUrl?: string;
@@ -239,7 +254,7 @@ export const MerchiProductFormProvider = ({
   classNameOptionSuper?: string;
   classNameOptionsCheckboxRadioContainer?: string;
   classNameOptionImage?: string;
-  classNameOptionImageContainer?: string;
+  classNameOptionImageContainer?: string; 
   classNameOptionColour?: string;
   classNameProductTitle?: string;
   classNameProductOriginTitle?: string;
@@ -250,11 +265,14 @@ export const MerchiProductFormProvider = ({
   classNameUnitPrice?: string;
   children: ReactNode;
   currentUser?: any;
-  hideCost?: boolean;
   hideCalculatedPrice?: boolean;
+  hideCost?: boolean;
+  hideCountry?: boolean;
+  hideDomainName?: boolean;
   hideQuantityField?: boolean;
   hideRequestQuotationButton?: boolean;
   hidePaymentUpfrontButton?: boolean;
+  hideTitle?: boolean;
   isCartItem?: boolean;
   initJob?: any;
   initProduct: any;
@@ -265,6 +283,8 @@ export const MerchiProductFormProvider = ({
   productFormId?: string;
   showCurrency?: boolean;
   showCurrencyCode?: boolean;
+  showFeatureDeadline?: boolean;
+  showGroupBuyStatus?: boolean;
   showUnitPrice?: boolean;
 }) => {
   const defaultJob = initJob || initProduct.defaultJob;
@@ -352,10 +372,13 @@ export const MerchiProductFormProvider = ({
           control,
           getQuote,
           hideCost,
+          hideCountry,
           hideCalculatedPrice,
+          hideDomainName,
           hideQuantityField,
           hideRequestQuotationButton,
           hidePaymentUpfrontButton,
+          hideTitle,
           hookForm,
           isCartItem,
           job,
@@ -371,6 +394,8 @@ export const MerchiProductFormProvider = ({
           showAlert,
           showCurrency,
           showCurrencyCode,
+          showFeatureDeadline,
+          showGroupBuyStatus,
           showUnitPrice,
         } as any
       }

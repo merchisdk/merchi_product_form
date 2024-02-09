@@ -100,10 +100,13 @@ export default async function Page({ params: { id } } : { params: { id: number }
 | `classNameUnitPrice`                       | `string?`      | undefined                                            | Class for the unit price element                    |
 | `currentUser`                              | `User?`        | undefined                                            | A Merchi client json object to be used as client    |
 | `hideCost`                                 | `boolean?`     | undefined                                            | Hide the cost. Used for quote requests              |
+| `hideCountry`                              | `boolean?`     | undefined                                            | Hide the country flag.                              |
 | `hideCalculatedPrice`                      | `boolean?`     | undefined                                            | Hide calculated price. Used for quote requests      |
+| `hideDomainName`                           | `boolean?`     | undefined                                            | Hide product domain                                 |
 | `hideQuantityField`                        | `boolean?`     | undefined                                            | Hide Quantity field. Used for quote requests        |
 | `hideRequestQuotationButton`               | `boolean?`     | undefined                                            | Hide request quote button                           |
 | `hidePaymentUpfrontButton`                 | `boolean?`     | undefined                                            | Hide buy now button                                 |
+| `hideTitle`                                | `boolean?`     | undefined                                            | Hide product title                                  |
 | `isCartItem`                               | `boolean?`     | undefined                                            | Used if the product form in being used in cart item context |
 | `initJob`                                  | `job | cartItem`| undefined                                           | The Merchi job or cartItem to be used for the form|
 | `initProduct`                              | `Product`      | undefined                                            | The Merchi product to be used for the form        |
@@ -114,4 +117,6 @@ export default async function Page({ params: { id } } : { params: { id: number }
 | `productFormId`                            | `string?`      | undefined                                            | An option id to be applied to the product form    |
 | `showCurrency`                             | `boolean?`     | undefined                                            | Show the currency icon to the user                |
 | `showCurrencyCode`                         | `boolean?`     | undefined                                            | Show the currency code to the user                |
+| `showFeatureDeadline`                      | `boolean?`     | undefined                                            | Will display a countdown timer                    |
+| `showGroupBuyStatus`                       | `boolean?`     | undefined                                            | will show a the group buy status bar              |
 | `showUnitPrice`                            | `boolean?`     | undefined                                            | Show the unit price to the user                   |
