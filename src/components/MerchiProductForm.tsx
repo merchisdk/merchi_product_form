@@ -7,8 +7,11 @@ import ProductTitle from './ProductTitle';
 import Variations from './Variations';
 import VariationsGroups from './VariationsGroups';
 import { isProductFileDownload, isProductSupplierMOD } from './utils';
+import ProductFeatureDeadline from './ProductFeatureDeadline';
+import ProductGroupBuyStatus from './ProductGroupBuyStatus';
 
 interface Props {
+  allowAddToCart?: boolean;
   classNameAlertSellerEditable?: string;
   classNameButtonSubmit?: string;
   classNameButtonGroupAdd?: string;
@@ -47,14 +50,19 @@ interface Props {
   classNameProductTotal?: string;
   classNameQuantityLabelContainer?: string;
   classNameUnitPrice?: string;
+  hideCalculatedPrice?: boolean;
   hideQuantityField?: boolean;
   hideSubmitButtons?: boolean;
+  hideCost?: boolean;
+  hideCountry?: boolean;
   hideTitle?: boolean;
   initJob?: any;
   initProduct: any;
   onBuyNow: (job: any) => void;
   onGetQuote: (job: any) => void;
   onSubmit?: (job: any) => void;
+  showFeatureDeadline?: boolean;
+  showGroupBuyStatus?: boolean;
 }
 
 function MerchiProductForm(props: Props) {
@@ -63,6 +71,8 @@ function MerchiProductForm(props: Props) {
     hideSubmitButtons = false,
     hideTitle = false,
     initProduct,
+    showFeatureDeadline,
+    showGroupBuyStatus,
   } = props;
   const { groupVariationFields } = initProduct;
   const hasGroups = groupVariationFields && groupVariationFields.length;
@@ -71,6 +81,8 @@ function MerchiProductForm(props: Props) {
   return (
     <MerchiProductFormProvider {...props}>
       {!hideTitle && <ProductTitle />}
+      {showFeatureDeadline && <ProductFeatureDeadline />}
+      {showGroupBuyStatus && <ProductGroupBuyStatus />}
       {!!(
         !isDownloadableProduct &&
         !isSupplierMOD &&
