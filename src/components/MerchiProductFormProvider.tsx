@@ -1,4 +1,5 @@
 'use client';
+import * as React from 'react';
 import { createContext, ReactNode, useContext, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { fetchJobQuote } from '../actions/jobs';
@@ -287,10 +288,10 @@ export const MerchiProductFormProvider = ({
   showGroupBuyStatus?: boolean;
   showUnitPrice?: boolean;
 }) => {
-  const defaultJob = initJob || initProduct.defaultJob;
-  const hookForm = useForm({ defaultValues: defaultJob || {} });
+  const defaultJob = initJob || initProduct.defaultJob || {};
+  const hookForm = useForm({ defaultValues: defaultJob });
   const [client, setClient] = useState(currentUser);
-  const [job, setJob] = useState<any>(initProduct.defaultJob || {});
+  const [job, setJob] = useState<any>(defaultJob);
   const [loading, setLoading] = useState(false);
   const { control, getValues, handleSubmit } = hookForm;
   const doSubmit = onSubmit ? handleSubmit(onSubmit) : undefined;
@@ -305,19 +306,19 @@ export const MerchiProductFormProvider = ({
     setLoading(false);
   }
   const addToCart = onAddToCart
-    ? async function addToCart() {
+    ? async () => {
         await getQuote();
         onAddToCart(job);
       }
     : undefined;
   const buyNow = onBuyNow
-    ? async function addToCart() {
+    ? async () =>  {
         await getQuote();
         onBuyNow(job);
       }
     : undefined;
   const getSubmitQuote = onGetQuote
-    ? async function addToCart() {
+    ? async () =>  {
         await getQuote();
         onGetQuote(job);
       }

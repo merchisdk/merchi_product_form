@@ -9,6 +9,7 @@ import VariationsGroups from './VariationsGroups';
 import { isProductFileDownload, isProductSupplierMOD } from './utils';
 import ProductFeatureDeadline from './ProductFeatureDeadline';
 import ProductGroupBuyStatus from './ProductGroupBuyStatus';
+import '../styles/globals.css';
 
 interface Props {
   allowAddToCart?: boolean;

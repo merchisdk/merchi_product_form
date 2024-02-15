@@ -7,7 +7,7 @@ export async function fetchJobQuote(jobJson: any, apiUrl: string) {
   const queryString = urlSearchParams({product_id:  jobJson.product!.id ? String(jobJson.product!.id!) : 'null', skip_rights: 'y'});
   const fetchOptions: any = {method: 'POST', body: formData};
   const response = await fetch(
-    `${apiUrl}/specialised-order-estimate/?${queryString}`,
+    `${apiUrl}specialised-order-estimate/?${queryString}`,
     fetchOptions,
   );
   if (!response.ok) {

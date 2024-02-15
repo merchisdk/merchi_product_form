@@ -38,7 +38,7 @@ function DropzoneInput({
         const formData = new FormData();
         formData.append('0', file);
 
-        const response = await fetch(`${apiUrl}/public-upload-job-files/`, {
+        const response = await fetch(`${apiUrl}public-upload-job-files/`, {
           method: 'POST',
           body: formData
         });

@@ -1,4 +1,5 @@
 'use client';
+import * as React from 'react'
 import { useState } from 'react';
 import { isBoolean, isArray } from 'lodash';
 import { IconFile } from './icons';
@@ -188,7 +189,6 @@ function VariationFileInput({ disabled, name, variation }: Props) {
   const _allowFileMultiple = determineBoolean(allowFileMultiple);
   const _showFilePreview = determineBoolean(showFilePreview);
   function handleUploadSuccess(fs: any) {
-    console.log('trying to append the file,', fs);
     if (_allowFileMultiple) {
       append(fs);
     } else {

@@ -1,0 +1,694 @@
+/* **********
+ Embed form
+ ********** */
+ .merchi-embed-form {
+
+  /* buttons */
+  &_button {
+    &-submit {
+      margin: 4px !important;
+    }
+  }
+
+  /* variant container */
+  &_variantion-container {
+    gap: 2rem;
+    display: flex;
+    flex-direction: column;
+    padding: 1rem 0;
+
+    @media(min-width: 992px) {
+      padding: 0;
+    }
+  }
+
+  /* information */
+  &_information-container {
+    margin-top: 1rem;
+
+    @media(min-width: 992px) {
+      padding: 0;
+    }
+
+    ul {
+      gap: 1rem;
+    }
+
+    .nav-item {
+      padding: 0 !important;
+    }
+
+    &-list-group-item {
+      padding: 0.5rem !important;
+      list-style-type: none;
+    }
+  }
+
+  /* images */
+  &_img {
+    &-container {}
+
+    &-product-pic {
+      img {
+        max-width: 100%;
+        border-radius: 0.5rem;
+      }
+    }
+
+    &-preview-container {
+      flex-direction: column;
+    }
+
+    &-preview-container-main-image {
+      align-items: center;
+      display: flex;
+      justify-content: center;
+      width: 100%;
+    }
+
+    &-thumbnails {
+      gap: 1rem;
+      flex-wrap: wrap;
+      justify-content: center;
+      padding: 0.5rem;
+    }
+  }
+
+  /* react zoom package */
+  &_zoom {
+    &-img button {
+      font-size: 1.5rem;
+      display: flex;
+    }
+  }
+
+  /* cost summary */
+  &_summary {
+    &-product-cost {
+      display: flex;
+      flex-direction: row;
+      justify-content: space-between;
+      width: 100%;
+      margin: 1rem 0;
+      flex-direction: wrap;
+    }
+
+    &-product-cost-container {
+      display: flex;
+      flex-direction: column;
+      font-size: 1.2rem;
+      margin-top: 1.5rem
+    }
+
+    &-button-submit-container {
+      display: flex;
+    }
+  }
+
+  /* variation dropzone */
+  &_dropzone {
+    padding: 0;
+    border: none;
+    color: inherit;
+    padding: 2rem 1rem;
+    background-color: #fff;
+    border: 1px dashed #dee2e6;
+    border-radius: 0.375rem;
+    text-align: center;
+    color: #8898aa;
+    order: -1;
+    cursor: pointer;
+    z-index: 999;
+    transition: all .2s ease-in-out;
+
+    &:hover {
+      box-shadow: 0 0.5em 0.75em #00000014;
+      scale: 1.002;
+    }
+
+    &-text-container {
+      display: flex;
+    }
+
+    &-icon-container {
+      display: inline-block;
+      width: 50px;
+      height: 50px;
+      background: #dfdfdf;
+      border-radius: 100%;
+      position: relative;
+      margin-right: 1rem;
+    }
+
+    &-icon {
+      position: absolute;
+      display: block;
+      top: 50%;
+      height: 24px;
+      left: 50%;
+      transform: translate(-50%, -50%)
+    }
+
+    &-icon-plus {
+      transition: all .15s ease-in-out;
+      position: absolute;
+      background: white;
+      height: 30px;
+      width: 30px !important;
+      border-radius: 100%;
+      border: 1px solid #dfdfdf;
+      padding: 5px;
+      display: block;
+      right: -8px;
+      bottom: -14px;
+      top: initial;
+      left: initial;
+
+      &:hover {
+        scale: 1.2;
+      }
+    }
+  }
+
+  /* variation image select */
+  &_image-select-option {
+    &-container {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    &-item-container {
+      flex-grow: 1;
+      flex: 0 0 calc(50% - 0.50rem);
+
+      @media(min-width: 782px) {
+        flex: 0 0 calc(33.33% - 0.67rem);
+      }
+    }
+
+    &-item {
+      background: #fff;
+      border-radius: 0.5em;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+      cursor: pointer;
+      transition-duration: 0.15s;
+      position: relative;
+      text-align: center;
+      padding: 1rem 0.5rem;
+
+      &:hover {
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        transition-duration: 0.25s;
+      }
+
+      &-img {
+        display: block;
+        height: 150px;
+        margin: auto;
+        max-width: 150px;
+        width: 100%;
+        background-repeat: no-repeat;
+        background-size: contain;
+      }
+
+      svg {
+        position: absolute;
+        top: 0.5rem;
+        right: 0.5rem;
+        background: #fff;
+        padding: 2px;
+        padding-bottom: 1px;
+        border-radius: 0.4rem;
+        font-size: 28px !important;
+        -webkit-animation-name: fadeInOpacity;
+        -webkit-animation-iteration-count: 1;
+        -webkit-animation-duration: 0.2s;
+        animation-name: fadeInOpacity;
+        animation-iteration-count: 1;
+        animation-duration: 0.2s;
+      }
+    }
+  }
+
+  /* variation color select */
+  &_color-select {
+    &-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 2rem;
+
+      @media (max-width: 768px) {
+        justify-content: center;
+      }
+    }
+
+    &-indicator {
+      border-radius: 100%;
+      height: 65px;
+      width: 65px;
+    }
+
+    &-item {
+      align-items: center;
+      display: flex;
+      flex-direction: column;
+      position: relative
+    }
+
+    &-description {
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      overflow: clip;
+      max-width: 125px;
+      text-transform: capitalize;
+      background-color: white;
+      padding: 0 0.4rem;
+      margin: 6px 0 0 0;
+      cursor: pointer;
+      border-radius: 5px;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+
+    &-option {
+      border: 4px solid #fff;
+      border-radius: 100%;
+      box-shadow: 0 2px 2px rgba(0, 0, 0, 0.1);
+      transition: all 0.2s ease-in-out;
+      z-index: 1;
+      height: 50px;
+      width: 50px;
+
+      &:hover {
+        box-shadow: 0 5px 4px rgba(0, 0, 0, 0.1);
+      }
+
+      i,
+      svg {
+        position: absolute;
+        top: 0;
+        right: 0;
+        background: #fff;
+        border-radius: 100%;
+        font-size: 21px;
+      }
+    }
+  }
+
+  /* variation checkbox and radio */
+  &_checkbox_radio {
+    &-container {
+      display: flex;
+      flex-direction: column;
+    }
+
+    &-item-container {
+      display: flex;
+      flex-direction: row;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    // item and input are in the merchi embed form with the className merchi-embed-form_checkbox_radio-item, but I dont know what its used for. Leaving it here in case we need it later.
+    &-item {}
+
+    &-input {
+      position: absolute;
+      opacity: 0;
+      cursor: pointer;
+      z-index: 999;
+      height: 33px;
+      width: 33px;
+
+      // Define the styles for the checkbox label
+      +label {
+        position: relative;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        margin-bottom: 0;
+
+        // Define the custom checkbox indicator
+        &::before {
+          content: " ";
+          display: inline-block;
+          margin-right: 0.5rem;
+          width: 33px;
+          height: 33px;
+          background-color: white;
+          border-radius: 6px;
+          box-shadow: rgba(42, 42, 42, 0.15) 0px 2px 2px 0px;
+          transition: all 0.1s ease-in-out;
+          cursor: pointer;
+        }
+
+        // Define the custom checkbox indicator when checked
+        &::after {
+          content: "";
+          width: 11px;
+          height: 11px; // Size of the checkmark
+          border-radius: 100%;
+          position: absolute;
+          top: 50%;
+          left: 11px;
+          transform: translateY(-50%);
+          opacity: 0;
+          transition: all 0.3s ease; // Smooth transition for hover/focus effects
+          cursor: pointer;
+        }
+      }
+
+      &:disabled+label {
+        &::before {
+          opacity: 0.8;
+          box-shadow: none;
+          cursor: not-allowed;
+          border: inset 1px #0000002b;
+          background-color: transparent;
+        }
+
+        &::after {
+          cursor: not-allowed;
+        }
+      }
+
+      &:disabled+label &-label {
+        opacity: 0.8;
+        box-shadow: none;
+        cursor: not-allowed;
+        border: inset 1px #0000002b;
+        background-color: transparent;
+      }
+
+      &:disabled+label:hover::before {
+        box-shadow: none;
+        border: inset 1px #0000002b;
+      }
+
+      // Apply styles to the checkbox when checked
+      &:checked+label::before {
+        box-shadow: rgba(42, 42, 42, 0.15) 0px 1px 1px 0px;
+      }
+
+      // Show the checkmark when the checkbox is checked
+      &:checked+label::after {
+        opacity: 1;
+      }
+
+    }
+
+    &-label {
+      position: relative;
+      cursor: auto !important;
+      display: inline-flex;
+      align-items: center;
+      height: 33px;
+    }
+
+    &-super {
+      display: block;
+      color: rgb(129, 136, 155);
+      padding: 3px 10px;
+      font-weight: bold;
+      border-radius: 8px;
+      font-size: 11px;
+      margin-top: 10px;
+      width: -moz-fit-content;
+      width: fit-content;
+      box-shadow: 1px 1px 2px #00000026;
+      background: #f2f4fb;
+      border-top: 1px solid white;
+      border-left: 1px solid white;
+    }
+  }
+
+  /* titles */
+  &_input {
+    &-radio {
+      font-size: 18px;
+      font-weight: 800;
+      padding-bottom: 0.25rem;
+    }
+
+    &-checkbox {
+      font-size: 18px;
+      font-weight: 800;
+      padding-bottom: 0.25rem;
+
+    }
+
+    &-select {
+      font-size: 18px;
+      font-weight: 800;
+      padding-bottom: 0.25rem;
+
+    }
+
+    &-image-select {
+      font-size: 18px;
+      font-weight: 800;
+      padding-bottom: 0.25rem;
+
+    }
+
+    &-file {
+      font-size: 18px;
+      font-weight: 800;
+      padding-bottom: 0.25rem;
+
+    }
+  }
+
+  /* other */
+  &_variation-cost-detail {
+    display: block;
+    color: rgb(129, 136, 155);
+    padding: 3px 10px;
+    font-weight: bold;
+    border-radius: 8px;
+    font-size: 14px;
+    width: -moz-fit-content;
+    width: fit-content;
+    box-shadow: 1px 1px 2px #00000026;
+    background: #f2f4fb;
+    border-top: 1px solid white;
+    border-left: 1px solid white;
+    margin: 0.25rem 0rem 0.5rem;
+  }
+
+  /* product groups */
+  &_product-group {
+    &-container {
+      background: rgba(255, 255, 255, 0.75);
+      border-radius: 0.75rem;
+      padding: 0.75rem 1rem 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    &-actions-container {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+
+      @media(min-width: 500px) {
+        width: auto;
+      }
+    }
+
+    &-actions-cost-container {
+      align-items: center;
+      display: flex;
+      justify-content: space-between;
+      margin-top: 2rem;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    &-total-cost {
+      font-weight: 800;
+    }
+
+    &-button-remove {
+      width: 100%;
+
+      @media(min-width: 500px) {
+        width: fit-content;
+      }
+    }
+
+    &-button-add-group {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      margin: 1rem 0;
+    }
+
+    &-inventory-status {
+      width: fit-content;
+      border-radius: 50px;
+      color: white;
+      font-weight: bold;
+      font-size: 0.75rem;
+      padding: 3px;
+      display: flex;
+      gap: 0.25rem;
+      align-items: center;
+    }
+
+    &-variation-container {
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
+    }
+
+    &-input-qty-container {
+      font-size: 18px;
+      font-weight: 800;
+    }
+  }
+
+  /* quantity input */
+  &_quantity {
+    &-container {}
+
+    &-label-container {
+      font-size: 18px;
+      font-weight: 800;
+      ;
+      margin-bottom: 0.5rem;
+    }
+  }
+}
+
+/* **********
+ END Embed from
+ ********** */
+
+/* Draft js RTE styles */
+
+.rte-editor-iframeContainer {
+  width: 100%;
+  height: 0;
+  position: relative;
+  min-height: 300px;
+  padding-bottom: 56.25%;
+}
+
+.rte-editor-iframe {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.rte-editor-invalidVideoSrc {
+  text-align: center;
+  background-color: #eaeaea;
+  padding: 1em;
+}
+
+.rte-editor-video {
+  width: 100%;
+  height: 100%;
+}
+
+[data-rmiz-wrap="visible"],
+[data-rmiz-wrap="hidden"] {
+  position: relative;
+  display: inline-flex;
+  align-items: flex-start;
+}
+
+[data-rmiz-wrap="hidden"] {
+  visibility: hidden;
+}
+
+[data-rmiz-overlay] {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  transition-property: background-color;
+}
+
+[data-rmiz-btn-open],
+[data-rmiz-btn-close] {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+
+  /* reset styles */
+  margin: 0;
+  padding: 0;
+  border: none;
+  border-radius: 0;
+  font: inherit;
+  color: inherit;
+  background: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+}
+
+[data-rmiz-btn-open] {
+  cursor: zoom-in;
+}
+
+[data-rmiz-btn-close] {
+  cursor: zoom-out;
+}
+
+[data-rmiz-modal-content] {
+  position: absolute;
+  transition-property: transform;
+  transform-origin: center center;
+}
+
+/* Product Images */
+.preview-container {
+  display: flex;
+  height: 490px;
+  padding-bottom: 1rem !important;
+  padding-top: 1rem !important;
+}
+
+.preview-container-stacked {
+  display: flex;
+  padding-bottom: 1rem !important;
+  padding-top: 1rem !important;
+}
+
+.preview-container-main-image {
+  align-items: center;
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+.product-pic img {
+  width: 100%;
+  border-radius: .375rem;
+  height: auto;
+  max-width: 470px;
+  max-height: 446px;
+}
+
+.fit-image {
+  width: 100%;
+  object-fit: cover;
+  border-radius: .375rem;
+}
