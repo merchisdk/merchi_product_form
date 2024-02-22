@@ -10,7 +10,7 @@ function ProductTitle() {
     hideDomainName,
     product,
   } = useMerchiFormContext();
-  const { domain, name } = product;
+  const { domain = {}, name } = product;
   const country = domain.country || 'AU';
   const countryName = isoCountries[country];
   return (
