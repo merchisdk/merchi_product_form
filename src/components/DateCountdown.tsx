@@ -130,6 +130,7 @@ function DateCountdown(props: Props) {
     icon = faStopwatch,
     tooltip,
   } = props;
+  const idCountdownDate = 'merchi-countdown-date'
   const now = new Date().getTime() / 1000;
   const faIcon = <FontAwesomeIcon icon={icon} />;
   const countdown = (
@@ -142,7 +143,10 @@ function DateCountdown(props: Props) {
   return (
     <div className={containerClass}>
       {tooltip ? (
-        <TooltipElement tooltip={tooltip}>
+        <TooltipElement
+          id={idCountdownDate}
+          tooltip={tooltip}
+        >
           {faIcon} {countdown}
         </TooltipElement>
       ) : (
