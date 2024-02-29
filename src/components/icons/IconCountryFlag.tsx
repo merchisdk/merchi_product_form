@@ -1,4 +1,5 @@
 'use client';
+import * as React from 'react';
 import TooltipElement from '../TooltipElement';
 
 interface Props {
@@ -15,7 +16,10 @@ function IconCountryFlag(
   const style = {borderRadius: '2px'}
   return (
     tooltip ?
-      <TooltipElement tooltip={tooltip}>
+      <TooltipElement
+        id={`merchi-country-flag_tooltip-${countryCode}`}
+        tooltip={tooltip}
+      >
   	    <span className={c} style={style}></span>
       </TooltipElement>
     : <span className={c} style={style}></span>

@@ -1,3 +1,4 @@
+import * as React from 'react';
 import TooltipElement from '../TooltipElement';
 import { useMerchiFormContext } from '../MerchiProductFormProvider';
 
@@ -16,7 +17,10 @@ function ButtonProductSubmit({ onClick, text }: Props) {
   const { needsInventory, inventoriesOpen } = product;
   const { inventorySufficient } = job;
   return needsInventory && !inventoriesOpen && !inventorySufficient ? (
-    <TooltipElement tooltip='Insufficient inventory'>
+    <TooltipElement
+      id={`merchi-submit-job-button-${product.id}`}
+      tooltip='Insufficient inventory'
+    >
       <button className={classNameButtonSubmit} disabled={true}>
         {text}
       </button>

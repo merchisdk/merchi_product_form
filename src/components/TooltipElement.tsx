@@ -5,13 +5,14 @@ import { Tooltip } from 'react-tooltip';
 
 interface Props {
   children: ReactNode;
+  id?: string;
   place?: 'top' | 'bottom' | 'left' | 'right';
   tooltip?: string;
 }
 
-const TooltipElement: FC<Props> = ({ children, place = 'top', tooltip }) => {
+const TooltipElement: FC<Props> = ({ children, id, place = 'top', tooltip }) => {
   // Generate a unique ID immediately for the tooltip anchor.
-  const ttid = `id-${uuidv4()}`;
+  const ttid = id || `id-${uuidv4()}`;
 
   // Only render the Tooltip if a tooltip text is provided.
   const renderTooltip = tooltip ? (

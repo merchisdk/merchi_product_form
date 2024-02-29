@@ -1,4 +1,5 @@
 'use client';
+import * as React from 'react';
 import TooltipElement from './TooltipElement';
 import { optionImageUrl, variationFieldOptionCostDetail } from './utils';
 import IconCheckedOrNoStock from './icons/IconCheckedOrNoStock';
@@ -48,7 +49,10 @@ function VariationOptionImage({
             backgroundImage: `url(${optionImageUrl(option)})`,
           }}
         />
-        <TooltipElement tooltip={tooltip}>
+        <TooltipElement
+          id={`merchi-image-option-tooltip-${option.id}`}
+          tooltip={tooltip}
+        >
           <div className='image-select-title'>{option.value}</div>
         </TooltipElement>
         {sellerProductEditable && (
