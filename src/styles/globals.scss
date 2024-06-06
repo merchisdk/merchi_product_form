@@ -692,3 +692,15 @@
   object-fit: cover;
   border-radius: .375rem;
 }
+
+.variation-field-instructions .DraftEditor-root .DraftEditor-editorContainer {
+  min-height: 1px;
+}
+
+.variation-field-instructions .DraftEditor-root .DraftEditor-editorContainer .public-DraftEditor-content {
+  min-height: 1px;
+}
+
+.variation-field-instructions img {
+  max-width: 100%;
+}
