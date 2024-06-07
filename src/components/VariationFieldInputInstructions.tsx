@@ -6,7 +6,6 @@ import Editor, { composeDecorators } from '@draft-js-plugins/editor';
 import '@draft-js-plugins/text-alignment/lib/plugin.css';
 import 'draft-js/dist/Draft.css';
 import '@draft-js-plugins/image/lib/plugin.css';
-import '@draft-js-plugins/static-toolbar/lib/plugin.css';
 import '@draft-js-plugins/alignment/lib/plugin.css';
 
 import createFocusPlugin from '@draft-js-plugins/focus';
