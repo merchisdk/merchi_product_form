@@ -8,7 +8,7 @@ function ProductButtonsSubmit() {
     allowAddToCart,
     classNameButtonSubmit,
     classNameButtonsSubmitContainer,
-    btnNameAddToCart = 'Add To Card',
+    btnNameAddToCart = 'Add To Cart',
     loading,
     onAddToCart,
     onBuyNow,
