@@ -1,4 +1,5 @@
 'use client';
+import * as React from 'react';
 import { MerchiProductFormProvider } from './MerchiProductFormProvider';
 import InputProductQuantity from './InputProductQuantity';
 import ProductTotalCost from './ProductTotalCost';
@@ -10,6 +11,7 @@ import { isProductFileDownload, isProductSupplierMOD } from './utils';
 import ProductFeatureDeadline from './ProductFeatureDeadline';
 import ProductGroupBuyStatus from './ProductGroupBuyStatus';
 import '../styles/globals.css';
+import { extendMerchiSourceInLocalStorage } from '../utils/merchiSource';
 
 interface Props {
   allowAddToCart?: boolean;
@@ -79,6 +81,8 @@ function MerchiProductForm(props: Props) {
   const hasGroups = groupVariationFields && groupVariationFields.length;
   const isSupplierMOD = isProductSupplierMOD(initProduct);
   const isDownloadableProduct = isProductFileDownload(initProduct);
+  // on intialise check for "merchi_source" and save it in localStorage
+  extendMerchiSourceInLocalStorage();
   return (
     <MerchiProductFormProvider {...props}>
       {!hideTitle && <ProductTitle />}
