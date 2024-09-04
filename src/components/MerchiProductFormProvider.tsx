@@ -3,6 +3,7 @@ import * as React from 'react';
 import { createContext, ReactNode, useContext, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { fetchJobQuote } from '../actions/jobs';
+import { getMerchiSourceJobTags } from './utils';
 
 type FormMethods = ReturnType<typeof useForm>;
 
@@ -295,6 +296,9 @@ export const MerchiProductFormProvider = ({
   const [loading, setLoading] = useState(false);
   const { control, getValues, handleSubmit } = hookForm;
   const doSubmit = onSubmit ? handleSubmit(onSubmit) : undefined;
+
+  const tags = getMerchiSourceJobTags();
+
   async function getQuote() {
     setLoading(true);
     const values = await getValues();
@@ -308,19 +312,19 @@ export const MerchiProductFormProvider = ({
   const addToCart = onAddToCart
     ? async () => {
         await getQuote();
-        onAddToCart(job);
+        onAddToCart({...job, tags});
       }
     : undefined;
   const buyNow = onBuyNow
     ? async () =>  {
         await getQuote();
-        onBuyNow(job);
+        onBuyNow({...job});
       }
     : undefined;
   const getSubmitQuote = onGetQuote
     ? async () =>  {
         await getQuote();
-        onGetQuote(job);
+        onGetQuote({...job});
       }
     : undefined;
   const [alert, showAlert] = useState(null);
