@@ -318,13 +318,13 @@ export const MerchiProductFormProvider = ({
   const buyNow = onBuyNow
     ? async () =>  {
         await getQuote();
-        onBuyNow({...job, tags});
+        onBuyNow({...job});
       }
     : undefined;
   const getSubmitQuote = onGetQuote
     ? async () =>  {
         await getQuote();
-        onGetQuote({...job, tags});
+        onGetQuote({...job});
       }
     : undefined;
   const [alert, showAlert] = useState(null);
