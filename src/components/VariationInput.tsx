@@ -40,6 +40,7 @@ const VariationInput: React.FC<Props> = ({
     rules: validationParams(variation.variationField)
   });
   const { value, variationField } = variation;
+  console.log('Log - Value: ', value);
   const validationClass = invalid ? 'is-invalid' : '';
   return (
     <div className={`${classNameInputContainer} merchi-input-${inputType}-container`}>
@@ -50,7 +51,7 @@ const VariationInput: React.FC<Props> = ({
       />
       {inputType === 'textarea' ? (
         <textarea
-          defaultValue={value}
+          defaultValue={typeof value === 'object' ? JSON.stringify(value) : value}
           disabled={disabled}
           className={`${classNameInput} ${validationClass}`}
           rows={variationField.rows}
@@ -59,7 +60,7 @@ const VariationInput: React.FC<Props> = ({
         />
       ) : (
         <input
-          defaultValue={value}
+          defaultValue={typeof value === 'object' ? JSON.stringify(value) : value}
           disabled={disabled}
           type={inputType}
           className={`${classNameInput} ${validationClass}`}
