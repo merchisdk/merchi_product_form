@@ -41,6 +41,8 @@ const VariationInput: React.FC<Props> = ({
   });
   const { value, variationField } = variation;
   console.log('Log - Value: ', value);
+  console.log('Log - Type of Value: ', typeof value);
+  
   const validationClass = invalid ? 'is-invalid' : '';
   return (
     <div className={`${classNameInputContainer} merchi-input-${inputType}-container`}>
