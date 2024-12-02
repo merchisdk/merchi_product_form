@@ -80,17 +80,13 @@ function MerchiProductForm(props: Props) {
   const hasGroups = groupVariationFields && groupVariationFields.length;
   const isSupplierMOD = isProductSupplierMOD(initProduct);
   const isDownloadableProduct = isProductFileDownload(initProduct);
+  const hideQuantity = isDownloadableProduct || isSupplierMOD || hasGroups;
   return (
     <MerchiProductFormProvider {...props}>
       {!hideTitle && <ProductTitle />}
       {showFeatureDeadline && <ProductFeatureDeadline />}
       {showGroupBuyStatus && <ProductGroupBuyStatus />}
-      {!!(
-        !isDownloadableProduct &&
-        !isSupplierMOD &&
-        !hasGroups &&
-        !hideQuantityField
-      ) && <InputProductQuantity />}
+      {!hideQuantity || !hideQuantityField && <InputProductQuantity />}
       <div className='merchi-embed-form_variantion-container'>
         <VariationsGroups />
         <Variations />
