@@ -1,4 +1,5 @@
 'use client';
+import * as React from 'react';
 import { formatCurrency } from './currency';
 import { useMerchiFormContext } from './MerchiProductFormProvider';
 
@@ -18,16 +19,15 @@ function ProductUnitPrice({
     showCurrencyCode = false,
     showUnitPrice =  true,
   } = useMerchiFormContext();
-  const { bestPrice, currency, unitPrice } = product;
+  const { bestPrice = 0, currency, unitPrice = 0 } = product;
   const currencyOptions = {
     currency,
     codeBeforeSymbol: showCurrencyCode,
     showCodeIfNoSymbol: showCurrency,
     spaceBetweenSymbol
   };
-  const productUnitPrice = formatCurrency(unitPrice, currencyOptions);
-  const productBestPrice = formatCurrency(
-    product.bestPrice, {...currencyOptions, codeBeforeSymbol: false});
+  const productUnitPrice = formatCurrency(unitPrice || 0, currencyOptions);
+  const productBestPrice = formatCurrency(bestPrice || 0, {...currencyOptions, codeBeforeSymbol: false});
   const hasPriceRange = unitPrice !== bestPrice;
   return (
     <span className={classNameUnitPrice}>

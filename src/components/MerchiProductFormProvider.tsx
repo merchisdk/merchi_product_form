@@ -3,6 +3,7 @@ import * as React from 'react';
 import { createContext, ReactNode, useContext, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { fetchJobQuote } from '../actions/jobs';
+import { productHasGroups } from '../utils/products';
 import { getMerchiSourceJobTags } from './utils';
 
 type FormMethods = ReturnType<typeof useForm>;
@@ -299,15 +300,27 @@ export const MerchiProductFormProvider = ({
 
   const tags = getMerchiSourceJobTags();
 
+  const [alert, showAlert] = useState((null as any));
+
   async function getQuote() {
     setLoading(true);
     const values = await getValues();
-    const r = await fetchJobQuote({
-      ...values,
-      product: { id: initProduct.id },
-    }, apiUrl);
-    setJob(r);
-    setLoading(false);
+    let data = { ...values,  product: { id: initProduct.id } };
+    if (productHasGroups(initProduct)) {
+      // if the product has group variation fields we delete quantity
+      // because each group has it's own quantity
+      delete data.quantity;
+    }
+    try {
+      const r = await fetchJobQuote(data);
+      setJob(r);
+    } catch (e: any) {
+      const message = e.errorMessage || e.message || 'Server error';
+      showAlert({ message });
+      console.error(message);
+    } finally {
+      setLoading(false); 
+    }
   }
   const addToCart = onAddToCart
     ? async () => {
@@ -327,7 +340,6 @@ export const MerchiProductFormProvider = ({
         onGetQuote({...job});
       }
     : undefined;
-  const [alert, showAlert] = useState(null);
   return (
     <MerchiProductFormContext.Provider
       value={

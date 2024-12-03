@@ -117,74 +117,62 @@ export const currencyMap: any =
     YER: '﷼',
     ZWD: 'Z$'};
 
-export function formatCurrency(amount: any, options: any) {
-  /*
-    *   Example usage:
+type CurrencyOptions = {
+  currency?: string;
+  showCodeIfNoSymbol?: boolean;
+  symbolAfterAmount?: boolean;
+  financialNegative?: boolean;
+  codeAfterSymbol?: boolean;
+  codeBeforeSymbol?: boolean;
+  spaceBetweenSymbol?: boolean;
+  decimalPlaces?: number;
+  decimalSeperator?: string;
+  codeAfterAmount?: boolean;
+};
 
-            formatCurrency(-222.123456, {currency: 'EGP',
-                                         showCodeIfNoSymbol: true,
-                                         financialNegative: true,
-                                         decimalPlaces: 3})
+export function formatCurrency(amount: any, options: CurrencyOptions = {}): string {
+  const {
+    currency = 'AUD',
+    showCodeIfNoSymbol = true,
+    symbolAfterAmount = false,
+    financialNegative = false,
+    codeAfterSymbol = false,
+    codeBeforeSymbol = false,
+    spaceBetweenSymbol = false,
+    decimalPlaces = 2,
+    decimalSeperator = '.',
+    codeAfterAmount = false
+  } = options;
 
-            --> '(£222.123)'
-    */
+  let symbol = '';
+  let result = '';
+  let negative = amount < 0;
+  if (negative) amount = Math.abs(amount);
 
-  let symbol;
-  let negative = false;
-  let result;
-  options = options || {};
-  options.currency = options.currency || 'AUD';
-  options.showCodeIfNoSymbol = options.showCodeIfNoSymbol || true;
-  options.symbolAfterAmount = options.symbolAfterAmount || false;
-  options.financialNegative = options.financialNegative || false;
-  options.codeAfterSymbol = options.codeAfterSymbol || false;
-  options.codeBeforeSymbol = options.codeBeforeSymbol || false;
-  options.spaceBetweenSymbol = options.spaceBetweenSymbol || false;
-  options.decimalPlaces = options.decimalPlaces || 2;
-  options.decimalSeperator = options.decimalSeperator || '.';
-  options.codeAfterAmount = options.codeAfterAmount || false;
-  if (amount < 0.0) {
-    negative = true;
-        amount *= -1.0; // eslint-disable-line
+  if (Object.prototype.hasOwnProperty.call(currencyMap, currency)) {
+    symbol = currencyMap[currency];
+    if (codeAfterSymbol) symbol += `(${currency})`;
+    if (codeBeforeSymbol) symbol = `(${currency})${symbol}`;
+  } else if (showCodeIfNoSymbol) {
+    symbol = currency;
   }
-  if (Object.prototype.hasOwnProperty.call(currencyMap, options.currency)) {
-    symbol = currencyMap[options.currency];
-    if (options.codeAfterSymbol) {
-      symbol += '(' + options.currency + ') ';
-    }
-    if (options.codeBeforeSymbol) {
-      symbol = `(${options.currency}) ${symbol}`;
-    }
-  } else if (options.showCodeIfNoSymbol) {
-    symbol = options.currency;
+
+  amount = Number(amount.toFixed(decimalPlaces)).toFixed(decimalPlaces).replace('.', decimalSeperator);
+
+  if (symbolAfterAmount) {
+    result = amount + (spaceBetweenSymbol ? ' ' : '') + symbol;
   } else {
-    symbol = '';
+    result = symbol + (spaceBetweenSymbol ? ' ' : '') + amount;
   }
-    amount = amount.toFixed(options.decimalPlaces);
-    amount = amount.replace('.', options.decimalSeperator);
-  if (options.symbolAfterAmount) {
-    result = amount;
-    if (options.spaceBetweenSymbol) {
-      result += ' ';
-    }
-    result += symbol;
-  } else {
-    result = symbol;
-    if (options.spaceBetweenSymbol) {
-      result += ' ';
-    }
-    result += amount;
-  }
+
   if (negative) {
-    if (options.financialNegative) {
-      result = `(${result})`;
-    } else {
-      result = `-${result}`;
-    }
+    result = financialNegative ? `(${result})` : `-${result}`;
   }
-  if (options.codeAfterAmount === true) {
-    result += ` (${options.currency})`;
+
+  if (codeAfterAmount) {
+    result += ` (${currency})`;
   }
+
   return result;
 }
 

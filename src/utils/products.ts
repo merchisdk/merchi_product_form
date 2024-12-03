@@ -38,9 +38,17 @@ export function productProfileUrl(product: any) {
 }
 
 export function productFeatureImageUrl(product: any, noImageSrc?: string) {
-  return product!.featureImage &&
-    product!.featureImage!.viewUrl ?
-      product!.featureImage!.viewUrl :
-        product!.images && product!.images[0] && product!.images[0]!.viewUrl ?
-          product!.images[0]!.viewUrl : noImageSrc ? noImageSrc : productProfileUrl(product);
+  return product!.featureImage
+    && product!.featureImage!.viewUrl
+    ? product!.featureImage!.viewUrl
+    : product!.images && product!.images[0]
+    && product!.images[0]!.viewUrl
+    ? product!.images[0]!.viewUrl
+    : noImageSrc
+    ? noImageSrc
+    : productProfileUrl(product);
+}
+
+export function productHasGroups(product: any) {
+  return !!product?.groupVariationFields.length;
 }
