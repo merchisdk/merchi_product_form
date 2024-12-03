@@ -1,15 +1,44 @@
-import { urlSearchParams } from '../utils/url';
+import { Merchi } from 'merchi_sdk_ts';
 
-export async function fetchJobQuote(jobJson: any, apiUrl: string) {
-  const queryString = urlSearchParams({product_id:  jobJson.product!.id ? String(jobJson.product!.id!) : 'null', skip_rights: 'y'});
-  const fetchOptions: any = {method: 'POST', body: JSON.stringify(jobJson)};
-  const response = await fetch(
-    `${apiUrl}specialised-order-estimate/?${queryString}`,
-    fetchOptions,
+const merchi = new Merchi();
+type AnyObject = Record<string, any>;
+
+function removeNullValues(obj: AnyObject): AnyObject {
+  const variation = Object.fromEntries(
+    Object.entries(obj).filter(([_, value]) => value !== null)
   );
-  if (!response.ok) {
-    throw new Error(`Server responded with ${response.status}: ${response.statusText}`);
-  }
-  const job = await response.json()
-  return job;
+  return {...variation, id: undefined};
+}
+
+function removeNullValuesFromArray(objs: AnyObject[]): AnyObject[] {
+  return objs.map((obj) => {
+    const cleanedObj = removeNullValues(obj);
+    if (cleanedObj.variations) {
+      // Recursively clean variations if it's an object
+      cleanedObj.variations = removeNullValues(cleanedObj.variations);
+    }
+    return {id: undefined, ...cleanedObj};
+  });
+}
+
+export async function fetchJobQuote(jobJson: AnyObject) {
+  const merchiJob = new merchi.Job();
+  const { variations = [], variationsGroups = [] } = jobJson;
+  
+  // Clean the input data by removing nulls
+  const cleanedVariationsGroups = removeNullValuesFromArray(variationsGroups);
+  const cleanedVariations = removeNullValuesFromArray(variations);
+  const cleanedJob = removeNullValues(jobJson);
+
+  // Passing cleaned data into merchiJob object
+  merchiJob.fromJson(
+    {
+      ...cleanedJob,
+      variations: cleanedVariations,
+      variationsGroups: cleanedVariationsGroups,
+    },
+    { makeDirty: false, arrayValueStrict: false }
+  );
+
+  return merchiJob.getQuote();
 }

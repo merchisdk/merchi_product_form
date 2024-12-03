@@ -300,6 +300,8 @@ export const MerchiProductFormProvider = ({
 
   const tags = getMerchiSourceJobTags();
 
+  const [alert, showAlert] = useState((null as any));
+
   async function getQuote() {
     setLoading(true);
     const values = await getValues();
@@ -309,9 +311,16 @@ export const MerchiProductFormProvider = ({
       // because each group has it's own quantity
       delete data.quantity;
     }
-    const r = await fetchJobQuote(data, apiUrl);
-    setJob(r);
-    setLoading(false);
+    try {
+      const r = await fetchJobQuote(data);
+      setJob(r);
+    } catch (e: any) {
+      const message = e.errorMessage || e.message || 'Server error';
+      showAlert({ message });
+      console.error(message);
+    } finally {
+      setLoading(false); 
+    }
   }
   const addToCart = onAddToCart
     ? async () => {
@@ -331,7 +340,6 @@ export const MerchiProductFormProvider = ({
         onGetQuote({...job});
       }
     : undefined;
-  const [alert, showAlert] = useState(null);
   return (
     <MerchiProductFormContext.Provider
       value={
