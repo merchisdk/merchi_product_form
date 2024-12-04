@@ -15,7 +15,9 @@ function removeNullValuesFromArray(objs: AnyObject[]): AnyObject[] {
     const cleanedObj = removeNullValues(obj);
     if (cleanedObj.variations) {
       // Recursively clean variations if it's an object
-      cleanedObj.variations = removeNullValues(cleanedObj.variations);
+      cleanedObj.variations = cleanedObj.variations.map(
+        (variation: AnyObject) => removeNullValues(variation)
+      );
     }
     return {id: undefined, ...cleanedObj};
   });
