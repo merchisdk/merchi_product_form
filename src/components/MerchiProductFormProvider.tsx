@@ -313,7 +313,8 @@ export const MerchiProductFormProvider = ({
     }
     try {
       const r = await fetchJobQuote(data);
-      setJob(r);
+      const jobJson = r.toJson();
+      setJob(jobJson);
     } catch (e: any) {
       const message = e.errorMessage || e.message || 'Server error';
       showAlert({ message });
