@@ -1,4 +1,5 @@
 'use client';
+import * as React from 'react';
 import { useController } from 'react-hook-form';
 import VariationError from './VariationError';
 import VariationLabel from './VariationLabel';

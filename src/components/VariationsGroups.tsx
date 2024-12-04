@@ -57,7 +57,6 @@ function VariationsGroups({ disabled, name = 'variationsGroups' }: Props) {
               containerClass='merchi-embed-form_product-group-variation-container'
               disabled={disabled}
               name={`${name}[${index}].variations`}
-              keyName='variationGroupsArrayFieldId'
             />
             {product.needsInventory && variationGroup && (
               <GroupInventory group={job.variationsGroups[index]} />

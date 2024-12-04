@@ -1,4 +1,5 @@
 'use client';
+import * as React from 'react';
 import { FieldType } from './types';
 import {
   VariationCheckbox,
@@ -49,7 +50,7 @@ function DynamicVariationInput({
 }: Props) {
   const { showAlert } = useMerchiFormContext();
   const { variationField } = variation;
-  const { fieldType  } = variationField;
+  const { fieldType } = variationField;
   const Variation = fieldMaps.get(parseInt(fieldType, 10));
   return (
     <>

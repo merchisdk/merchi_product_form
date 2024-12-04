@@ -1,4 +1,5 @@
 'use client';
+import * as React from 'react';
 import DynamicVariationInput from './DynamicVariationInput';
 import { useFieldArray } from 'react-hook-form';
 import { useMerchiFormContext } from './MerchiProductFormProvider';

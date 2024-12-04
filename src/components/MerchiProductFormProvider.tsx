@@ -303,8 +303,8 @@ export const MerchiProductFormProvider = ({
   const [alert, showAlert] = useState((null as any));
 
   async function getQuote() {
-    setLoading(true);
     const values = await getValues();
+    setLoading(true);
     let data = { ...values,  product: { id: initProduct.id } };
     if (productHasGroups(initProduct)) {
       // if the product has group variation fields we delete quantity
