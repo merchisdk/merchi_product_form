@@ -1,7 +1,6 @@
-import { cloneDeepWith, orderBy } from 'lodash';
+import { Merchi } from 'merchi_sdk_ts';
 import { formatCurrency } from '../utils/currency';
 import { ProductType } from './types';
-import { FieldType } from './types';
 const pngOptionNotFound = require('../images/product-not-found.png').default;
 
 function renderSingleCostIndication(
@@ -82,93 +81,15 @@ export function allowedFileTypes(variationField: any): string {
   return allowedTypes.join(',');
 }
 
-function buildVariationOption(option: any) {
-  return { ...option };
-}
-
-function buildEmptyVariation(variationField: any): object {
-  if (variationField.defaultValue === undefined) {
-    throw new Error('defaultValue is undefined, did you forget to embed it?');
-  }
-  if (variationField.variationCost === undefined) {
-    const err = 'variationCost is undefined, did you forget to embed it?';
-    throw new Error(err);
-  }
-  if (variationField.options === undefined) {
-    throw new Error('options is undefined, did you forget to embed it?');
-  }
-
-  const isSelectable = (): boolean => {
-    if (variationField.fieldType === undefined) {
-      throw new Error('fieldType is undefined, did you forget to embed it?');
-    }
-    const selectable = new Set([
-      FieldType.SELECT,
-      FieldType.CHECKBOX,
-      FieldType.RADIO,
-      FieldType.IMAGE_SELECT,
-      FieldType.COLOUR_SELECT,
-    ]);
-    return selectable.has(variationField.fieldType);
-  };
-
-  let value = variationField.defaultValue;
-  let onceOffCost = variationField.variationCost;
-  let selectableOptions: any[] = [];
-
-  if (isSelectable()) {
-    onceOffCost = 0;
-    const values: number[] = [];
-    for (const option of variationField.options) {
-      if (
-        (variationField.sellerProductEditable && option.include) ||
-        (!variationField.sellerProductEditable && option.default)
-      ) {
-        if (option.variationCost === undefined) {
-          throw new Error(
-            'option.variationCost is undefined, did you ' +
-              'forget to embed it?'
-          );
-        }
-        values.push(option.id);
-        onceOffCost += option.variationCost;
-      }
-      selectableOptions.push(buildVariationOption(option));
-    }
-    value = values.join();
-  }
-
-  const result = {
-    value: value,
-    onceOffCost: onceOffCost,
-    unitCostTotal: 0,
-    cost: onceOffCost,
-    selectableOptions: selectableOptions,
-    variationField: cloneDeepWith(variationField, (value: any, key?: string | number) => {
-      if (typeof key === 'string' && key === 'merchi') {
-        return value;
-      }
-    }),
-
-  };
-
-  return result;
-}
+const merchi = new Merchi();
 
 export function buildEmptyVariationGroup(product: any) {
-  const { groupVariationFields = [] } = product;
-  const result: any = { quantity: 0, variations: [] };
-  const variations = [];
-  let cost = 0;
-  const sortedFields = orderBy(groupVariationFields, ['position'], ['asc']);
-  for (const variationField of sortedFields) {
-    const empty: any = buildEmptyVariation(variationField);
-    variations.push(empty);
-    cost += empty.cost as number;
-  }
-  result.groupCost = cost;
-  result.variations = variations;
-  return result;
+  const productEnt = new merchi.Product();
+  productEnt.fromJson({...product}, { makeDirty: false});
+  const newGroup = new productEnt.buildEmptyVariationGroup();
+  newGroup.groupCost = 0;
+  newGroup.quantity = 0;
+  return newGroup.toJson();
 }
 
 export function isProductSupplierMOD(product: any) {

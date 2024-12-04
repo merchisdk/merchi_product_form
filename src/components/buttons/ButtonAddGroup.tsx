@@ -23,8 +23,6 @@ function ButtonAddGroup({ addGroup, disabled }: Props) {
       color='white'
       onClick={() => {
         const newGroup = buildEmptyVariationGroup(product);
-        newGroup.groupCost = 0;
-        newGroup.quantity = 0;
         addGroup(newGroup);
         getQuote();
       }}
