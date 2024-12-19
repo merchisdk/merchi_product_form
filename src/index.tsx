@@ -3,6 +3,12 @@ import DynamicVariationInput from './components/DynamicVariationInput';
 import InputHiddenStatic from './components/InputHiddenStatic';
 import InputProductQuantity from './components/InputProductQuantity';
 import MerchiProductForm from './components/MerchiProductForm';
+import ProductButtonsSubmit from './components/ProductButtonsSubmit';
+import ProductFeatureDeadline from './components/ProductFeatureDeadline';
+import ProductGroupBuyStatus from './components/ProductGroupBuyStatus';
+import ProductTotalCost from './components/ProductTotalCost';
+import ProductTitle from './components/ProductTitle';
+import { productFeatureImageUrl } from './utils/products';
 import VariationCheckBoxOrRadioOption from './components/VariationCheckBoxOrRadioOption';
 import {
   MerchiProductFormProvider,
@@ -32,6 +38,7 @@ import {
   VariationSelectImage,
 } from './components/VariationSelectElements';
 import Variations from './components/Variations';
+import VariationsGroups from './components/VariationsGroups';
 
 export {
   AlertVariationSellerEditable,
@@ -39,6 +46,12 @@ export {
   InputHiddenStatic,
   InputProductQuantity,
   MerchiProductFormProvider,
+  ProductButtonsSubmit,
+  ProductFeatureDeadline,
+  productFeatureImageUrl,
+  ProductGroupBuyStatus,
+  ProductTitle,
+  ProductTotalCost,
   VariationCheckBoxOrRadioOption,
   useMerchiFormContext,
   VariationCheckbox,
@@ -58,6 +71,7 @@ export {
   VariationSelectColour,
   VariationSelectImage,
   Variations,
+  VariationsGroups,
   TooltipElement,
 };
 
