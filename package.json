@@ -1,6 +1,6 @@
 {
   "name": "merchi_product_form",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "description": "A React component for Merchi product forms",
   "main": "lib/index.js",
   "module": "src/index.tsx",
@@ -76,7 +76,7 @@
     "@types/draft-js": "^0.11.4",
     "draft-js": "^0.11.7",
     "lodash": "^4.17.21",
-    "merchi_sdk_ts": "^1.0.52",
+    "merchi_sdk_ts": "^1.0.70",
     "moment-timezone": "^0.5.45",
     "react": "^18.0.0",
     "react-country-region-selector": "^3.6.1",
