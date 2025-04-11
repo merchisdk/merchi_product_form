@@ -28,14 +28,11 @@ function VariationLabel({
         className={`d-flex align-items-center mb-1 ${variationClassName || ''}`}
       >
         <div
-          className={`align-items-center flex-wrap gap-1${
-            variationClassName ? variationClassName + '-title' : ''
-          }`}
+          className={`align-items-center flex-wrap gap-1${variationClassName ? variationClassName + '-title' : ''
+            }`}
         >
           {`${variationField!.name} `}
-          {loading && cost ? (
-            <CgSpinner fontSize='1.25rem' className='animate_spin ml-1' />
-          ) : hideCost || forceHideCost ? (
+          {hideCost || forceHideCost ? (
             ''
           ) : hasExtraCost && !sellerProductEditable ? (
             <span className='merchi-embed-form_variation-cost-detail'>
