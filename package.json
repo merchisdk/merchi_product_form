@@ -6,7 +6,7 @@
   "module": "src/index.tsx",
   "types": "lib/index.d.ts",
   "scripts": {
-    "build": "babel src --out-dir lib --extensions .ts,.tsx --source-maps inline --verbose --copy-files && yarn copy-assets && yarn compile-sass",
+    "build": "npx babel src --out-dir lib --extensions .ts,.tsx --source-maps inline --verbose --copy-files && npm run copy-assets && npm run compile-sass",
     "copy-assets": "copyfiles -u 1 src/**/*.png lib",
     "compile-sass": "sass src/styles/globals.scss lib/styles/globals.css",
     "start": "react-scripts start",
@@ -41,7 +41,7 @@
     "react-dom": "^18.0.0"
   },
   "devDependencies": {
-    "@babel/cli": "^7.23.0",
+    "@babel/cli": "^7.27.0",
     "@babel/core": "^7.23.0",
     "@babel/plugin-transform-react-jsx": "^7.22.15",
     "@babel/plugin-transform-runtime": "^7.23.3",
@@ -57,7 +57,7 @@
     "copyfiles": "^2.4.1",
     "eslint": "8.47.0",
     "eslint-config-next": "13.4.16",
-    "sass": "^1.70.0",
+    "sass": "^1.86.3",
     "typescript": "^5.1.6"
   },
   "dependencies": {
@@ -89,7 +89,6 @@
     "react-tooltip": "^5.23.0",
     "react-transition": "^1.0.3",
     "react-transition-group": "^4.4.5",
-    "sass": "^1.66.1",
     "uuid": "^9.0.0"
   },
   "overrides": {
