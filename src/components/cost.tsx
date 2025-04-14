@@ -11,12 +11,11 @@ interface Props {
 export function LabelCost({ cost = 0, label }: Props) {
   const { loading, product } = useMerchiFormContext();
   const { currency } = product;
-
   return (
     <span style={{ display: 'inline-flex', alignItems: 'center' }}>
       {`${label} `}
       {loading && cost ? (
-        <CgSpinner fontSize="1.25rem" className="animate_spin ml-1" />
+        <CgSpinner fontSize='1.25rem' className='animate_spin ml-1' />
       ) : (
         formatCurrency(parseFloat(String(cost)), {
           currency,

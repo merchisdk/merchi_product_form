@@ -22,7 +22,6 @@ function VariationLabel({
   const { instructions, sellerProductEditable } = variationField;
   const { hideCost, loading } = useMerchiFormContext();
   const hasExtraCost = onceOffCost || unitCost;
-
   return (
     <>
       <div
@@ -30,27 +29,24 @@ function VariationLabel({
       >
         <div
           style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}
-          className={`align-items-center flex-wrap gap-1${
-            variationClassName ? variationClassName + '-title' : ''
-          }`}
+          className={`align-items-center flex-wrap gap-1${variationClassName ? variationClassName + '-title' : ''
+            }`}
         >
           {`${variationField?.name ?? ''} `}
           {loading && cost ? (
-            <CgSpinner fontSize="1.25rem" className="animate_spin ml-1" />
+            <CgSpinner fontSize='1.25rem' className='animate_spin ml-1' />
           ) : hideCost || forceHideCost ? (
             ''
           ) : hasExtraCost && !sellerProductEditable ? (
-            <span className="merchi-embed-form_variation-cost-detail">
+            <span className='merchi-embed-form_variation-cost-detail'>
               {variationCostDetail(variation)}
             </span>
           ) : (
             ''
           )}
         </div>
-
         <VariationFieldNameAndCostInputs name={name} variation={variation} />
       </div>
-
       {instructions && (
         <VariationFieldInputInstructions instructions={instructions} />
       )}
