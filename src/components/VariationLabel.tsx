@@ -28,11 +28,11 @@ function VariationLabel({
         className={`d-flex align-items-center mb-1 ${variationClassName || ''}`}
       >
         <div
-          className={`align-items-center flex-wrap gap-1${
-            variationClassName ? variationClassName + '-title' : ''
-          }`}
+          style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}
+          className={`align-items-center flex-wrap gap-1${variationClassName ? variationClassName + '-title' : ''
+            }`}
         >
-          {`${variationField!.name} `}
+          {`${variationField?.name ?? ''} `}
           {loading && cost ? (
             <CgSpinner fontSize='1.25rem' className='animate_spin ml-1' />
           ) : hideCost || forceHideCost ? (
@@ -47,7 +47,9 @@ function VariationLabel({
         </div>
         <VariationFieldNameAndCostInputs name={name} variation={variation} />
       </div>
-      {instructions && <VariationFieldInputInstructions instructions={instructions} />}
+      {instructions && (
+        <VariationFieldInputInstructions instructions={instructions} />
+      )}
     </>
   );
 }
