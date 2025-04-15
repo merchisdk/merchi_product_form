@@ -1,4 +1,5 @@
 'use client';
+import * as React from 'react';
 import { useController } from 'react-hook-form';
 import VariationError from './VariationError';
 import VariationLabel from './VariationLabel';
@@ -33,14 +34,14 @@ const VariationInput: React.FC<Props> = ({
   } = useMerchiFormContext();
   const {
     field,
-    fieldState: { invalid, error }
+    fieldState: { invalid }
   } = useController({
     name: name, 
     control, 
     rules: validationParams(variation.variationField)
   });
 
-  const { value:defaultValue, variationField } = variation;
+  const { value: defaultValue, variationField } = variation;
 
   const { value, ...fieldWithoutValue } = field;
 
@@ -60,6 +61,7 @@ const VariationInput: React.FC<Props> = ({
           rows={variationField.rows}
           placeholder={variationField.placeholder}
           {...fieldWithoutValue}
+          name={`${name}.value`}
         />
       ) : (
         <input
@@ -69,6 +71,7 @@ const VariationInput: React.FC<Props> = ({
           className={`${classNameInput} ${validationClass}`}
           placeholder={variationField.placeholder}
           {...fieldWithoutValue}
+          name={`${name}.value`}
         />
       )}
       <VariationError name={name} />
