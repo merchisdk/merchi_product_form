@@ -36,14 +36,12 @@ const VariationInput: React.FC<Props> = ({
     field,
     fieldState: { invalid }
   } = useController({
-    name: name, 
+    name: `${name}.value`, 
     control, 
     rules: validationParams(variation.variationField)
   });
 
-  const { value: defaultValue, variationField } = variation;
-
-  const { value, ...fieldWithoutValue } = field;
+  const { variationField } = variation;
 
   const validationClass = invalid ? 'is-invalid' : '';
   return (
@@ -55,23 +53,19 @@ const VariationInput: React.FC<Props> = ({
       />
       {inputType === 'textarea' ? (
         <textarea
-          defaultValue={defaultValue}
           disabled={disabled}
           className={`${classNameInput} ${validationClass}`}
           rows={variationField.rows}
           placeholder={variationField.placeholder}
-          {...fieldWithoutValue}
-          name={`${name}.value`}
+          {...field}
         />
       ) : (
         <input
-          defaultValue={defaultValue}
           disabled={disabled}
           type={inputType}
           className={`${classNameInput} ${validationClass}`}
           placeholder={variationField.placeholder}
-          {...fieldWithoutValue}
-          name={`${name}.value`}
+          {...field}
         />
       )}
       <VariationError name={name} />

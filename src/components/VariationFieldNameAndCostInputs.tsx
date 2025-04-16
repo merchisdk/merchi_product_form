@@ -1,4 +1,5 @@
 'use client';
+import * as React from 'react';
 import InputHiddenStatic from './InputHiddenStatic';
 
 interface Props {
@@ -18,16 +19,20 @@ function VariationFieldNameAndCostInputs(props: Props) {
     <>
       <InputHiddenStatic
         name={`${name}.onceOffCost`}
-        value={floatValue(onceOffCost)} />
+        value={floatValue(onceOffCost)}
+      />
       <InputHiddenStatic
         name={`${name}.unitCost`}
-        value={floatValue(unitCost)} />
+        value={floatValue(unitCost)}
+      />
       <InputHiddenStatic
         name={`${name}.variationField.variationCost`}
-        value={floatValue(variationField.variationCost)} />
+        value={floatValue(variationField.variationCost)}
+      />
       <InputHiddenStatic
         name={`${name}.variationField.variationUnitCost`}
-        value={floatValue(variationField.variationUnitCost)} />
+        value={floatValue(variationField.variationUnitCost)}
+      />
     </>
   );
 }
