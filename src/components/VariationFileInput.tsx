@@ -85,7 +85,7 @@ interface VariationFilesListProps {
 }
 
 function VariationFilesList({ files }: VariationFilesListProps) {
-  const { classNameFileListItemContainer} = useMerchiFormContext();
+  const { classNameFileListItemContainer } = useMerchiFormContext();
   return (
     <ul className={classNameFileListItemContainer}>
       {files.map((f: any, i: number) => (
@@ -155,6 +155,7 @@ function ButtonUploadedFiles({
   const { classNameFileUploadButton } = useMerchiFormContext();
   return (
     <button
+      type='button'
       className={classNameFileUploadButton}
       disabled={files.length === 0}
       onClick={onClick}
