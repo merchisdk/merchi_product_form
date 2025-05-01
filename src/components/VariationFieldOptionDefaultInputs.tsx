@@ -1,4 +1,5 @@
 'use client';
+import * as React from 'react';
 import InputHiddenStatic from './InputHiddenStatic';
 
 interface Props {

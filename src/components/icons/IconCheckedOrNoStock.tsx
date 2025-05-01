@@ -1,4 +1,5 @@
 'use client';
+import * as React from 'react';
 import IconChecked from './IconChecked';
 import IconNoStock from './IconNoStock';
 

@@ -1,6 +1,6 @@
 'use client';
 import * as React from 'react';
-import { useMerchiFormContext } from './MerchiProductFormProvider';
+import { useMerchiFormContext } from '../context/MerchiProductFormProvider';
 import { ButtonProductSubmit } from './buttons';
 import { isProductSupplierMOD } from './utils';
 
