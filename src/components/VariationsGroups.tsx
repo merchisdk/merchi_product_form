@@ -12,9 +12,10 @@ import { useMerchiFormContext } from '../context/MerchiProductFormProvider';
 interface Props {
   disabled?: boolean;
   name?: string;
+  renderBetweenGroups?: (index: number) => React.ReactNode;
 }
 
-function VariationsGroups({ disabled, name = 'variationsGroups' }: Props) {
+function VariationsGroups({ disabled, name = 'variationsGroups', renderBetweenGroups }: Props) {
   const {
     classNameGroupsContainer,
     control,
@@ -36,49 +37,51 @@ function VariationsGroups({ disabled, name = 'variationsGroups' }: Props) {
         const count = index + 1;
         const variationGroup = job.variationsGroups[index];
         return (
-          <fieldset
-            className={classNameGroupsContainer}
-            key={group.groupId}
-            name={`${name}[${index}]`}
-          >
-            {isResellMOD || hideQuantityField ? (
-              <InputHiddenStatic
-                name={`${name}[${index}].quantity`}
-                value={1}
-              />
-            ) : (
-              <InputGroupQuantity
-                count={count}
-                disabled={disabled}
-                name={`${name}[${index}].quantity`}
-              />
-            )}
-            <Variations
-              containerClass='merchi-embed-form_product-group-variation-container'
-              disabled={disabled}
-              name={`${name}[${index}].variations`}
-            />
-            {product.needsInventory && variationGroup && (
-              <GroupInventory group={job.variationsGroups[index]} />
-            )}
-            <div className='merchi-embed-form_product-group-actions-cost-container'>
-              {!hideCalculatedPrice && variationGroup && (
-                <LabelGroupCost group={variationGroup} />
+          <React.Fragment key={group.groupId}>
+            <fieldset
+              className={classNameGroupsContainer}
+              name={`${name}[${index}]`}
+            >
+              {isResellMOD || hideQuantityField ? (
+                <InputHiddenStatic
+                  name={`${name}[${index}].quantity`}
+                  value={1}
+                />
+              ) : (
+                <InputGroupQuantity
+                  count={count}
+                  disabled={disabled}
+                  name={`${name}[${index}].quantity`}
+                />
               )}
-              <div className='merchi-embed-form_product-group-actions-container'>
-                {groupCount > 1 && (
-                  <ButtonRemoveGroup
-                    count={count}
-                    disabled={disabled}
-                    remove={() => remove(index)}
-                  />
+              <Variations
+                containerClass='merchi-embed-form_product-group-variation-container'
+                disabled={disabled}
+                name={`${name}[${index}].variations`}
+              />
+              {product.needsInventory && variationGroup && (
+                <GroupInventory group={job.variationsGroups[index]} />
+              )}
+              <div className='merchi-embed-form_product-group-actions-cost-container'>
+                {!hideCalculatedPrice && variationGroup && (
+                  <LabelGroupCost group={variationGroup} />
                 )}
+                <div className='merchi-embed-form_product-group-actions-container'>
+                  {groupCount > 1 && (
+                    <ButtonRemoveGroup
+                      count={count}
+                      disabled={disabled}
+                      remove={() => remove(index)}
+                    />
+                  )}
+                </div>
               </div>
-            </div>
-            {groupCount === count && (
-              <ButtonAddGroup addGroup={append} disabled={disabled} />
-            )}
-          </fieldset>
+              {groupCount === count && (
+                <ButtonAddGroup addGroup={append} disabled={disabled} />
+              )}
+            </fieldset>
+            {renderBetweenGroups && renderBetweenGroups(index)}
+          </React.Fragment>
         );
       })}
     </>
