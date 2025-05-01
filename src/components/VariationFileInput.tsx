@@ -19,7 +19,7 @@ import {
   faTimes,
   faTrashAlt,
 } from '@fortawesome/free-solid-svg-icons';
-import { useMerchiFormContext } from './MerchiProductFormProvider';
+import { useMerchiFormContext } from '../context/MerchiProductFormProvider';
 
 const LoadingIcon = () => <FontAwesomeIcon icon={faCircleNotch} spin />;
 

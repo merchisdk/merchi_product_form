@@ -1,6 +1,6 @@
 'use client';
 import * as React from 'react';
-import { FieldType } from './types';
+import { FieldType } from '../utils/types';
 import {
   VariationCheckbox,
   VariationRadio,
@@ -20,7 +20,7 @@ import {
   VariationSelectColour,
   VariationSelectImage,
 } from './VariationSelectElements';
-import { useMerchiFormContext } from './MerchiProductFormProvider';
+import { useMerchiFormContext } from '../context/MerchiProductFormProvider';
 
 const fieldMaps = new Map();
 fieldMaps.set(FieldType.CHECKBOX, VariationCheckbox);

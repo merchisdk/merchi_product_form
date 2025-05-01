@@ -13,7 +13,7 @@ import VariationCheckBoxOrRadioOption from './components/VariationCheckBoxOrRadi
 import {
   MerchiProductFormProvider,
   useMerchiFormContext,
-} from "./components/MerchiProductFormProvider";
+} from "./context/MerchiProductFormProvider";
 import {
   VariationCheckbox,
   VariationRadio,
