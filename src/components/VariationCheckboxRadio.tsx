@@ -1,8 +1,9 @@
 'use client';
+import * as React from 'react';
 import VariationCheckBoxOrRadioOption from './VariationCheckBoxOrRadioOption';
 import VariationError from './VariationError';
 import VariationLabel from './VariationLabel';
-import { useMerchiFormContext } from './MerchiProductFormProvider';
+import { useMerchiFormContext } from '../context/MerchiProductFormProvider';
 
 interface Props {
   disabled?: boolean;

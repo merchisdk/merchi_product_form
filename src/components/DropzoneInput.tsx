@@ -1,8 +1,9 @@
+import * as React from 'react';
 import { useState } from 'react';
 import { Accept, useDropzone } from 'react-dropzone';
 import { CgSpinner } from 'react-icons/cg';
 import { FaRegImage, FaPlus } from 'react-icons/fa';
-import { useMerchiFormContext } from './MerchiProductFormProvider'; 
+import { useMerchiFormContext } from '../context/MerchiProductFormProvider'; 
 
 interface Props {
   accept?: string;

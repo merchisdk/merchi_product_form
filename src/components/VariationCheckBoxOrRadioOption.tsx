@@ -1,8 +1,9 @@
 'use client';
+import * as React from 'react';
 import { useController } from 'react-hook-form';
 import VariationFieldOptionDefaultInputs from './VariationFieldOptionDefaultInputs';
 import { variationFieldOptionCostDetail } from './utils';
-import { useMerchiFormContext } from './MerchiProductFormProvider';
+import { useMerchiFormContext } from '../context/MerchiProductFormProvider';
 
 interface Props {
   disabled?: boolean;

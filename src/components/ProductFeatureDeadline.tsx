@@ -1,7 +1,7 @@
 import * as React from 'react';
 import * as moment from 'moment-timezone';
 import DateCountdown from './DateCountdown';
-import { useMerchiFormContext } from './MerchiProductFormProvider';
+import { useMerchiFormContext } from '../context/MerchiProductFormProvider';
 
 function ProductFeatureDeadline() {
   const { product } = useMerchiFormContext();

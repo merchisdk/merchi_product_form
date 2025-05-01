@@ -1,11 +1,12 @@
 'use client';
+import * as React from 'react';
 import { useController } from 'react-hook-form';
 import { isBoolean } from 'lodash';
 import VariationOptionColour from './VariationOptionColour';
 import VariationOptionImage from './VariationOptionImage';
 import VariationError from './VariationError';
 import VariationLabel from './VariationLabel';
-import { useMerchiFormContext } from './MerchiProductFormProvider';
+import { useMerchiFormContext } from '../context/MerchiProductFormProvider';
 
 function determineBoolean(value: any) {
   return isBoolean(value) ? value : value === 'true' ? true : false;

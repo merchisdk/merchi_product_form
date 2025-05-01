@@ -1,7 +1,7 @@
 'use client';
 import * as React from 'react';
 import { formatCurrency } from './currency';
-import { useMerchiFormContext } from './MerchiProductFormProvider';
+import { useMerchiFormContext } from '../context/MerchiProductFormProvider';
 
 interface Props {
   unitPriceText?: string;

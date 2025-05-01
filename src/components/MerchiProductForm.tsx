@@ -1,6 +1,6 @@
 'use client';
 import * as React from 'react';
-import { MerchiProductFormProvider } from './MerchiProductFormProvider';
+import { MerchiProductFormProvider } from '../context/MerchiProductFormProvider';
 import InputProductQuantity from './InputProductQuantity';
 import ProductTotalCost from './ProductTotalCost';
 import ProductButtonsSubmit from './ProductButtonsSubmit';

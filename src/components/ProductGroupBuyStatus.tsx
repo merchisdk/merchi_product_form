@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { useMerchiFormContext } from './MerchiProductFormProvider';
+import { useMerchiFormContext } from '../context/MerchiProductFormProvider';
 
 interface ProgressBarProps {
   value?: number;

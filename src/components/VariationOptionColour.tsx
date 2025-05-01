@@ -4,7 +4,7 @@ import TooltipElement from './TooltipElement';
 import { variationFieldOptionCostDetail } from './utils';
 import VariationFieldOptionDefaultInputs from './VariationFieldOptionDefaultInputs';
 import IconCheckedOrNoStock from './icons/IconCheckedOrNoStock';
-import { useMerchiFormContext } from './MerchiProductFormProvider';
+import { useMerchiFormContext } from '../context/MerchiProductFormProvider';
 
 interface Props {
   doClick: () => void;

@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { currencyTotalCostShowIncTax } from './currency';
 import { CgSpinner } from 'react-icons/cg';
-import { useMerchiFormContext } from './MerchiProductFormProvider';
+import { useMerchiFormContext } from '../context/MerchiProductFormProvider';
 import { isProductSupplierMOD } from './utils';
 
 function ProductTotalCost() {

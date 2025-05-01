@@ -3,7 +3,7 @@ import * as React from 'react';
 import TooltipElement from './TooltipElement';
 import { optionImageUrl, variationFieldOptionCostDetail } from './utils';
 import IconCheckedOrNoStock from './icons/IconCheckedOrNoStock';
-import { useMerchiFormContext } from './MerchiProductFormProvider';
+import { useMerchiFormContext } from '../context/MerchiProductFormProvider';
 import InputHiddenStatic from './InputHiddenStatic';
 import VariationFieldOptionDefaultInputs from './VariationFieldOptionDefaultInputs';
 

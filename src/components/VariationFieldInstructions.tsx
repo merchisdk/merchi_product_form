@@ -1,5 +1,5 @@
 'use client';
-
+import * as React from 'react';
 const VariationFieldInstructions = ({ variation }: any) => {
   const { variationField } = variation;
   const instructions = variationField && variationField.name

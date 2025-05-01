@@ -1,5 +1,6 @@
 'use client';
-import { useMerchiFormContext } from './MerchiProductFormProvider';
+import * as React from 'react';
+import { useMerchiFormContext } from '../context/MerchiProductFormProvider';
 
 interface Props {
   name: string;
