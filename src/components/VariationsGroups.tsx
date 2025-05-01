@@ -7,7 +7,7 @@ import InputGroupQuantity from './InputGroupQuantity';
 import InputHiddenStatic from './InputHiddenStatic';
 import Variations from './Variations';
 import { useFieldArray } from 'react-hook-form';
-import { useMerchiFormContext } from './MerchiProductFormProvider';
+import { useMerchiFormContext } from '../context/MerchiProductFormProvider';
 
 interface Props {
   disabled?: boolean;

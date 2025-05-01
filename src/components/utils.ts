@@ -1,6 +1,6 @@
 import { Merchi } from 'merchi_sdk_ts';
 import { formatCurrency } from '../utils/currency';
-import { ProductType } from './types';
+import { ProductType } from '../utils/types';
 const pngOptionNotFound = require('../images/product-not-found.png').default;
 
 function renderSingleCostIndication(

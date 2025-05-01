@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { variationCostDetail } from './utils';
 import VariationFieldNameAndCostInputs from './VariationFieldNameAndCostInputs';
-import { useMerchiFormContext } from './MerchiProductFormProvider';
+import { useMerchiFormContext } from '../context/MerchiProductFormProvider';
 import { CgSpinner } from 'react-icons/cg';
 import VariationFieldInputInstructions from './VariationFieldInputInstructions';
 

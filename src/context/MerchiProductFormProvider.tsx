@@ -4,7 +4,7 @@ import { createContext, ReactNode, useContext, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { fetchJobQuote } from '../actions/jobs';
 import { productHasGroups } from '../utils/products';
-import { getMerchiSourceJobTags } from './utils';
+import { getMerchiSourceJobTags } from '../components/utils';
 
 type FormMethods = ReturnType<typeof useForm>;
 

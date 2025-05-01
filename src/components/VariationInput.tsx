@@ -3,7 +3,7 @@ import * as React from 'react';
 import { useController } from 'react-hook-form';
 import VariationError from './VariationError';
 import VariationLabel from './VariationLabel';
-import { useMerchiFormContext } from './MerchiProductFormProvider';
+import { useMerchiFormContext } from '../context/MerchiProductFormProvider';
 
 const validationParams = (variationField: any) => {
   const { name, fieldMax: max, fieldMin: min, required } = variationField;

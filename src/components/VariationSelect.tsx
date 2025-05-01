@@ -5,7 +5,7 @@ import VariationError from './VariationError';
 import VariationLabel from './VariationLabel';
 import VariationFieldOptionDefaultInputs from './VariationFieldOptionDefaultInputs';
 import { variationCostDetail } from './utils';
-import { useMerchiFormContext } from './MerchiProductFormProvider';
+import { useMerchiFormContext } from '../context/MerchiProductFormProvider';
 
 interface Props {
   disabled?: boolean;
