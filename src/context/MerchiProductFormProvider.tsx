@@ -54,6 +54,7 @@ interface IMerchiProductForm {
   classNameUnitPrice?: string;
   control: any;
   currentUser?: any;
+  draftApproveCallback: ((job: any) => Promise<void>) | null;
   getQuote: any;
   hideCost?: boolean;
   hideCountry?: boolean;
@@ -132,6 +133,7 @@ const MerchiProductFormContext = createContext<IMerchiProductForm>({
   classNameUnitPrice: undefined,
   control: {},
   currentUser: {},
+  draftApproveCallback: null,
   getQuote() {},
   hideCost: false,
   hideCountry: false,
@@ -213,6 +215,7 @@ export const MerchiProductFormProvider = ({
   classNameUnitPrice,
   children,
   currentUser,
+  draftApproveCallback = null,
   hideCost,
   hideCountry = false,
   hideCalculatedPrice,
@@ -280,6 +283,7 @@ export const MerchiProductFormProvider = ({
   classNameUnitPrice?: string;
   children: ReactNode;
   currentUser?: any;
+  draftApproveCallback?: ((job: any) => Promise<void>) | null;
   hideCalculatedPrice?: boolean;
   hideCost?: boolean;
   hideCountry?: boolean;
@@ -305,14 +309,14 @@ export const MerchiProductFormProvider = ({
   const defaultJob = initJob || initProduct.defaultJob || {};
   const hookForm = useForm({ defaultValues: defaultJob });
   const [client, setClient] = useState(currentUser);
+  const [alert, showAlert] = useState((null as any));
+  const [draftAppproveCallback, setDraftAppproveCallback] = useState<((job: any) => Promise<void>) | null>(null);
   const [job, setJob] = useState<any>(defaultJob);
   const [loading, setLoading] = useState(false);
   const { control, getValues, handleSubmit } = hookForm;
   const doSubmit = onSubmit ? handleSubmit(onSubmit) : undefined;
 
   const tags = getMerchiSourceJobTags();
-
-  const [alert, showAlert] = useState((null as any));
 
   async function getQuote() {
     const values = await getValues();
@@ -360,6 +364,10 @@ export const MerchiProductFormProvider = ({
         await getQuote();
         const openDraftModal = await launchDraftApproveModal();
         if (openDraftModal) {
+          setDraftAppproveCallback(async (jobData) => {
+            onAddToCart({...jobData, tags});
+            return Promise.resolve();
+          });
           setIsDraftModalOpen(true);
         } else {
           onAddToCart({...job, tags});
@@ -371,6 +379,10 @@ export const MerchiProductFormProvider = ({
         await getQuote();
         const openDraftModal = await launchDraftApproveModal();
         if (openDraftModal) {
+          setDraftAppproveCallback(async (jobData) => {
+            onBuyNow({...jobData});
+            return Promise.resolve();
+          });
           setIsDraftModalOpen(true);
         } else {
           onBuyNow({...job});
@@ -382,6 +394,10 @@ export const MerchiProductFormProvider = ({
         await getQuote();
         const openDraftModal = await launchDraftApproveModal();
         if (openDraftModal) {
+          setDraftAppproveCallback(async (jobData) => {
+            onGetQuote({...jobData});
+            return Promise.resolve();
+          });
           setIsDraftModalOpen(true);
         } else {
           onGetQuote({...job});
@@ -437,6 +453,7 @@ export const MerchiProductFormProvider = ({
           classNameUnitPrice,
           client,
           control,
+          draftApproveCallback,
           getQuote,
           hideCost,
           hideCountry,

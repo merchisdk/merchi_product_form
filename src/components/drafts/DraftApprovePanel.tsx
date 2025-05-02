@@ -68,6 +68,7 @@ export default function DraftApprovePanel({
     apiUrl,
     classNameButtonApproveDrafts,
     classNameButtonCloseDrafts,
+    draftApproveCallback,
     job,
     product,
     setIsDraftModalOpen,
@@ -129,6 +130,12 @@ export default function DraftApprovePanel({
       jobData.clientFiles = clientFiles.map((file: MerchiFile) => ({id: file.id}));
       jobData.ownDrafts = [{images: draftFiles.map((file: MerchiFile) => ({id: file.id}))}];
       setJob(jobData);
+      
+      // Call the callback if provided
+      if (draftApproveCallback) {
+        await draftApproveCallback(jobData);
+      }
+      
       setIsDraftModalOpen(false);
     } catch (error) {
       const message = error.errorMessage || error.message || 'Server error';

@@ -112,6 +112,7 @@ The `MerchiProductForm` component accepts the following props:
 | `allowAddToCart` | `boolean?` | `false` | Controls if the add to cart button is shown |
 | `btnNameAddToCart` | `string?` | `"Add to Cart"` | The text on the add to cart button |
 | `currentUser` | `User?` | `undefined` | A Merchi client object to be used as the form's client |
+| `draftApproveCallback` | `(job) => Promise<void> \| null` | `null` | Async callback function that is triggered when drafts are approved |
 | `hideTitle` | `boolean?` | `false` | Hide the product title |
 | `hideCost` | `boolean?` | `false` | Hide the cost (useful for quote requests) |
 | `hideCountry` | `boolean?` | `false` | Hide the country flag |
