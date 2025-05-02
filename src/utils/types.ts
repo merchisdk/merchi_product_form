@@ -37,3 +37,30 @@ export enum FieldType {
   COLOUR_PICKER = 10,
   COLOUR_SELECT = 11,
 }
+
+export interface RenderedDraftPreview {
+  templateId: number;
+  draft: string; // base64 string of the template artwork as a draft
+  canvasPreview: string; // base64 string of the template rendered with the full canvas
+}
+
+export interface DraftTemplateData {
+  groupIndex: number;
+  productId: number;
+  templateData: any[];
+  previews: any[];
+}
+
+export interface MerchiFile {
+  id?: number;
+  uploadId?: string;
+  name?: string | null;
+  mimetype?: string | null;
+  size?: number;
+  creationDate?: Date | null;
+  archived?: Date | null;
+  cachedViewUrl?: string | null;
+  viewUrlExpires?: Date | null;
+  cachedDownloadUrl?: string | null;
+  fileData?: File;
+}

@@ -1,6 +1,6 @@
 import * as React from 'react';
 import TooltipElement from '../TooltipElement';
-import { useMerchiFormContext } from '../MerchiProductFormProvider';
+import { useMerchiFormContext } from '../../context/MerchiProductFormProvider';
 
 interface Props {
   onClick: () => void;
