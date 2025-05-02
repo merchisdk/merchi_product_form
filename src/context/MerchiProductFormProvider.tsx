@@ -215,7 +215,6 @@ export const MerchiProductFormProvider = ({
   classNameUnitPrice,
   children,
   currentUser,
-  draftApproveCallback = null,
   hideCost,
   hideCountry = false,
   hideCalculatedPrice,
@@ -283,7 +282,6 @@ export const MerchiProductFormProvider = ({
   classNameUnitPrice?: string;
   children: ReactNode;
   currentUser?: any;
-  draftApproveCallback?: ((job: any) => Promise<void>) | null;
   hideCalculatedPrice?: boolean;
   hideCost?: boolean;
   hideCountry?: boolean;
@@ -310,7 +308,7 @@ export const MerchiProductFormProvider = ({
   const hookForm = useForm({ defaultValues: defaultJob });
   const [client, setClient] = useState(currentUser);
   const [alert, showAlert] = useState((null as any));
-  const [draftAppproveCallback, setDraftAppproveCallback] = useState<((job: any) => Promise<void>) | null>(null);
+  const [draftApproveCallback, setDraftAppproveCallback] = useState<((job: any) => Promise<void>) | null>(null);
   const [job, setJob] = useState<any>(defaultJob);
   const [loading, setLoading] = useState(false);
   const { control, getValues, handleSubmit } = hookForm;
