@@ -144,6 +144,8 @@ The component provides extensive CSS class customization options:
 | `classNameButtonGroupAdd` | `string?` | `'btn btn-white'` | Class for the add group button element |
 | `classNameButtonGroupRemove` | `string?` | `'btn btn-danger'` | Class for the delete group button element |
 | `classNameButtonsSubmitContainer` | `string?` | `'merchi-product-buttons-submit-container'` | Class for the container of the submit buttons |
+| `classNameButtonApproveDrafts` | `string?` | `'btn btn-success'` | Class for the approve drafts button element |
+| `classNameButtonCloseDrafts` | `string?` | `'btn btn-secondary'` | Class for the close drafts button element |
 | `classNameFileUploadContainer` | `string?` | `'merchi-input-file-container'` | Class for the input file container |
 | `classNameFileUpload` | `string?` | `'merchi-embed-form_dropzone'` | Class for the dropzone container |
 | `classNameFilePreviewContainer` | `string?` | `'uploaded-variation-file'` | Class for the file variation upload element |
