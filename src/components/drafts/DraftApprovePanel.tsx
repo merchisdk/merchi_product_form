@@ -22,25 +22,25 @@ async function uploadBase64Image(
 ): Promise<MerchiFile> {
   // Remove "data:image/..." prefix if present
   const base64Data = base64.includes(',') ? base64.split(',')[1] : base64;
-  
+
   // Convert base64 to binary data
   const binaryString = atob(base64Data);
   const bytes = new Uint8Array(binaryString.length);
-  
+
   for (let i = 0; i < binaryString.length; i++) {
     bytes[i] = binaryString.charCodeAt(i);
   }
-  
+
   // Create a Blob from the binary data
   const blob = new Blob([bytes], { type: 'image/png' });
-  
+
   // Create a File from the Blob
   const file = new File(
     [blob],
     `group-${groupId}-template-${templateId}-draft-${suffix}-${Date.now()}.png`,
     { type: 'image/png' }
   );
-  
+
   const formData = new FormData();
   formData.append('0', file);
 
@@ -59,15 +59,19 @@ async function uploadBase64Image(
 }
 
 interface DraftApprovePanelProps {
+  customFooterContent?: React.ReactNode;
 }
 
 export default function DraftApprovePanel({
-
+  customFooterContent,
 }: DraftApprovePanelProps) {
   const {
     apiUrl,
     classNameButtonApproveDrafts,
     classNameButtonCloseDrafts,
+    classNameDraftButtonContainer,
+    classNameDraftGroupContainer,
+    classNameDraftGroupTitle,
     draftApproveCallback,
     job,
     product,
@@ -126,16 +130,16 @@ export default function DraftApprovePanel({
           clientFiles.push(clientFile);
         }
       }
-      const jobData = {...job};
-      jobData.clientFiles = clientFiles.map((file: MerchiFile) => ({id: file.id}));
-      jobData.ownDrafts = [{images: draftFiles.map((file: MerchiFile) => ({id: file.id}))}];
+      const jobData = { ...job };
+      jobData.clientFiles = clientFiles.map((file: MerchiFile) => ({ id: file.id }));
+      jobData.ownDrafts = [{ images: draftFiles.map((file: MerchiFile) => ({ id: file.id })) }];
       setJob(jobData);
-      
+
       // Call the callback if provided
       if (draftApproveCallback) {
         await draftApproveCallback(jobData);
       }
-      
+
       setIsDraftModalOpen(false);
     } catch (error) {
       const message = error.errorMessage || error.message || 'Server error';
@@ -147,29 +151,32 @@ export default function DraftApprovePanel({
   return (
     <div>
       {draftData.map((draft, index) => (
-        <div key={index}>
-          <h3>Group {index + 1}</h3>
+        <div key={index} className={classNameDraftGroupContainer}>
+          <h3 className={classNameDraftGroupTitle}>Group {index + 1}</h3>
           {draft.templateData.map((tD: RenderedDraftPreview, tDIndex: number) => (
             <DraftPreview key={tDIndex} templateData={tD} />
           ))}
         </div>
       ))}
-      <button
-        className={classNameButtonCloseDrafts}
-        onClick={() => {
-          setIsDraftModalOpen(false);
-        }}
-        disabled={isLoading}
-      >
-        Close Drafts
-      </button>
-      <button
-        className={classNameButtonApproveDrafts}
-        disabled={isLoading}
-        onClick={approveDrats}
-      >
-        Approve Drafts
-      </button>
+      {customFooterContent}
+      <div className={classNameDraftButtonContainer}>
+        <button
+          className={classNameButtonCloseDrafts}
+          onClick={() => {
+            setIsDraftModalOpen(false);
+          }}
+          disabled={isLoading}
+        >
+          Close Drafts
+        </button>
+        <button
+          className={classNameButtonApproveDrafts}
+          disabled={isLoading}
+          onClick={approveDrats}
+        >
+          Approve Drafts
+        </button>
+      </div>
     </div>
   );
 }

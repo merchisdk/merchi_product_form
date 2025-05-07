@@ -19,6 +19,9 @@ interface IMerchiProductForm {
   classNameButtonsSubmitContainer?: string;
   classNameButtonApproveDrafts?: string;
   classNameButtonCloseDrafts?: string;
+  classNameDraftButtonContainer?: string;
+  classNameDraftGroupContainer?: string;
+  classNameDraftGroupTitle?: string;
   classNameFileUploadContainer?: string;
   classNameFileUpload?: string;
   classNameFilePreviewContainer?: string;
@@ -99,6 +102,9 @@ const MerchiProductFormContext = createContext<IMerchiProductForm>({
   classNameButtonsSubmitContainer: undefined,
   classNameButtonApproveDrafts: undefined,
   classNameButtonCloseDrafts: undefined,
+  classNameDraftButtonContainer: undefined,
+  classNameDraftGroupContainer: undefined,
+  classNameDraftGroupTitle: undefined,
   classNameFileUploadContainer: undefined,
   classNameFileUpload: undefined,
   classNameFilePreviewContainer: undefined,
@@ -134,7 +140,7 @@ const MerchiProductFormContext = createContext<IMerchiProductForm>({
   control: {},
   currentUser: {},
   draftApproveCallback: null,
-  getQuote() {},
+  getQuote() { },
   hideCost: false,
   hideCountry: false,
   hideDomainName: false,
@@ -149,17 +155,17 @@ const MerchiProductFormContext = createContext<IMerchiProductForm>({
   isDraftModalOpen: false,
   job: {},
   loading: false,
-  onAddToCart() {},
-  onBuyNow() {},
-  onGetQuote() {},
-  onSubmit() {},
+  onAddToCart() { },
+  onBuyNow() { },
+  onGetQuote() { },
+  onSubmit() { },
   product: {},
   productFormId: undefined,
-  setClient() {},
-  setIsDraftModalOpen() {},
-  setJob(job) {},
-  setLoading(loading) {},
-  showAlert(alert) {},
+  setClient() { },
+  setIsDraftModalOpen() { },
+  setJob(job) { },
+  setLoading(loading) { },
+  showAlert(alert) { },
   showCurrency: false,
   showCurrencyCode: false,
   showFeatureDeadline: false,
@@ -180,6 +186,9 @@ export const MerchiProductFormProvider = ({
   classNameButtonsSubmitContainer = 'merchi-product-buttons-submit-container',
   classNameButtonApproveDrafts = 'btn btn-success',
   classNameButtonCloseDrafts = 'btn btn-secondary',
+  classNameDraftButtonContainer = 'merchi-product-draft-button-container',
+  classNameDraftGroupContainer = 'merchi-product-draft-group-container',
+  classNameDraftGroupTitle = 'merchi-product-draft-group-title',
   classNameFileUploadContainer = 'merchi-input-file-container',
   classNameFileUpload = 'merchi-embed-form_dropzone',
   classNameFilePreviewContainer = 'uploaded-variation-file',
@@ -192,7 +201,7 @@ export const MerchiProductFormProvider = ({
   classNameFileListItem = 'list-group-item no-z-index-hover',
   classNameFileButtonDownload = 'btn btn-sm btn-secondary',
   classNameFileButtonDelete = 'btn btn-sm btn-danger ml-2',
-  classNameFileListItemContainer = 'list-group' ,
+  classNameFileListItemContainer = 'list-group',
   classNameGroupsContainer = 'merchi-embed-form_product-group-container',
   classNameGroupPriceContainer = 'merchi-embed-form_product-group-total-cost',
   classNameInput = 'form-control',
@@ -247,6 +256,9 @@ export const MerchiProductFormProvider = ({
   classNameButtonsSubmitContainer?: string;
   classNameButtonApproveDrafts?: string;
   classNameButtonCloseDrafts?: string;
+  classNameDraftButtonContainer?: string;
+  classNameDraftGroupContainer?: string;
+  classNameDraftGroupTitle?: string;
   classNameFileUploadContainer?: string;
   classNameFileUpload?: string;
   classNameFilePreviewContainer?: string;
@@ -271,7 +283,7 @@ export const MerchiProductFormProvider = ({
   classNameOptionSuper?: string;
   classNameOptionsCheckboxRadioContainer?: string;
   classNameOptionImage?: string;
-  classNameOptionImageContainer?: string; 
+  classNameOptionImageContainer?: string;
   classNameOptionColour?: string;
   classNameProductTitle?: string;
   classNameProductOriginTitle?: string;
@@ -319,7 +331,7 @@ export const MerchiProductFormProvider = ({
   async function getQuote() {
     const values = await getValues();
     setLoading(true);
-    let data = { ...values,  product: { id: initProduct.id } };
+    let data = { ...values, product: { id: initProduct.id } };
     if (productHasGroups(initProduct)) {
       // if the product has group variation fields we delete quantity
       // because each group has it's own quantity
@@ -334,7 +346,7 @@ export const MerchiProductFormProvider = ({
       showAlert({ message });
       console.error(message);
     } finally {
-      setLoading(false); 
+      setLoading(false);
     }
   }
 
@@ -359,48 +371,48 @@ export const MerchiProductFormProvider = ({
   const [isDraftModalOpen, setIsDraftModalOpen] = useState(false);
   const addToCart = onAddToCart
     ? async () => {
-        await getQuote();
-        const openDraftModal = await launchDraftApproveModal();
-        if (openDraftModal) {
-          setDraftAppproveCallback(async (jobData) => {
-            onAddToCart({...jobData, tags});
-            return Promise.resolve();
-          });
-          setIsDraftModalOpen(true);
-        } else {
-          onAddToCart({...job, tags});
-        }
+      await getQuote();
+      const openDraftModal = await launchDraftApproveModal();
+      if (openDraftModal) {
+        setDraftAppproveCallback(async (jobData) => {
+          onAddToCart({ ...jobData, tags });
+          return Promise.resolve();
+        });
+        setIsDraftModalOpen(true);
+      } else {
+        onAddToCart({ ...job, tags });
       }
+    }
     : undefined;
   const buyNow = onBuyNow
-    ? async () =>  {
-        await getQuote();
-        const openDraftModal = await launchDraftApproveModal();
-        if (openDraftModal) {
-          setDraftAppproveCallback(async (jobData) => {
-            onBuyNow({...jobData});
-            return Promise.resolve();
-          });
-          setIsDraftModalOpen(true);
-        } else {
-          onBuyNow({...job});
-        }
+    ? async () => {
+      await getQuote();
+      const openDraftModal = await launchDraftApproveModal();
+      if (openDraftModal) {
+        setDraftAppproveCallback(async (jobData) => {
+          onBuyNow({ ...jobData });
+          return Promise.resolve();
+        });
+        setIsDraftModalOpen(true);
+      } else {
+        onBuyNow({ ...job });
       }
+    }
     : undefined;
   const getSubmitQuote = onGetQuote
-    ? async () =>  {
-        await getQuote();
-        const openDraftModal = await launchDraftApproveModal();
-        if (openDraftModal) {
-          setDraftAppproveCallback(async (jobData) => {
-            onGetQuote({...jobData});
-            return Promise.resolve();
-          });
-          setIsDraftModalOpen(true);
-        } else {
-          onGetQuote({...job});
-        }
+    ? async () => {
+      await getQuote();
+      const openDraftModal = await launchDraftApproveModal();
+      if (openDraftModal) {
+        setDraftAppproveCallback(async (jobData) => {
+          onGetQuote({ ...jobData });
+          return Promise.resolve();
+        });
+        setIsDraftModalOpen(true);
+      } else {
+        onGetQuote({ ...job });
       }
+    }
     : undefined;
   return (
     <MerchiProductFormContext.Provider
@@ -416,6 +428,9 @@ export const MerchiProductFormProvider = ({
           classNameButtonsSubmitContainer,
           classNameButtonApproveDrafts,
           classNameButtonCloseDrafts,
+          classNameDraftButtonContainer,
+          classNameDraftGroupContainer,
+          classNameDraftGroupTitle,
           classNameFileUploadContainer,
           classNameFileUpload,
           classNameFilePreviewContainer,
