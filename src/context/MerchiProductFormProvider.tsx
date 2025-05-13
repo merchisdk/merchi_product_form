@@ -353,11 +353,14 @@ export const MerchiProductFormProvider = ({
   const launchDraftApproveModal = async () => {
     // if the client has drafts which have not been approved, we launch a modal to approve them
     const designData = localStorage.getItem(`productDraftTemplate-${initProduct.id}`);
+
     if (designData) {
       try {
-        const draftDataJson: DraftTemplateData = JSON.parse(designData);
-        if (draftDataJson.productId === initProduct.id) {
-          return true;
+        const draftDataJson: DraftTemplateData[] = JSON.parse(designData);
+        for (const draft of draftDataJson) {
+          if (draft.productId === initProduct.id) {
+            return true;
+          }
         }
         return false;
       } catch (e) {
@@ -374,16 +377,26 @@ export const MerchiProductFormProvider = ({
       await getQuote();
       const openDraftModal = await launchDraftApproveModal();
       if (openDraftModal) {
-        setDraftAppproveCallback(async (jobData) => {
-          onAddToCart({ ...jobData, tags });
+        setDraftAppproveCallback(() => async (jobData) => {
+          console.log("[Provider] callback invoked with", jobData);
+          const finalJobData = jobData || job;
+          if (!finalJobData.product) finalJobData.product = { id: initProduct.id };
+          console.log("[Provider] scheduling onAddToCart with", finalJobData, tags);
+          setTimeout(() => {
+            onAddToCart({ ...finalJobData, tags });
+          }, 0);
           return Promise.resolve();
         });
         setIsDraftModalOpen(true);
       } else {
-        onAddToCart({ ...job, tags });
+        if (!job.product) job.product = { id: initProduct.id };
+        setTimeout(() => {
+          onAddToCart({ ...job, tags });
+        }, 0);
       }
     }
     : undefined;
+
   const buyNow = onBuyNow
     ? async () => {
       await getQuote();
@@ -414,6 +427,16 @@ export const MerchiProductFormProvider = ({
       }
     }
     : undefined;
+
+  React.useEffect(() => {
+    console.log(
+      "[Provider] draftApproveCallback:",
+      draftApproveCallback,
+      "typeof →",
+      typeof draftApproveCallback
+    );
+  }, [draftApproveCallback]);
+
   return (
     <MerchiProductFormContext.Provider
       value={

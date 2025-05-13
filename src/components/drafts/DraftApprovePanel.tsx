@@ -98,52 +98,48 @@ export default function DraftApprovePanel({
     base64,
     suffix,
   );
+
   async function approveDrats() {
+    console.log(
+      "[DraftApprovePanel] approveDrats fired, draftApproveCallback =",
+      draftApproveCallback
+    );
+
+    if (!draftApproveCallback) {
+      showAlert({ message: "No draftApproveCallback, aborting." });
+      return;
+    }
+
     setIsLoading(true);
-    const draftFiles: MerchiFile[] = [];
-    const clientFiles: MerchiFile[] = [];
     try {
+      const draftFiles: MerchiFile[] = [];
+      const clientFiles: MerchiFile[] = [];
       for (const group of draftData) {
-        const {
-          groupIndex,
-          templateData,
-        } = group;
-        for (const template of templateData) {
-          const {
-            canvasPreview,
-            draft,
-            templateId,
-          } = template;
-          const clientFile = await doUpload(
-            groupIndex,
-            templateId,
-            'client',
-            draft,
-          );
-          const draftFile = await doUpload(
-            groupIndex,
-            templateId,
-            'draft',
-            canvasPreview,
-          );
-          draftFiles.push(draftFile);
+        for (const template of group.templateData) {
+          const clientFile = await doUpload(group.groupIndex, template.templateId, template.draft, "client");
+          const draftFile = await doUpload(group.groupIndex, template.templateId, template.canvasPreview, "draft");
           clientFiles.push(clientFile);
+          draftFiles.push(draftFile);
         }
       }
-      const jobData = { ...job };
-      jobData.clientFiles = clientFiles.map((file: MerchiFile) => ({ id: file.id }));
-      jobData.ownDrafts = [{ images: draftFiles.map((file: MerchiFile) => ({ id: file.id })) }];
+
+      const jobData = {
+        ...job,
+        clientFiles: clientFiles.map(f => ({ id: f.id })),
+        ownDrafts: [{ images: draftFiles.map(f => ({ id: f.id })) }]
+      };
       setJob(jobData);
 
-      // Call the callback if provided
-      if (draftApproveCallback) {
-        await draftApproveCallback(jobData);
-      }
+      console.log("[DraftApprovePanel] about to call callback with jobData:", jobData);
+      await draftApproveCallback(jobData);
+      console.log("[DraftApprovePanel] callback finished!");
 
       setIsDraftModalOpen(false);
-    } catch (error) {
-      const message = error.errorMessage || error.message || 'Server error';
+
+    } catch (e: any) {
+      const message = e.errorMessage || e.message || "Upload error";
       showAlert({ message });
+      console.error(e);
     } finally {
       setIsLoading(false);
     }
@@ -161,6 +157,7 @@ export default function DraftApprovePanel({
       {customFooterContent}
       <div className={classNameDraftButtonContainer}>
         <button
+          type="button"
           className={classNameButtonCloseDrafts}
           onClick={() => {
             setIsDraftModalOpen(false);
@@ -170,6 +167,7 @@ export default function DraftApprovePanel({
           Close Drafts
         </button>
         <button
+          type="button"
           className={classNameButtonApproveDrafts}
           disabled={isLoading}
           onClick={approveDrats}
