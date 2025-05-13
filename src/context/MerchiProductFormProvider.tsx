@@ -377,11 +377,9 @@ export const MerchiProductFormProvider = ({
       await getQuote();
       const openDraftModal = await launchDraftApproveModal();
       if (openDraftModal) {
-        setDraftAppproveCallback(() => async (jobData) => {
-          console.log("[Provider] callback invoked with", jobData);
+        setDraftAppproveCallback(async (jobData) => {
           const finalJobData = jobData || job;
           if (!finalJobData.product) finalJobData.product = { id: initProduct.id };
-          console.log("[Provider] scheduling onAddToCart with", finalJobData, tags);
           setTimeout(() => {
             onAddToCart({ ...finalJobData, tags });
           }, 0);
@@ -427,15 +425,6 @@ export const MerchiProductFormProvider = ({
       }
     }
     : undefined;
-
-  React.useEffect(() => {
-    console.log(
-      "[Provider] draftApproveCallback:",
-      draftApproveCallback,
-      "typeof →",
-      typeof draftApproveCallback
-    );
-  }, [draftApproveCallback]);
 
   return (
     <MerchiProductFormContext.Provider

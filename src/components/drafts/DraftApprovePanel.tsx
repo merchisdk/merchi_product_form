@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useMerchiFormContext } from '../../context/MerchiProductFormProvider';
 import { DraftTemplateData, RenderedDraftPreview, MerchiFile } from '../../utils/types';
 
@@ -65,6 +65,7 @@ interface DraftApprovePanelProps {
 export default function DraftApprovePanel({
   customFooterContent,
 }: DraftApprovePanelProps) {
+
   const {
     apiUrl,
     classNameButtonApproveDrafts,
@@ -78,13 +79,23 @@ export default function DraftApprovePanel({
     setIsDraftModalOpen,
     setJob,
     showAlert,
+    hookForm,
   } = useMerchiFormContext();
+
   const [isLoading, setIsLoading] = useState(false);
-  const data = localStorage.getItem(`productDraftTemplate-${product.id}`);
-  if (!data) {
-    return null;
+
+  const key = `productDraftTemplate-${product.id}`;
+  const raw = localStorage.getItem(key);
+  if (!raw) return null;
+
+  const allDrafts: DraftTemplateData[] = JSON.parse(raw);
+  const groupVariationFields: any[] = hookForm.getValues('variationsGroups') || [];
+  const currentCount = groupVariationFields.length;
+
+  const draftData = allDrafts.filter(d => d.groupIndex < currentCount);
+  if (draftData.length !== allDrafts.length) {
+    localStorage.setItem(key, JSON.stringify(draftData));
   }
-  const draftData: DraftTemplateData[] = JSON.parse(data);
 
   const doUpload = async (
     groupIndex: number,
@@ -100,11 +111,6 @@ export default function DraftApprovePanel({
   );
 
   async function approveDrats() {
-    console.log(
-      "[DraftApprovePanel] approveDrats fired, draftApproveCallback =",
-      draftApproveCallback
-    );
-
     if (!draftApproveCallback) {
       showAlert({ message: "No draftApproveCallback, aborting." });
       return;
@@ -130,10 +136,9 @@ export default function DraftApprovePanel({
       };
       setJob(jobData);
 
-      console.log("[DraftApprovePanel] about to call callback with jobData:", jobData);
       await draftApproveCallback(jobData);
-      console.log("[DraftApprovePanel] callback finished!");
 
+      localStorage.removeItem(`productDraftTemplate-${product.id}`);
       setIsDraftModalOpen(false);
 
     } catch (e: any) {
