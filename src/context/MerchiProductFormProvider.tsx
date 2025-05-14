@@ -375,9 +375,10 @@ export const MerchiProductFormProvider = ({
   const addToCart = onAddToCart
     ? async () => {
       await getQuote();
+      console.log('v5');
       const openDraftModal = await launchDraftApproveModal();
       if (openDraftModal) {
-        setDraftAppproveCallback(async (jobData) => {
+        setDraftAppproveCallback(() => async (jobData) => {
           const finalJobData = jobData || job;
           if (!finalJobData.product) finalJobData.product = { id: initProduct.id };
           setTimeout(() => {
