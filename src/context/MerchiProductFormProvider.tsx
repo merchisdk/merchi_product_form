@@ -5,7 +5,7 @@ import { useForm } from 'react-hook-form';
 import { fetchJobQuote } from '../actions/jobs';
 import { productHasGroups } from '../utils/products';
 import { getMerchiSourceJobTags } from '../components/utils';
-
+import { DraftTemplateData } from '../utils/types';
 type FormMethods = ReturnType<typeof useForm>;
 
 interface IMerchiProductForm {
@@ -17,6 +17,11 @@ interface IMerchiProductForm {
   classNameButtonGroupAdd?: string;
   classNameButtonGroupRemove?: string;
   classNameButtonsSubmitContainer?: string;
+  classNameButtonApproveDrafts?: string;
+  classNameButtonCloseDrafts?: string;
+  classNameDraftButtonContainer?: string;
+  classNameDraftGroupContainer?: string;
+  classNameDraftGroupTitle?: string;
   classNameFileUploadContainer?: string;
   classNameFileUpload?: string;
   classNameFilePreviewContainer?: string;
@@ -52,6 +57,7 @@ interface IMerchiProductForm {
   classNameUnitPrice?: string;
   control: any;
   currentUser?: any;
+  draftApproveCallback: ((job: any) => Promise<void>) | null;
   getQuote: any;
   hideCost?: boolean;
   hideCountry?: boolean;
@@ -64,6 +70,7 @@ interface IMerchiProductForm {
   hookForm: FormMethods;
   isCartItem?: boolean;
   initJob?: any;
+  isDraftModalOpen: boolean;
   job: any;
   loading: boolean;
   onAddToCart?: () => void;
@@ -73,6 +80,7 @@ interface IMerchiProductForm {
   product: any;
   productFormId?: string;
   setClient: (client: any) => void;
+  setIsDraftModalOpen: (isOpen: boolean) => void;
   setJob: (job: any) => void;
   setLoading: (loading: boolean) => void;
   showAlert: (alert: any) => void;
@@ -92,6 +100,11 @@ const MerchiProductFormContext = createContext<IMerchiProductForm>({
   classNameButtonGroupAdd: undefined,
   classNameButtonGroupRemove: undefined,
   classNameButtonsSubmitContainer: undefined,
+  classNameButtonApproveDrafts: undefined,
+  classNameButtonCloseDrafts: undefined,
+  classNameDraftButtonContainer: undefined,
+  classNameDraftGroupContainer: undefined,
+  classNameDraftGroupTitle: undefined,
   classNameFileUploadContainer: undefined,
   classNameFileUpload: undefined,
   classNameFilePreviewContainer: undefined,
@@ -126,7 +139,8 @@ const MerchiProductFormContext = createContext<IMerchiProductForm>({
   classNameUnitPrice: undefined,
   control: {},
   currentUser: {},
-  getQuote() {},
+  draftApproveCallback: null,
+  getQuote() { },
   hideCost: false,
   hideCountry: false,
   hideDomainName: false,
@@ -138,18 +152,20 @@ const MerchiProductFormContext = createContext<IMerchiProductForm>({
   hookForm: {} as any,
   isCartItem: false,
   initJob: undefined,
+  isDraftModalOpen: false,
   job: {},
   loading: false,
-  onAddToCart() {},
-  onBuyNow() {},
-  onGetQuote() {},
-  onSubmit() {},
+  onAddToCart() { },
+  onBuyNow() { },
+  onGetQuote() { },
+  onSubmit() { },
   product: {},
   productFormId: undefined,
-  setClient() {},
-  setJob(job) {},
-  setLoading(loading) {},
-  showAlert(alert) {},
+  setClient() { },
+  setIsDraftModalOpen() { },
+  setJob(job) { },
+  setLoading(loading) { },
+  showAlert(alert) { },
   showCurrency: false,
   showCurrencyCode: false,
   showFeatureDeadline: false,
@@ -168,6 +184,11 @@ export const MerchiProductFormProvider = ({
   classNameButtonGroupAdd = 'btn btn-white',
   classNameButtonGroupRemove = 'btn btn-danger',
   classNameButtonsSubmitContainer = 'merchi-product-buttons-submit-container',
+  classNameButtonApproveDrafts = 'btn btn-success',
+  classNameButtonCloseDrafts = 'btn btn-secondary',
+  classNameDraftButtonContainer = 'merchi-product-draft-button-container',
+  classNameDraftGroupContainer = 'merchi-product-draft-group-container',
+  classNameDraftGroupTitle = 'merchi-product-draft-group-title',
   classNameFileUploadContainer = 'merchi-input-file-container',
   classNameFileUpload = 'merchi-embed-form_dropzone',
   classNameFilePreviewContainer = 'uploaded-variation-file',
@@ -180,7 +201,7 @@ export const MerchiProductFormProvider = ({
   classNameFileListItem = 'list-group-item no-z-index-hover',
   classNameFileButtonDownload = 'btn btn-sm btn-secondary',
   classNameFileButtonDelete = 'btn btn-sm btn-danger ml-2',
-  classNameFileListItemContainer = 'list-group' ,
+  classNameFileListItemContainer = 'list-group',
   classNameGroupsContainer = 'merchi-embed-form_product-group-container',
   classNameGroupPriceContainer = 'merchi-embed-form_product-group-total-cost',
   classNameInput = 'form-control',
@@ -233,6 +254,11 @@ export const MerchiProductFormProvider = ({
   classNameButtonGroupAdd?: string;
   classNameButtonGroupRemove?: string;
   classNameButtonsSubmitContainer?: string;
+  classNameButtonApproveDrafts?: string;
+  classNameButtonCloseDrafts?: string;
+  classNameDraftButtonContainer?: string;
+  classNameDraftGroupContainer?: string;
+  classNameDraftGroupTitle?: string;
   classNameFileUploadContainer?: string;
   classNameFileUpload?: string;
   classNameFilePreviewContainer?: string;
@@ -257,7 +283,7 @@ export const MerchiProductFormProvider = ({
   classNameOptionSuper?: string;
   classNameOptionsCheckboxRadioContainer?: string;
   classNameOptionImage?: string;
-  classNameOptionImageContainer?: string; 
+  classNameOptionImageContainer?: string;
   classNameOptionColour?: string;
   classNameProductTitle?: string;
   classNameProductOriginTitle?: string;
@@ -293,6 +319,8 @@ export const MerchiProductFormProvider = ({
   const defaultJob = initJob || initProduct.defaultJob || {};
   const hookForm = useForm({ defaultValues: defaultJob });
   const [client, setClient] = useState(currentUser);
+  const [alert, showAlert] = useState((null as any));
+  const [draftApproveCallback, setDraftAppproveCallback] = useState<((job: any) => Promise<void>) | null>(null);
   const [job, setJob] = useState<any>(defaultJob);
   const [loading, setLoading] = useState(false);
   const { control, getValues, handleSubmit } = hookForm;
@@ -300,12 +328,10 @@ export const MerchiProductFormProvider = ({
 
   const tags = getMerchiSourceJobTags();
 
-  const [alert, showAlert] = useState((null as any));
-
   async function getQuote() {
     const values = await getValues();
     setLoading(true);
-    let data = { ...values,  product: { id: initProduct.id } };
+    let data = { ...values, product: { id: initProduct.id } };
     if (productHasGroups(initProduct)) {
       // if the product has group variation fields we delete quantity
       // because each group has it's own quantity
@@ -320,27 +346,87 @@ export const MerchiProductFormProvider = ({
       showAlert({ message });
       console.error(message);
     } finally {
-      setLoading(false); 
+      setLoading(false);
     }
   }
+
+  const launchDraftApproveModal = async () => {
+    // if the client has drafts which have not been approved, we launch a modal to approve them
+    const designData = localStorage.getItem(`productDraftTemplate-${initProduct.id}`);
+
+    if (designData) {
+      try {
+        const draftDataJson: DraftTemplateData[] = JSON.parse(designData);
+        for (const draft of draftDataJson) {
+          if (draft.productId === initProduct.id) {
+            return true;
+          }
+        }
+        return false;
+      } catch (e) {
+        console.error('Error parsing design data', e);
+        return false;
+      }
+    }
+    return false;
+  }
+
+  const [isDraftModalOpen, setIsDraftModalOpen] = useState(false);
   const addToCart = onAddToCart
     ? async () => {
-        await getQuote();
-        onAddToCart({...job, tags});
+      await getQuote();
+      console.log('v5');
+      const openDraftModal = await launchDraftApproveModal();
+      if (openDraftModal) {
+        setDraftAppproveCallback(() => async (jobData) => {
+          const finalJobData = jobData || job;
+          if (!finalJobData.product) finalJobData.product = { id: initProduct.id };
+          setTimeout(() => {
+            onAddToCart({ ...finalJobData, tags });
+          }, 0);
+          return Promise.resolve();
+        });
+        setIsDraftModalOpen(true);
+      } else {
+        if (!job.product) job.product = { id: initProduct.id };
+        setTimeout(() => {
+          onAddToCart({ ...job, tags });
+        }, 0);
       }
+    }
     : undefined;
+
   const buyNow = onBuyNow
-    ? async () =>  {
-        await getQuote();
-        onBuyNow({...job});
+    ? async () => {
+      await getQuote();
+      const openDraftModal = await launchDraftApproveModal();
+      if (openDraftModal) {
+        setDraftAppproveCallback(async (jobData) => {
+          onBuyNow({ ...jobData });
+          return Promise.resolve();
+        });
+        setIsDraftModalOpen(true);
+      } else {
+        onBuyNow({ ...job });
       }
+    }
     : undefined;
   const getSubmitQuote = onGetQuote
-    ? async () =>  {
-        await getQuote();
-        onGetQuote({...job});
+    ? async () => {
+      await getQuote();
+      const openDraftModal = await launchDraftApproveModal();
+      if (openDraftModal) {
+        setDraftAppproveCallback(async (jobData) => {
+          onGetQuote({ ...jobData });
+          return Promise.resolve();
+        });
+        setIsDraftModalOpen(true);
+      } else {
+        onGetQuote({ ...job });
       }
+    }
     : undefined;
+
   return (
     <MerchiProductFormContext.Provider
       value={
@@ -353,6 +439,11 @@ export const MerchiProductFormProvider = ({
           classNameButtonGroupAdd,
           classNameButtonGroupRemove,
           classNameButtonsSubmitContainer,
+          classNameButtonApproveDrafts,
+          classNameButtonCloseDrafts,
+          classNameDraftButtonContainer,
+          classNameDraftGroupContainer,
+          classNameDraftGroupTitle,
           classNameFileUploadContainer,
           classNameFileUpload,
           classNameFilePreviewContainer,
@@ -388,6 +479,7 @@ export const MerchiProductFormProvider = ({
           classNameUnitPrice,
           client,
           control,
+          draftApproveCallback,
           getQuote,
           hideCost,
           hideCountry,
@@ -399,6 +491,7 @@ export const MerchiProductFormProvider = ({
           hideTitle,
           hookForm,
           isCartItem,
+          isDraftModalOpen,
           job,
           loading,
           onAddToCart: addToCart,
@@ -407,6 +500,7 @@ export const MerchiProductFormProvider = ({
           product: initProduct,
           productFormId,
           setClient,
+          setIsDraftModalOpen,
           setJob,
           setLoading,
           showAlert,

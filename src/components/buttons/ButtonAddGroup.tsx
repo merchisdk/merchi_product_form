@@ -3,7 +3,7 @@ import * as React from 'react';
 import { CgSpinner } from 'react-icons/cg';
 import { FaPlus } from 'react-icons/fa';
 
-import { useMerchiFormContext } from '../MerchiProductFormProvider';
+import { useMerchiFormContext } from '../../context/MerchiProductFormProvider';
 import { buildEmptyVariationGroup } from '../utils';
 
 interface Props {

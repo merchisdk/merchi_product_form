@@ -40,9 +40,15 @@ import {
 import Variations from './components/Variations';
 import VariationsGroups from './components/VariationsGroups';
 
+import DraftApprovePanel from './components/drafts/DraftApprovePanel';
+import ButtonProductSubmit from './components/buttons/ButtonProductSubmit';
+import { isProductSupplierMOD } from './components/utils';
+
+
 export {
   AlertVariationSellerEditable,
   DynamicVariationInput,
+  DraftApprovePanel,
   InputHiddenStatic,
   InputProductQuantity,
   MerchiProductFormProvider,
@@ -73,6 +79,8 @@ export {
   Variations,
   VariationsGroups,
   TooltipElement,
+  ButtonProductSubmit,
+  isProductSupplierMOD,
 };
 
 export default MerchiProductForm;
