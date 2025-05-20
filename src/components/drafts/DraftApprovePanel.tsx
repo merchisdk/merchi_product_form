@@ -137,8 +137,6 @@ export default function DraftApprovePanel({
       setJob(jobData);
 
       await draftApproveCallback(jobData);
-
-      localStorage.removeItem(`productDraftTemplate-${product.id}`);
       setIsDraftModalOpen(false);
 
     } catch (e: any) {
