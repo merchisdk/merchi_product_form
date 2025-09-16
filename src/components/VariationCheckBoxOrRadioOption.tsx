@@ -1,15 +1,12 @@
 'use client';
 import * as React from 'react';
 import { useController } from 'react-hook-form';
-import VariationFieldOptionDefaultInputs from './VariationFieldOptionDefaultInputs';
 import { variationFieldOptionCostDetail } from './utils';
 import { useMerchiFormContext } from '../context/MerchiProductFormProvider';
 
 interface Props {
   disabled?: boolean;
-  index: number;
   inputType?: string;
-  isAvailable: boolean;
   name: string;
   option: any;
   variation: any;
@@ -17,9 +14,7 @@ interface Props {
 
 function VariationCheckBoxOrRadioOption({
   disabled,
-  index,
   inputType,
-  isAvailable = true,
   name,
   option,
   variation,
@@ -38,28 +33,28 @@ function VariationCheckBoxOrRadioOption({
   });
   const { variationField } = variation;
   const { sellerProductEditable } = variationField;
-  const { id, value } = option;
+  const { available, isVisible, optionId, value } = option;
   const optionCost = variationFieldOptionCostDetail(option);
-  const outOfStock = !isAvailable ? ' - insufficient stock' : '';
-  const outOfStockOrCost = outOfStock || optionCost;
+  const statusText = !isVisible ? ' - disabled' : !available ? ' - insufficient stock' : '';
+  const outOfStockOrCost = statusText || optionCost;
   const activeIds = (field.value || '').split(',');
-  const isActive = activeIds.includes(String(id));
+  const isActive = activeIds.includes(String(optionId));
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     let updatedIds = [...activeIds];
 
     if (sellerProductEditable || inputType === 'checkbox') {
       // Checkbox Logic
-      if (e.target.checked && !updatedIds.includes(String(id))) {
-        updatedIds.push(String(id));
+      if (e.target.checked && !updatedIds.includes(String(optionId))) {
+        updatedIds.push(String(optionId));
       } else if (!e.target.checked) {
         updatedIds = updatedIds.filter(
-          (existingId) => existingId !== String(id)
+          (existingId) => existingId !== String(optionId)
         );
       }
     } else if (inputType === 'radio') {
       // Radio Logic
-      updatedIds = [String(id)];
+      updatedIds = [String(optionId)];
     }
 
     field.onChange(updatedIds.join(','));
@@ -68,23 +63,19 @@ function VariationCheckBoxOrRadioOption({
   };
   return (
     <div className={classNameOptionContainer}>
-      <VariationFieldOptionDefaultInputs
-        option={option}
-        optionName={`${name}.variationField.options[${index}]`}
-      />
       <input
         className={classNameOptionInput}
         checked={isActive}
         type={sellerProductEditable ? 'checkbox' : inputType}
-        disabled={disabled || !isAvailable}
-        value={id}
+        disabled={disabled || !available || !isVisible}
+        value={optionId}
         name={`${name}.value`}
         onChange={handleChange}
       />
       <label className={classNameOptionLabel}>{value}</label>
       {outOfStockOrCost && (
         <span className={classNameOptionSuper}>
-          {outOfStock} {optionCost}
+          {statusText} {optionCost}
         </span>
       )}
     </div>

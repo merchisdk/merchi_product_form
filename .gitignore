@@ -44,3 +44,7 @@ globals.css.map
 #lockfile
 yarn.lock
 package-lock.json
+
+#yalc
+.yalc
+yalc.lock

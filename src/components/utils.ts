@@ -43,8 +43,8 @@ export function variationCostDetail(variation: any) {
 }
 
 export function variationFieldOptionCostDetail(option: any) {
-  const { currency, variationCost, variationUnitCost } = option;
-  return costDetail(variationCost!, variationUnitCost!, currency!);
+  const { currency, onceOffCost, unitCost } = option;
+  return costDetail(onceOffCost!, unitCost!, currency!);
 }
 
 export function splitSelectedOptions(value: any) {
@@ -386,4 +386,70 @@ export function getMerchiSourceJobTags(): any[] {
     return [];
   }
   return [];
+}
+
+export function sortByPosition(options: any[]): any[] {
+  return options.map((obj: any) => {
+    const position = typeof obj.position === 'string'
+      ? parseInt(obj.position, 10)
+      : obj.position;
+    return {
+      ...obj,
+      position: typeof position === 'number' ? position : 0,
+    };
+  }).sort((a, b) => {
+    const aPosition = typeof a.position === 'number' ? a.position : 0;
+    const bPosition = typeof b.position === 'number' ? b.position : 0;
+    return aPosition - bPosition;
+  });
+}
+
+export function cleanFormVariationJson(variation: any) {
+  const variationJson = JSON.parse(variation.json);
+  const cleanVariation = {
+    ...variationJson,
+    value: variation.value,
+    variationFiles: variation.variationFiles || [],
+  };
+  if (cleanVariation.id) {
+    delete cleanVariation.id
+  }
+  if (cleanVariation.variationArrayFieldId) {
+    delete cleanVariation.variationArrayFieldId;
+  }
+  return cleanVariation;
+}
+
+export function cleanJobVariationsAndGroups(jobJson: any) {
+  const { variations, variationsGroups } = jobJson;
+  const hasGroups = Boolean(variationsGroups && variationsGroups.length);
+  const hasVariations = Boolean(variations && variations.length);
+  
+  // Loop over individual variations and check if the variation is a json string, if it is convert it to an object
+  if (hasVariations) {
+    for (let i = 0; i < variations.length; i++) {
+      variations[i] = cleanFormVariationJson(variations[i]);
+    }
+    jobJson.variations = variations;
+  }
+  
+  if (hasGroups) {
+    for (let i = 0; i < variationsGroups.length; i++) {
+      // Set default quantity if not present
+      const group = variationsGroups[i];
+      if (!group.quantity) {
+        group.quantity = 0;
+      }
+      
+      // Handle variations within the group - convert JSON strings to objects
+      if (group.variations && Array.isArray(group.variations)) {
+        for (let j = 0; j < group.variations.length; j++) {
+          group.variations[j] = cleanFormVariationJson(group.variations[j]);
+        }
+      }
+    }
+    jobJson.variationsGroups = variationsGroups;
+  }
+  
+  return jobJson;
 }

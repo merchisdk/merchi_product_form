@@ -6,6 +6,7 @@ import { fetchJobQuote } from '../actions/jobs';
 import { productHasGroups } from '../utils/products';
 import { getMerchiSourceJobTags } from '../components/utils';
 import { DraftTemplateData } from '../utils/types';
+import { cleanJobVariationsAndGroups } from '../components/utils';
 type FormMethods = ReturnType<typeof useForm>;
 
 interface IMerchiProductForm {
@@ -323,24 +324,26 @@ export const MerchiProductFormProvider = ({
   const [draftApproveCallback, setDraftAppproveCallback] = useState<((job: any) => Promise<void>) | null>(null);
   const [job, setJob] = useState<any>(defaultJob);
   const [loading, setLoading] = useState(false);
-  const { control, getValues, handleSubmit } = hookForm;
+  const { control, getValues, handleSubmit, reset } = hookForm;
   const doSubmit = onSubmit ? handleSubmit(onSubmit) : undefined;
 
   const tags = getMerchiSourceJobTags();
 
   async function getQuote() {
     const values = await getValues();
+    const cleanedValues = cleanJobVariationsAndGroups(values);
     setLoading(true);
-    let data = { ...values, product: { id: initProduct.id } };
+    let data = { ...cleanedValues, product: { id: initProduct.id } };
     if (productHasGroups(initProduct)) {
       // if the product has group variation fields we delete quantity
       // because each group has it's own quantity
       delete data.quantity;
     }
     try {
-      const r = await fetchJobQuote(data);
+      const r = await fetchJobQuote(data, apiUrl);
       const jobJson = r.toJson();
       setJob(jobJson);
+      reset({...jobJson});
     } catch (e: any) {
       const message = e.errorMessage || e.message || 'Server error';
       showAlert({ message });
@@ -375,7 +378,6 @@ export const MerchiProductFormProvider = ({
   const addToCart = onAddToCart
     ? async () => {
       await getQuote();
-      console.log('v5');
       const openDraftModal = await launchDraftApproveModal();
       if (openDraftModal) {
         setDraftAppproveCallback(() => async (jobData) => {

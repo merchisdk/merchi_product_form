@@ -8,7 +8,6 @@ import {
 import VariationFileInput from './VariationFileInput';
 import AlertVariationSellerEditable from './AlertVariationSellerEditable';
 import VariationFieldInstructions from './VariationFieldInstructions';
-import VariationFieldStaticValues from './VariationFieldStaticValues';
 import VariationSelect from './VariationSelect';
 import {
   VariationInputCoulourPicker,
@@ -48,16 +47,16 @@ function DynamicVariationInput({
   name,
   variation,
 }: Props) {
-  const { showAlert } = useMerchiFormContext();
+  const { hookForm, showAlert } = useMerchiFormContext();
   const { variationField } = variation;
   const { fieldType } = variationField;
   const Variation = fieldMaps.get(parseInt(fieldType, 10));
   return (
     <>
-      <VariationFieldStaticValues
-        index={index}
-        name={name}
-        variation={variation}
+      <input
+        type='hidden'
+        defaultValue={JSON.stringify(variation)}
+        {...hookForm.register(`${name}[${index}].json`)}
       />
       <AlertVariationSellerEditable variationField={variationField} />
       <Variation

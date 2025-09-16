@@ -1,6 +1,5 @@
 import { Merchi } from 'merchi_sdk_ts';
 
-const merchi = new Merchi();
 type AnyObject = Record<string, any>;
 
 function removeNullValues(obj: AnyObject): AnyObject {
@@ -23,7 +22,14 @@ function removeNullValuesFromArray(objs: AnyObject[]): AnyObject[] {
   });
 }
 
-export async function fetchJobQuote(jobJson: AnyObject) {
+export async function fetchJobQuote(jobJson: AnyObject, apiUrl: string) {
+  const merchi = new Merchi(
+    undefined,    // or sessionToken
+    undefined,    // or clientToken  
+    undefined,    // or invoiceToken
+    undefined,       // or undefined
+    apiUrl,  // backendUri
+  );
   const merchiJob = new merchi.Job();
   const { variations = [], variationsGroups = [] } = jobJson;
   

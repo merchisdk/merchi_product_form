@@ -48,7 +48,6 @@ const VariationInput: React.FC<Props> = ({
     <div className={`${classNameInputContainer} merchi-input-${inputType}-container`}>
       <VariationLabel
         variationClassName={`merchi-input-${inputType}`}
-        name={name}
         variation={variation}
       />
       {inputType === 'textarea' ? (
