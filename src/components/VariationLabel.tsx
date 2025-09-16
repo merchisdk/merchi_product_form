@@ -1,20 +1,17 @@
 import * as React from 'react';
 import { variationCostDetail } from './utils';
-import VariationFieldNameAndCostInputs from './VariationFieldNameAndCostInputs';
 import { useMerchiFormContext } from '../context/MerchiProductFormProvider';
 import { CgSpinner } from 'react-icons/cg';
 import VariationFieldInputInstructions from './VariationFieldInputInstructions';
 
 interface Props {
   forceHideCost?: boolean;
-  name: string;
   variation: any;
   variationClassName?: string;
 }
 
 function VariationLabel({
   forceHideCost,
-  name,
   variation = {},
   variationClassName,
 }: Props) {
@@ -45,7 +42,6 @@ function VariationLabel({
             ''
           )}
         </div>
-        <VariationFieldNameAndCostInputs name={name} variation={variation} />
       </div>
       {instructions && (
         <VariationFieldInputInstructions instructions={instructions} />

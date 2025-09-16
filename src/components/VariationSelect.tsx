@@ -3,8 +3,7 @@ import * as React from 'react';
 import { useController } from 'react-hook-form';
 import VariationError from './VariationError';
 import VariationLabel from './VariationLabel';
-import VariationFieldOptionDefaultInputs from './VariationFieldOptionDefaultInputs';
-import { variationCostDetail } from './utils';
+import { sortByPosition, variationCostDetail } from './utils';
 import { useMerchiFormContext } from '../context/MerchiProductFormProvider';
 
 interface Props {
@@ -24,36 +23,25 @@ const VariationSelect: React.FC<Props> = ({ disabled, name, variation }) => {
 
   const {
     field,
-    fieldState: { invalid, error },
+    fieldState: { invalid },
   } = useController({
     name: `${name}.value`,
     control,
   });
 
-  const { selectableOptions = [], variationField } = variation;
-  const { options = [] } = variationField;
-
-  const optionAvailable = (index: number) => {
-    return selectableOptions[index] ? selectableOptions[index].available : true;
-  };
+  const { selectableOptions = [] } = variation;
 
   const validationClass = invalid ? 'is-invalid' : '';
 
+  function isActive(option: any) {
+    return option.available && option.isVisible;
+  }
   return (
     <div className={`${classNameInputContainer} merchi-input-select-container`}>
       <VariationLabel
         variationClassName='merchi-embed-form_input-select'
-        name={name}
         variation={variation}
       />
-      {options.map((option: any, index: number) => (
-        <span key={`${name}-select-option-values-${index}`}>
-          <VariationFieldOptionDefaultInputs
-            option={option}
-            optionName={`${name}.variationField.options[${index}]`}
-          />
-        </span>
-      ))}
       <select
         {...field}
         disabled={disabled}
@@ -63,17 +51,15 @@ const VariationSelect: React.FC<Props> = ({ disabled, name, variation }) => {
           getQuote();
         }}
       >
-        {options.map((option: any, index: number) => (
+        {sortByPosition(selectableOptions).map((option: any, index: number) => (
           <option
-            value={option.id}
-            disabled={!optionAvailable(index)}
-            key={`variation-option-${option.id}`}
+            value={option.optionId}
+            disabled={!isActive(option)}
+            key={`variation-option-${option.optionId}`}
           >
             {option.value}
-            {!optionAvailable(index) ? ' - insufficient stock' : ''}
-            {!hideCost &&
-              selectableOptions[index] &&
-              variationCostDetail(selectableOptions[index])}
+            {!option.isVisible ? ' - disabled' : !option.available ? ' - insufficient stock' : ''}
+            {!hideCost && variationCostDetail(option)}
           </option>
         ))}
       </select>

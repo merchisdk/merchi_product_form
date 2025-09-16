@@ -39,32 +39,28 @@ function VariationFieldOptionElement({
 }: OptionProps) {
   const { control, getQuote } = useMerchiFormContext();
   const { field } = useController({ name: `${name}.value`, control });
-  const optionName = `${name}.options[${index}]`;
-  const { selectableOptions, variationField } = variation;
+  const { variationField } = variation;
   const { sellerProductEditable } = variationField;
-  const { id } = option;
-  const inputId = `${name}.options.id-${id}`;
+  const { optionId } = option;
+  const inputId = `${name}.options.id-${optionId}`;
   const activeIds = field.value ? field.value.split(',') : [];
-  const isActive = activeIds.includes(String(id));
-  const isAvailable = selectableOptions[index]
-    ? selectableOptions[index].available
-    : true;
+  const isActive = activeIds.includes(String(optionId));
   const optionInputType = optionType(variation);
   const doClick = () => {
     let updatedIds = [...activeIds];
 
     if (sellerProductEditable || optionInputType === 'checkbox') {
       // Checkbox Logic
-      if (!updatedIds.includes(String(id))) {
-        updatedIds.push(String(id));
+      if (!updatedIds.includes(String(optionId))) {
+        updatedIds.push(String(optionId));
       } else {
         updatedIds = updatedIds.filter(
-          (existingId) => existingId !== String(id)
+          (existingId) => existingId !== String(optionId)
         );
       }
     } else if (optionInputType === 'radio') {
       // Radio Logic
-      updatedIds = [String(id)];
+      updatedIds = [String(optionId)];
     }
     field.onChange(updatedIds.length ? updatedIds.join(',') : '');
 
@@ -75,7 +71,7 @@ function VariationFieldOptionElement({
       <input
         style={{ display: 'none' }}
         checked={isActive}
-        value={id}
+        value={optionId}
         type={optionInputType}
         id={inputId}
         name={`${name}.value`}
@@ -86,8 +82,6 @@ function VariationFieldOptionElement({
         <VariationOptionImage
           doClick={doClick}
           isChecked={isActive}
-          isAvailable={isAvailable}
-          name={`${optionName}.variationField.options[${index}]`}
           option={option}
           sellerProductEditable={sellerProductEditable}
         />
@@ -95,8 +89,6 @@ function VariationFieldOptionElement({
         <VariationOptionColour
           doClick={doClick}
           isChecked={isActive}
-          isAvailable={isAvailable}
-          name={`${optionName}.variationField.options[${index}]`}
           option={option}
           sellerProductEditable={sellerProductEditable}
         />
@@ -118,8 +110,7 @@ export const VariationSelectElements: React.FC<Props> = ({
   name,
   variation,
 }) => {
-  const { variationField } = variation;
-  const { options = [] } = variationField;
+  const { selectableOptions } = variation;
   const isImage = inputType === 'image';
   return (
     <div className={isImage ? 'merchi-image-select-container' : ''}>
@@ -128,7 +119,6 @@ export const VariationSelectElements: React.FC<Props> = ({
         variationClassName={`merchi-embed-form_input${
           isImage ? '-image' : ''
         }-select`}
-        name={name}
         variation={variation}
       />
       <div
@@ -138,12 +128,12 @@ export const VariationSelectElements: React.FC<Props> = ({
             : 'merchi-embed-form_color-select-container'
         }
       >
-        {options.map((option: any, index: number) => (
+        {selectableOptions.map((option: any, index: number) => (
           <VariationFieldOptionElement
+            key={`variation-option-${option.optionId}-${index}`}
             disabled={disabled}
             index={index}
             inputType={inputType}
-            key={`variation-option-${name}-${index}`}
             name={name}
             option={option}
             variation={variation}
