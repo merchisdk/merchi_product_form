@@ -16,8 +16,8 @@ import {
   faChevronUp,
   faCircleNotch,
   faDownload,
-  faTimes,
-  faTrashAlt,
+  faXmark,
+  faTrashCan,
 } from '@fortawesome/free-solid-svg-icons';
 import { useMerchiFormContext } from '../context/MerchiProductFormProvider';
 
@@ -69,7 +69,7 @@ function FileListItem({
                 {loading ? (
                   <LoadingIcon />
                 ) : (
-                  <FontAwesomeIcon icon={faTrashAlt} />
+                  <FontAwesomeIcon icon={faTrashCan} />
                 )}
               </button>
             )}
@@ -125,7 +125,7 @@ function VariationFile({
         className={classNameFilePreviewIconWrapper}
         onClick={() => deleteVariationFile(file)}
       >
-        <FontAwesomeIcon icon={faTimes} className='close-icon' />
+        <FontAwesomeIcon icon={faXmark} className='close-icon' />
       </div>
       <IconFile file={file} />
       <InputHiddenStatic
@@ -201,7 +201,6 @@ function VariationFileInput({ disabled, name, variation }: Props) {
     <div className={classNameFileUploadContainer}>
       <VariationLabel
         variationClassName='merchi-embed-form_input-file'
-        name={name}
         variation={variation}
       />
       <DropzoneInput
