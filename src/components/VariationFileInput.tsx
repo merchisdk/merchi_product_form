@@ -10,18 +10,17 @@ import VariationError from './VariationError';
 import VariationLabel from './VariationLabel';
 import Collapse from './Collapse';
 import { useFieldArray } from 'react-hook-form';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
-  faChevronDown,
-  faChevronUp,
-  faCircleNotch,
-  faDownload,
-  faXmark,
-  faTrashCan,
-} from '@fortawesome/free-solid-svg-icons';
+  FaChevronDown,
+  FaChevronUp,
+  FaDownload,
+  FaTimes,
+  FaTrash,
+} from 'react-icons/fa';
+import { CgSpinner } from 'react-icons/cg';
 import { useMerchiFormContext } from '../context/MerchiProductFormProvider';
 
-const LoadingIcon = () => <FontAwesomeIcon icon={faCircleNotch} spin />;
+const LoadingIcon = () => <CgSpinner className='animate_spin' />;
 
 interface PropsFileListItem {
   file: any;
@@ -48,6 +47,7 @@ function FileListItem({
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
+          minHeight: '2.5rem',
         }}
       >
         <span className='ml-3'>{file.name}</span>
@@ -58,7 +58,7 @@ function FileListItem({
               href={file.downloadUrl}
               download
             >
-              <FontAwesomeIcon icon={faDownload} />
+              <FaDownload />
             </a>
             {doDelete && (
               <button
@@ -69,7 +69,7 @@ function FileListItem({
                 {loading ? (
                   <LoadingIcon />
                 ) : (
-                  <FontAwesomeIcon icon={faTrashCan} />
+                  <FaTrash />
                 )}
               </button>
             )}
@@ -125,7 +125,7 @@ function VariationFile({
         className={classNameFilePreviewIconWrapper}
         onClick={() => deleteVariationFile(file)}
       >
-        <FontAwesomeIcon icon={faXmark} className='close-icon' />
+        <FaTimes className='close-icon' />
       </div>
       <IconFile file={file} />
       <InputHiddenStatic
@@ -151,7 +151,7 @@ function ButtonUploadedFiles({
   const hasFiles = Array.isArray(files) && files.length > 0;
   const text =
     files.length !== 1 ? `${files.length} files selected` : '1 file selected';
-  const icon = isOpen ? faChevronUp : faChevronDown;
+  const Icon = isOpen ? FaChevronUp : FaChevronDown;
   const { classNameFileUploadButton } = useMerchiFormContext();
   return (
     <button
@@ -161,7 +161,7 @@ function ButtonUploadedFiles({
       onClick={onClick}
     >
       {hasFiles ? text : 'No files selected'}{' '}
-      {hasFiles && <FontAwesomeIcon icon={icon} />}
+      {hasFiles && <Icon />}
     </button>
   );
 }

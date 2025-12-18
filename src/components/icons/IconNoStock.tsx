@@ -1,13 +1,11 @@
-'use client';
 import * as React from 'react';
 import TooltipElement from '../TooltipElement';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCircleXmark } from '@fortawesome/free-solid-svg-icons';
+import { FaTimesCircle } from 'react-icons/fa';
 
 function IconNoStock() {
   return (
   	<TooltipElement tooltip='Insufficient stock'>
-      <FontAwesomeIcon icon={faCircleXmark} />
+      <FaTimesCircle />
     </TooltipElement>
   );
 }

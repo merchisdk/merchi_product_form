@@ -21,7 +21,7 @@ async function uploadBase64Image(
   suffix: string = 'preview'
 ): Promise<MerchiFile> {
   // Remove "data:image/..." prefix if present
-  const base64Data = base64.includes(',') ? base64.split(',')[1] : base64;
+  const base64Data = typeof base64 === 'string' && base64.includes(',') ? base64.split(',')[1] : base64;
 
   // Convert base64 to binary data
   const binaryString = atob(base64Data);

@@ -1,8 +1,8 @@
 'use client';
+import * as React from 'react';
 import { supplierSellerEditableProductTypes } from './utils';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faClipboardCheck } from '@fortawesome/free-solid-svg-icons';
-import { useMerchiFormContext } from './MerchiProductFormProvider';
+import { FaClipboardCheck } from 'react-icons/fa';
+import { useMerchiFormContext } from '../context/MerchiProductFormProvider';
 
 function isTrue(value: any) {
   return [true, 'true'].includes(value);
@@ -36,7 +36,7 @@ function AlertVariationSellerEditable({ variationField }: Props) {
               marginRight: '1rem',
             }}
           >
-            <FontAwesomeIcon icon={faClipboardCheck} size='2x' />
+            <FaClipboardCheck size={32} />
           </div>
           <div>
             Select variation options you would like

@@ -1,7 +1,7 @@
 'use client';
-import { faTrash } from '@fortawesome/free-solid-svg-icons';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { useMerchiFormContext } from '../MerchiProductFormProvider';
+import * as React from 'react';
+import { FaTrash } from 'react-icons/fa';
+import { useMerchiFormContext } from '../../context/MerchiProductFormProvider';
 
 interface Props {
   count: number;
@@ -17,7 +17,7 @@ function ButtonRemoveGroup({ count, disabled, remove }: Props) {
       onClick={remove}
       disabled={disabled}
     >
-      <FontAwesomeIcon icon={faTrash} /> {`Group (${count})`}
+      <FaTrash /> {`Group (${count})`}
     </button>
   );
 }

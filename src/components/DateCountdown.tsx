@@ -1,7 +1,6 @@
 import * as React from 'react';
 import TooltipElement from './TooltipElement';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faStopwatch } from '@fortawesome/free-solid-svg-icons';
+import { FaStopwatch } from 'react-icons/fa';
 
 interface CountProps {
   className?: string;
@@ -127,12 +126,12 @@ function DateCountdown(props: Props) {
     containerClass = 'd-inline-block text-ellipsis',
     deadline,
     hideSeconds = true,
-    icon = faStopwatch,
+    icon: Icon = FaStopwatch,
     tooltip,
   } = props;
   const idCountdownDate = 'merchi-countdown-date'
   const now = new Date().getTime() / 1000;
-  const faIcon = <FontAwesomeIcon icon={icon} />;
+  const faIcon = Icon ? <Icon /> : null;
   const countdown = (
     <CountdownTimer
       hideSeconds={hideSeconds}

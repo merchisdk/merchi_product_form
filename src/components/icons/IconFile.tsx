@@ -1,12 +1,14 @@
-'use client';
 import * as React from 'react';
-import { faCircleNotch, faFilePdf } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { FaFilePdf } from "react-icons/fa";
+import { CgSpinner } from "react-icons/cg";
 
-function IconContainer({ className, icon, spin = false }: any) {
+function IconContainer({ className, icon: Icon, spin = false }: any) {
+  if (!Icon) {
+    return null;
+  }
   return (
     <span className={className || 'avatar rounded-circle'}>
-      <FontAwesomeIcon icon={icon} spin={spin} />
+      <Icon className={spin ? 'animate_spin' : ''} />
     </span>
   );
 }
@@ -26,7 +28,7 @@ function IconFile({ file }: FileIconProps) {
   return file.id ? isPdf(file) ?
     <IconContainer
       className='avatar avatar-md align-middle bg-secondary text-dark shadow'
-      icon={faFilePdf}
+      icon={FaFilePdf}
     />
   :
     <div
@@ -36,7 +38,7 @@ function IconFile({ file }: FileIconProps) {
   :
     <IconContainer
       className='avatar avatar-md align-middle text-dark shadow'
-      icon={faCircleNotch}
+      icon={CgSpinner}
       spin={true}
     />;
 }

@@ -48,7 +48,13 @@ export function variationFieldOptionCostDetail(option: any) {
 }
 
 export function splitSelectedOptions(value: any) {
-  return value && Array.isArray(value) ? value : value ? value.split(',') : [];
+  if (Array.isArray(value)) {
+    return value;
+  }
+  if (typeof value === 'string' && value) {
+    return value.split(',');
+  }
+  return [];
 }
 
 export const supplierSellerEditableProductTypes: Array<number> = [
