@@ -1,5 +1,5 @@
 import { ProductType } from "./types";
-const productNotFound = require('../images/product-not-found.png').default;
+const productNotFound = require('../images/product-not-found.png');
 
 export const supplierProductCreationTypes: Array<number> = [
   ProductType.SUPPLIER_MOD,
@@ -34,7 +34,8 @@ export function productProfileUrl(product: any) {
   if (product && product.featureImage && product.featureImage.viewUrl) {
     return String(product.featureImage.viewUrl);
   }
-  return productNotFound.src;
+  const image = productNotFound.default || productNotFound;
+  return image ? (image.src || image) : '';
 }
 
 export function productFeatureImageUrl(product: any, noImageSrc?: string) {

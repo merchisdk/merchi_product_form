@@ -1,7 +1,7 @@
 import { Merchi } from 'merchi_sdk_ts';
 import { formatCurrency } from '../utils/currency';
 import { ProductType } from '../utils/types';
-const pngOptionNotFound = require('../images/product-not-found.png').default;
+const pngOptionNotFound = require('../images/product-not-found.png');
 
 function renderSingleCostIndication(
   cost: any,
@@ -57,12 +57,13 @@ export const supplierSellerEditableProductTypes: Array<number> = [
 ];
 
 export function optionImageUrl(option: any) {
-  const imageNotFount = pngOptionNotFound.src;
+  const image = pngOptionNotFound ? (pngOptionNotFound.default || pngOptionNotFound) : '';
+  const imageNotFound = image ? (image.src || image) : '';
   return option.linkedFile
     ? option.linkedFile
       ? option.linkedFile.viewUrl
-      : imageNotFount
-    : imageNotFount;
+      : imageNotFound
+    : imageNotFound;
 }
 
 export function allowedFileTypes(variationField: any): string {
