@@ -43,7 +43,11 @@ function VariationFieldOptionElement({
   const { sellerProductEditable } = variationField;
   const { optionId } = option;
   const inputId = `${name}.options.id-${optionId}`;
-  const activeIds = field.value ? field.value.split(',') : [];
+  const activeIds = typeof field.value === 'string'
+    ? field.value.split(',')
+    : Array.isArray(field.value)
+    ? field.value.map(String)
+    : [];
   const isActive = activeIds.includes(String(optionId));
   const optionInputType = optionType(variation);
   const doClick = () => {

@@ -37,7 +37,11 @@ function VariationCheckBoxOrRadioOption({
   const optionCost = variationFieldOptionCostDetail(option);
   const statusText = !isVisible ? ' - disabled' : !available ? ' - insufficient stock' : '';
   const outOfStockOrCost = statusText || optionCost;
-  const activeIds = (field.value || '').split(',');
+  const activeIds = typeof field.value === 'string'
+    ? field.value.split(',')
+    : Array.isArray(field.value)
+    ? field.value.map(String)
+    : [];
   const isActive = activeIds.includes(String(optionId));
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
