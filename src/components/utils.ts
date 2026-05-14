@@ -412,14 +412,26 @@ export function sortByPosition(options: any[]): any[] {
 }
 
 export function cleanFormVariationJson(variation: any) {
-  const variationJson = JSON.parse(variation.json);
+  let variationJson: any = null;
+  const rawJson = variation?.json;
+  if (typeof rawJson === 'string' && rawJson && rawJson !== 'undefined') {
+    try {
+      variationJson = JSON.parse(rawJson);
+    } catch {
+      variationJson = null;
+    }
+  }
+  if (!variationJson) {
+    const { json, ...rest } = variation || {};
+    variationJson = rest;
+  }
   const cleanVariation = {
     ...variationJson,
     value: variation.value,
     variationFiles: variation.variationFiles || [],
   };
   if (cleanVariation.id) {
-    delete cleanVariation.id
+    delete cleanVariation.id;
   }
   if (cleanVariation.variationArrayFieldId) {
     delete cleanVariation.variationArrayFieldId;
