@@ -67,8 +67,7 @@ function TurnaroundOption({
     ? `${days} day${days !== 1 ? 's' : ''} - ${deliveryLabel} ${formattedDate.dayName}, ${formattedDate.month} ${formattedDate.dayNumber}${outOfStock}`
     : `${days} day${days !== 1 ? 's' : ''} - ${deliveryLabel}${outOfStock}`;
 
-  const handleOnChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    register(`${name}.value`).onChange(e);
+  const handleOnChange = () => {
     if (onChange) onChange();
     getQuote();
   };

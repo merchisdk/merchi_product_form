@@ -19,14 +19,14 @@ export const embedProduct = {
   component: {},
   defaultJob: {},
   domain: {
-    activeTheme: {mainCss: {}},
+    activeTheme: { mainCss: {} },
     logo: {}
   },
-  draftTemplates: {file: {}},
+  draftTemplates: { file: {} },
   groupBuyStatus: {},
-  groupVariationFields: {options: {linkedFile: {}}},
+  groupVariationFields: { options: { linkedFile: {} }, selectedBy: {} },
   images: {},
-  independentVariationFields: {options: {linkedFile: {}}},
+  independentVariationFields: { options: { linkedFile: {} }, selectedBy: {} },
   publicFiles: {},
 };
 
@@ -43,11 +43,11 @@ export function productFeatureImageUrl(product: any, noImageSrc?: string) {
     && product!.featureImage!.viewUrl
     ? product!.featureImage!.viewUrl
     : product!.images && product!.images[0]
-    && product!.images[0]!.viewUrl
-    ? product!.images[0]!.viewUrl
-    : noImageSrc
-    ? noImageSrc
-    : productProfileUrl(product);
+      && product!.images[0]!.viewUrl
+      ? product!.images[0]!.viewUrl
+      : noImageSrc
+        ? noImageSrc
+        : productProfileUrl(product);
 }
 
 export function productHasGroups(product: any) {
