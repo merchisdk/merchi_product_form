@@ -119,6 +119,11 @@ export function isProductFileDownload(product: any) {
   return isProductTypeFileDownload(productType);
 }
 
+export function isProductLeadForm(product: any) {
+  const productType = product && product.productType;
+  return parseInt(productType, 10) === ProductType.LEAD_FORM;
+}
+
 export const isoCountries: any = {
   AF: 'Afghanistan',
   AX: 'Aland Islands',

@@ -499,6 +499,7 @@ export const MerchiProductFormProvider = ({
           onAddToCart: addToCart,
           onBuyNow: buyNow,
           onGetQuote: getSubmitQuote,
+          onSubmit,
           product: initProduct,
           productFormId,
           setClient,
