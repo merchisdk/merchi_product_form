@@ -1,5 +1,6 @@
 import AlertVariationSellerEditable from './components/AlertVariationSellerEditable';
 import DynamicVariationInput from './components/DynamicVariationInput';
+import FormLead from './components/FormLead';
 import InputHiddenStatic from './components/InputHiddenStatic';
 import InputProductQuantity from './components/InputProductQuantity';
 import MerchiProductForm from './components/MerchiProductForm';
@@ -42,13 +43,14 @@ import VariationsGroups from './components/VariationsGroups';
 
 import DraftApprovePanel from './components/drafts/DraftApprovePanel';
 import ButtonProductSubmit from './components/buttons/ButtonProductSubmit';
-import { isProductSupplierMOD } from './components/utils';
+import { isProductLeadForm, isProductSupplierMOD } from './components/utils';
 
 
 export {
   AlertVariationSellerEditable,
   DynamicVariationInput,
   DraftApprovePanel,
+  FormLead,
   InputHiddenStatic,
   InputProductQuantity,
   MerchiProductFormProvider,
@@ -80,6 +82,7 @@ export {
   VariationsGroups,
   TooltipElement,
   ButtonProductSubmit,
+  isProductLeadForm,
   isProductSupplierMOD,
 };
 

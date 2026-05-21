@@ -22,6 +22,7 @@ export enum ProductType {
   SELLER_FILE_DOWNLOAD = 20,
   SUPPLIER_MOD_SUPPLY_CHAIN_REQUEST = 21,
   SUPPLIER_SUPPLY_CHAIN_REQUEST = 22,
+  LEAD_FORM = 23,
 }
 
 export enum FieldType {
