@@ -194,7 +194,7 @@ function VariationFileInput({ disabled, name, variation }: Props) {
       append(fs);
     } else {
       if (hasFiles) remove(0);
-      append(fs[0]);
+      append(fs);
     }
   }
   return (
