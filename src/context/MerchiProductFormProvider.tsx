@@ -324,7 +324,7 @@ export const MerchiProductFormProvider = ({
   const [draftApproveCallback, setDraftAppproveCallback] = useState<((job: any) => Promise<void>) | null>(null);
   const [job, setJob] = useState<any>(defaultJob);
   const [loading, setLoading] = useState(false);
-  const { control, getValues, handleSubmit } = hookForm;
+  const { control, getValues, handleSubmit, reset } = hookForm;
   const doSubmit = onSubmit ? handleSubmit(onSubmit) : undefined;
 
   const tags = getMerchiSourceJobTags();
@@ -343,6 +343,7 @@ export const MerchiProductFormProvider = ({
       const r = await fetchJobQuote(data, apiUrl);
       const jobJson = r.toJson();
       setJob(jobJson);
+      reset({ ...jobJson });
     } catch (e: any) {
       const message = e.errorMessage || e.message || 'Server error';
       showAlert({ message });
