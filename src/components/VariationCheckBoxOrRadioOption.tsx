@@ -65,9 +65,11 @@ function VariationCheckBoxOrRadioOption({
 
     getQuote();
   };
+  const optionInputId = `merchi-opt-${optionId}`;
   return (
     <div className={classNameOptionContainer}>
       <input
+        id={optionInputId}
         className={classNameOptionInput}
         checked={isActive}
         type={sellerProductEditable ? 'checkbox' : inputType}
@@ -76,7 +78,7 @@ function VariationCheckBoxOrRadioOption({
         name={`${name}.value`}
         onChange={handleChange}
       />
-      <label className={classNameOptionLabel}>{value}</label>
+      <label htmlFor={optionInputId} className={classNameOptionLabel}>{value}</label>
       {outOfStockOrCost && (
         <span className={classNameOptionSuper}>
           {statusText} {optionCost}

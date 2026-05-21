@@ -35,6 +35,7 @@ function InputProductQuantity({ disabled, name = 'quantity' }: Props) {
       message: `${product.name} can not be less than ${minimum}`,
     };
   }
+  const inputId = `merchi-qty-${name}`;
   const { field } = useController({
     name: name,
     control,
@@ -44,7 +45,7 @@ function InputProductQuantity({ disabled, name = 'quantity' }: Props) {
     <div className={classNameInputContainer}>
       <div className={classNameQuantityLabelContainer}>
         <div>
-          <span>Quantity</span>{' '}
+          <label htmlFor={inputId} style={{ display: 'inline' }}>Quantity</label>{' '}
           <small>
             <ProductUnitPrice /> {minimum > 1 && `(MOQ of ${minimum})`}
           </small>
@@ -54,6 +55,7 @@ function InputProductQuantity({ disabled, name = 'quantity' }: Props) {
         <div>{job.quantity}</div>
       ) : (
         <input
+          id={inputId}
           disabled={disabled}
           min='0'
           type='number'

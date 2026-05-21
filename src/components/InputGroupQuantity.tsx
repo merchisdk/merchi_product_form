@@ -11,6 +11,7 @@ interface Props {
 }
 
 function InputGroupQuantity({ count, disabled, name }: Props) {
+  const inputId = `merchi-group-qty-${count}`;
   const {
     classNameInputContainer,
     classNameInput,
@@ -40,8 +41,9 @@ function InputGroupQuantity({ count, disabled, name }: Props) {
   });
   return (
     <div className={classNameInputContainer}>
-      <label>Group ({count}) quantity</label>
+      <label htmlFor={inputId}>Group ({count}) quantity</label>
       <input
+        id={inputId}
         disabled={disabled}
         min='0'
         type='number'

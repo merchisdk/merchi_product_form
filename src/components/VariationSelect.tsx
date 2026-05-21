@@ -43,6 +43,7 @@ const VariationSelect: React.FC<Props> = ({ disabled, name, variation }) => {
         variation={variation}
       />
       <select
+        aria-label={variation.variationField.name}
         {...field}
         disabled={disabled}
         className={`${classNameInput} ${validationClass}`}

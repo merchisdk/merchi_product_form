@@ -52,6 +52,7 @@ const VariationInput: React.FC<Props> = ({
       />
       {inputType === 'textarea' ? (
         <textarea
+          aria-label={variationField.name}
           disabled={disabled}
           className={`${classNameInput} ${validationClass}`}
           rows={variationField.rows}
@@ -60,6 +61,7 @@ const VariationInput: React.FC<Props> = ({
         />
       ) : (
         <input
+          aria-label={variationField.name}
           disabled={disabled}
           type={inputType}
           className={`${classNameInput} ${validationClass}`}
