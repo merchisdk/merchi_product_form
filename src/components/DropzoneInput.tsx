@@ -49,7 +49,7 @@ function DropzoneInput({
           throw new Error(`Server responded with ${response.status}: ${response.statusText}`);
         } else {
           data = await response.json();
-          onUploadSuccess(data.file);
+          onUploadSuccess(data.file ?? data);
         }
         setLoading(false);
       } catch (error: any) {
