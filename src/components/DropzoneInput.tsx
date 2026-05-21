@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { Accept, useDropzone } from 'react-dropzone';
 import { CgSpinner } from 'react-icons/cg';
 import { FaRegImage, FaPlus } from 'react-icons/fa';
-import { useMerchiFormContext } from '../context/MerchiProductFormProvider'; 
+import { useMerchiFormContext } from '../context/MerchiProductFormProvider';
 
 interface Props {
   accept?: string;
@@ -75,7 +75,7 @@ function DropzoneInput({
   return (
     <>
       <div {...getRootProps()} className={classNameFileUpload}>
-        <input {...getInputProps()} disabled={disabled} />
+        <input {...getInputProps()} disabled={disabled} aria-label={placeholder} />
         <div className={classNameFileUploadTextContainer}>
           <div className={classNameFileUploadIconContainer}>
             {loading ? (
