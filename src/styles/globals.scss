@@ -12,14 +12,18 @@
 
   /* variant container */
   &_variantion-container {
-    gap: 2rem;
+    gap: 1.25rem;
     display: flex;
     flex-direction: column;
-    padding: 1rem 0;
+    padding: 0;
+  }
 
-    @media(min-width: 992px) {
-      padding: 0;
-    }
+  fieldset.merchi-embed-form_product-group-container,
+  fieldset.merchi-embed-form_product-group-variation-container {
+    border: none;
+    margin: 0;
+    padding: 0;
+    min-width: 0;
   }
 
   /* information */
@@ -481,12 +485,12 @@
   /* product groups */
   &_product-group {
     &-container {
-      background: rgba(255, 255, 255, 0.75);
-      border-radius: 0.75rem;
-      padding: 0.75rem 1rem 1rem;
+      background: transparent;
+      border-radius: 0;
+      padding: 0;
       display: flex;
       flex-direction: column;
-      gap: 1rem;
+      gap: 1.25rem;
     }
 
     &-actions-container {
@@ -542,9 +546,7 @@
     }
 
     &-variation-container {
-      display: flex;
-      flex-direction: column;
-      gap: 2rem;
+      display: block;
     }
 
     &-input-qty-container {
