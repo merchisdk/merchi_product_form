@@ -344,10 +344,12 @@ export const MerchiProductFormProvider = ({
       const jobJson = r.toJson();
       setJob(jobJson);
       reset({ ...jobJson });
+      return jobJson;
     } catch (e: any) {
       const message = e.errorMessage || e.message || 'Server error';
       showAlert({ message });
       console.error(message);
+      return null;
     } finally {
       setLoading(false);
     }
@@ -377,11 +379,12 @@ export const MerchiProductFormProvider = ({
   const [isDraftModalOpen, setIsDraftModalOpen] = useState(false);
   const addToCart = onAddToCart
     ? async () => {
-      await getQuote();
+      const jobData = await getQuote();
+      if (!jobData) return;
       const openDraftModal = await launchDraftApproveModal();
       if (openDraftModal) {
-        setDraftAppproveCallback(() => async (jobData) => {
-          const finalJobData = jobData || job;
+        setDraftAppproveCallback(() => async (draftJobData) => {
+          const finalJobData = draftJobData || jobData;
           if (!finalJobData.product) finalJobData.product = { id: initProduct.id };
           setTimeout(() => {
             onAddToCart({ ...finalJobData, tags });
@@ -390,9 +393,9 @@ export const MerchiProductFormProvider = ({
         });
         setIsDraftModalOpen(true);
       } else {
-        if (!job.product) job.product = { id: initProduct.id };
+        if (!jobData.product) jobData.product = { id: initProduct.id };
         setTimeout(() => {
-          onAddToCart({ ...job, tags });
+          onAddToCart({ ...jobData, tags });
         }, 0);
       }
     }
@@ -400,31 +403,33 @@ export const MerchiProductFormProvider = ({
 
   const buyNow = onBuyNow
     ? async () => {
-      await getQuote();
+      const jobData = await getQuote();
+      if (!jobData) return;
       const openDraftModal = await launchDraftApproveModal();
       if (openDraftModal) {
-        setDraftAppproveCallback(async (jobData) => {
-          onBuyNow({ ...jobData });
+        setDraftAppproveCallback(async (draftJobData) => {
+          onBuyNow({ ...(draftJobData || jobData) });
           return Promise.resolve();
         });
         setIsDraftModalOpen(true);
       } else {
-        onBuyNow({ ...job });
+        onBuyNow({ ...jobData });
       }
     }
     : undefined;
   const getSubmitQuote = onGetQuote
     ? async () => {
-      await getQuote();
+      const jobData = await getQuote();
+      if (!jobData) return;
       const openDraftModal = await launchDraftApproveModal();
       if (openDraftModal) {
-        setDraftAppproveCallback(async (jobData) => {
-          onGetQuote({ ...jobData });
+        setDraftAppproveCallback(async (draftJobData) => {
+          onGetQuote({ ...(draftJobData || jobData) });
           return Promise.resolve();
         });
         setIsDraftModalOpen(true);
       } else {
-        onGetQuote({ ...job });
+        onGetQuote({ ...jobData });
       }
     }
     : undefined;
