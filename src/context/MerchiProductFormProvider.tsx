@@ -397,12 +397,19 @@ export const MerchiProductFormProvider = ({
       currency: result.currency,
     };
     setJob(nextJob);
-    // Only re-seed the form (which moves focus) when option visibility actually
-    // changed — i.e. on selection changes, not on quantity edits. This keeps
-    // quantity typing from losing focus while still revealing/hiding gated
-    // options. Cost/group-cost updates flow through setJob without a reset.
+    // Only re-seed the form when option visibility actually changed — i.e. on
+    // selection changes, not on quantity edits. Cost/group-cost updates flow
+    // through setJob without a reset. reset() makes useFieldArray remount its
+    // items, which makes the browser lose the scroll position; capture and
+    // restore it so the viewport doesn't jump when toggling a select.
     if (visibilityChanged) {
+      const hasWindow = typeof window !== 'undefined';
+      const scrollX = hasWindow ? window.scrollX : 0;
+      const scrollY = hasWindow ? window.scrollY : 0;
       reset(nextJob);
+      if (hasWindow && typeof window.requestAnimationFrame === 'function') {
+        window.requestAnimationFrame(() => window.scrollTo(scrollX, scrollY));
+      }
     }
     return nextJob;
   }
