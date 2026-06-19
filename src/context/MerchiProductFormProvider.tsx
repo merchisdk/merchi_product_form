@@ -7,6 +7,8 @@ import { productHasGroups } from '../utils/products';
 import { getMerchiSourceJobTags } from '../components/utils';
 import { DraftTemplateData } from '../utils/types';
 import { cleanJobVariationsAndGroups } from '../components/utils';
+import { pricing } from 'merchi_sdk_ts';
+import { toSelections } from '../utils/selections';
 type FormMethods = ReturnType<typeof useForm>;
 
 interface IMerchiProductForm {
@@ -60,6 +62,8 @@ interface IMerchiProductForm {
   currentUser?: any;
   draftApproveCallback: ((job: any) => Promise<void>) | null;
   getQuote: any;
+  quoteMode?: 'server' | 'client';
+  pricingRules?: any;
   hideCost?: boolean;
   hideCountry?: boolean;
   hideCalculatedPrice?: boolean;
@@ -142,6 +146,8 @@ const MerchiProductFormContext = createContext<IMerchiProductForm>({
   currentUser: {},
   draftApproveCallback: null,
   getQuote() { },
+  quoteMode: 'server',
+  pricingRules: undefined,
   hideCost: false,
   hideCountry: false,
   hideDomainName: false,
@@ -236,6 +242,8 @@ export const MerchiProductFormProvider = ({
   isCartItem,
   initJob,
   initProduct,
+  quoteMode = 'server',
+  pricingRules,
   onAddToCart,
   onBuyNow,
   onGetQuote,
@@ -306,6 +314,8 @@ export const MerchiProductFormProvider = ({
   isCartItem?: boolean;
   initJob?: any;
   initProduct: any;
+  quoteMode?: 'server' | 'client';
+  pricingRules?: any;
   onAddToCart?: (job: any) => void;
   onBuyNow?: (job: any) => void;
   onGetQuote?: (job: any) => void;
@@ -329,9 +339,38 @@ export const MerchiProductFormProvider = ({
 
   const tags = getMerchiSourceJobTags();
 
+  function applyClientQuote(values: any) {
+    const selections = toSelections(values, pricingRules);
+    const result = pricing.estimateQuote(pricingRules, selections);
+    if ('unsupported' in result) return null;
+    if (pricingRules.hasGroups && Array.isArray(values.variationsGroups)) {
+      values.variationsGroups.forEach((g: any, i: number) => {
+        g.groupCost = result.groupCosts[i] ?? 0;
+      });
+    }
+    const nextJob = {
+      ...values,
+      cost: result.cost,
+      costPerUnit: result.costPerUnit,
+      taxAmount: result.taxAmount,
+      totalCost: result.totalCost,
+      currency: result.currency,
+    };
+    setJob(nextJob);
+    return nextJob;
+  }
+
   async function getQuote() {
     const values = await getValues();
     const cleanedValues = cleanJobVariationsAndGroups(values);
+    if (quoteMode === 'client' && pricingRules) {
+      try {
+        const clientJob = applyClientQuote(cleanedValues);
+        if (clientJob) return clientJob;
+      } catch (e) {
+        // fall through to server on any client-calc error
+      }
+    }
     setLoading(true);
     let data = { ...cleanedValues, product: { id: initProduct.id } };
     if (productHasGroups(initProduct)) {
@@ -488,6 +527,8 @@ export const MerchiProductFormProvider = ({
           control,
           draftApproveCallback,
           getQuote,
+          quoteMode,
+          pricingRules,
           hideCost,
           hideCountry,
           hideCalculatedPrice,
