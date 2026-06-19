@@ -339,27 +339,53 @@ export const MerchiProductFormProvider = ({
 
   const tags = getMerchiSourceJobTags();
 
-  function applyOptionVisibility(variations: any[], visibleOptionIds: Set<number>) {
+  function applyOptionVisibility(
+    variations: any[],
+    visibleOptionIds: Set<number>
+  ): boolean {
+    let changed = false;
     (variations || []).forEach((variation: any) => {
       (variation.selectableOptions || []).forEach((option: any) => {
         // Mirror the server's per-option isVisible (selectedBy resolution).
         // available is defaulted true: client mode does not model inventory.
-        option.isVisible = visibleOptionIds.has(option.optionId);
-        option.available = true;
+        const isVisible = visibleOptionIds.has(option.optionId);
+        if (option.isVisible !== isVisible) {
+          option.isVisible = isVisible;
+          changed = true;
+        }
+        if (option.available !== true) {
+          option.available = true;
+          changed = true;
+        }
       });
     });
+    return changed;
   }
 
   function applyClientQuote(values: any) {
     const selections = toSelections(values, pricingRules);
     const result = pricing.estimateQuote(pricingRules, selections);
     if ('unsupported' in result) return null;
-    const visibleOptionIds = pricing.resolveVisibleOptionIds(pricingRules, selections);
-    applyOptionVisibility(values.variations, visibleOptionIds);
+    // Option visibility is scoped per container, mirroring the server:
+    // independent variations resolve against independent selections only; each
+    // group resolves against its own selections + independent. Other groups
+    // never leak in (so selecting 25mm in group 2 does not reveal a gated
+    // option in group 1).
+    const independentVisible = pricing.resolveVisibleOptionIds(pricingRules, {
+      quantity: selections.quantity,
+      fieldValues: selections.fieldValues,
+    });
+    let visibilityChanged = applyOptionVisibility(values.variations, independentVisible);
     if (pricingRules.hasGroups && Array.isArray(values.variationsGroups)) {
       values.variationsGroups.forEach((g: any, i: number) => {
         g.groupCost = result.groupCosts[i] ?? 0;
-        applyOptionVisibility(g.variations, visibleOptionIds);
+        const groupVisible = pricing.resolveVisibleOptionIds(pricingRules, {
+          fieldValues: selections.fieldValues,
+          groups: selections.groups ? [selections.groups[i]] : [],
+        });
+        if (applyOptionVisibility(g.variations, groupVisible)) {
+          visibilityChanged = true;
+        }
       });
     }
     const nextJob = {
@@ -371,11 +397,13 @@ export const MerchiProductFormProvider = ({
       currency: result.currency,
     };
     setJob(nextJob);
-    // Re-seed the form so the field arrays re-render with the recomputed option
-    // visibility. nextJob carries the current user selections, so input is
-    // preserved; text inputs do not trigger getQuote, so this never interrupts
-    // typing (this mirrors the server-mode reset).
-    reset(nextJob);
+    // Only re-seed the form (which moves focus) when option visibility actually
+    // changed — i.e. on selection changes, not on quantity edits. This keeps
+    // quantity typing from losing focus while still revealing/hiding gated
+    // options. Cost/group-cost updates flow through setJob without a reset.
+    if (visibilityChanged) {
+      reset(nextJob);
+    }
     return nextJob;
   }
 
