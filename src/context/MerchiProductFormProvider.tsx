@@ -339,13 +339,27 @@ export const MerchiProductFormProvider = ({
 
   const tags = getMerchiSourceJobTags();
 
+  function applyOptionVisibility(variations: any[], visibleOptionIds: Set<number>) {
+    (variations || []).forEach((variation: any) => {
+      (variation.selectableOptions || []).forEach((option: any) => {
+        // Mirror the server's per-option isVisible (selectedBy resolution).
+        // available is defaulted true: client mode does not model inventory.
+        option.isVisible = visibleOptionIds.has(option.optionId);
+        option.available = true;
+      });
+    });
+  }
+
   function applyClientQuote(values: any) {
     const selections = toSelections(values, pricingRules);
     const result = pricing.estimateQuote(pricingRules, selections);
     if ('unsupported' in result) return null;
+    const visibleOptionIds = pricing.resolveVisibleOptionIds(pricingRules, selections);
+    applyOptionVisibility(values.variations, visibleOptionIds);
     if (pricingRules.hasGroups && Array.isArray(values.variationsGroups)) {
       values.variationsGroups.forEach((g: any, i: number) => {
         g.groupCost = result.groupCosts[i] ?? 0;
+        applyOptionVisibility(g.variations, visibleOptionIds);
       });
     }
     const nextJob = {
@@ -357,6 +371,11 @@ export const MerchiProductFormProvider = ({
       currency: result.currency,
     };
     setJob(nextJob);
+    // Re-seed the form so the field arrays re-render with the recomputed option
+    // visibility. nextJob carries the current user selections, so input is
+    // preserved; text inputs do not trigger getQuote, so this never interrupts
+    // typing (this mirrors the server-mode reset).
+    reset(nextJob);
     return nextJob;
   }
 
