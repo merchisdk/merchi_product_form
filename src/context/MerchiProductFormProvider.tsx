@@ -339,22 +339,42 @@ export const MerchiProductFormProvider = ({
 
   const tags = getMerchiSourceJobTags();
 
+  const inventoryRefreshTimer = React.useRef<any>(null);
+
+  function buildAvailabilityMap(rules: any): Map<number, boolean> {
+    const map = new Map<number, boolean>();
+    const allFields = [...(rules.fields || []), ...(rules.groupFields || [])];
+    for (const f of allFields) {
+      for (const o of f.options || []) {
+        // Treat undefined as available; only an explicit false disables.
+        map.set(o.id, o.available !== false);
+      }
+    }
+    return map;
+  }
+
   function applyOptionVisibility(
     variations: any[],
-    visibleOptionIds: Set<number>
+    visibleOptionIds: Set<number>,
+    availabilityById: Map<number, boolean>
   ): boolean {
     let changed = false;
     (variations || []).forEach((variation: any) => {
       (variation.selectableOptions || []).forEach((option: any) => {
         // Mirror the server's per-option isVisible (selectedBy resolution).
-        // available is defaulted true: client mode does not model inventory.
         const isVisible = visibleOptionIds.has(option.optionId);
         if (option.isVisible !== isVisible) {
           option.isVisible = isVisible;
           changed = true;
         }
-        if (option.available !== true) {
-          option.available = true;
+        // Availability is a per-option stock snapshot from the bundle (true for
+        // non-inventory products). Quantity-dependent sufficiency is refreshed
+        // separately via scheduleInventoryRefresh.
+        const available = availabilityById.has(option.optionId)
+          ? Boolean(availabilityById.get(option.optionId))
+          : true;
+        if (option.available !== available) {
+          option.available = available;
           changed = true;
         }
       });
@@ -362,10 +382,58 @@ export const MerchiProductFormProvider = ({
     return changed;
   }
 
+  // For inventory-limited products, refresh quantity-dependent inventory
+  // (group inventoryCount/inventorySufficient) from the authoritative server in
+  // the background, debounced, and merge it through setJob (which renders
+  // without a form reset, so the viewport never jumps). The client price stays
+  // instant; the inventory badge catches up a beat later.
+  function mergeInventory(prev: any, serverJob: any) {
+    if (!prev) return prev;
+    const merged: any = {
+      ...prev,
+      inventoryCount: serverJob.inventoryCount,
+      inventorySufficient: serverJob.inventorySufficient,
+    };
+    if (Array.isArray(prev.variationsGroups) && Array.isArray(serverJob.variationsGroups)) {
+      merged.variationsGroups = prev.variationsGroups.map((g: any, i: number) => {
+        const sg = serverJob.variationsGroups[i];
+        if (!sg) return g;
+        return {
+          ...g,
+          inventoryCount: sg.inventoryCount,
+          inventorySufficient: sg.inventorySufficient,
+          matchingInventories: sg.matchingInventories,
+        };
+      });
+    }
+    return merged;
+  }
+
+  function scheduleInventoryRefresh(cleanedValues: any) {
+    if (!pricingRules || !pricingRules.needsInventory) return;
+    if (inventoryRefreshTimer.current) {
+      clearTimeout(inventoryRefreshTimer.current);
+    }
+    inventoryRefreshTimer.current = setTimeout(async () => {
+      try {
+        let data = { ...cleanedValues, product: { id: initProduct.id } };
+        if (productHasGroups(initProduct)) {
+          delete data.quantity;
+        }
+        const r = await fetchJobQuote(data, apiUrl);
+        const serverJob = r.toJson();
+        setJob((prev: any) => mergeInventory(prev, serverJob));
+      } catch (e) {
+        // Best-effort: if the inventory refresh fails the price is unaffected.
+      }
+    }, 450);
+  }
+
   function applyClientQuote(values: any) {
     const selections = toSelections(values, pricingRules);
     const result = pricing.estimateQuote(pricingRules, selections);
     if ('unsupported' in result) return null;
+    const availabilityById = buildAvailabilityMap(pricingRules);
     // Option visibility is scoped per container, mirroring the server:
     // independent variations resolve against independent selections only; each
     // group resolves against its own selections + independent. Other groups
@@ -375,7 +443,9 @@ export const MerchiProductFormProvider = ({
       quantity: selections.quantity,
       fieldValues: selections.fieldValues,
     });
-    let visibilityChanged = applyOptionVisibility(values.variations, independentVisible);
+    let visibilityChanged = applyOptionVisibility(
+      values.variations, independentVisible, availabilityById
+    );
     if (pricingRules.hasGroups && Array.isArray(values.variationsGroups)) {
       values.variationsGroups.forEach((g: any, i: number) => {
         g.groupCost = result.groupCosts[i] ?? 0;
@@ -383,7 +453,7 @@ export const MerchiProductFormProvider = ({
           fieldValues: selections.fieldValues,
           groups: selections.groups ? [selections.groups[i]] : [],
         });
-        if (applyOptionVisibility(g.variations, groupVisible)) {
+        if (applyOptionVisibility(g.variations, groupVisible, availabilityById)) {
           visibilityChanged = true;
         }
       });
@@ -420,7 +490,10 @@ export const MerchiProductFormProvider = ({
     if (quoteMode === 'client' && pricingRules) {
       try {
         const clientJob = applyClientQuote(cleanedValues);
-        if (clientJob) return clientJob;
+        if (clientJob) {
+          scheduleInventoryRefresh(cleanedValues);
+          return clientJob;
+        }
       } catch (e) {
         // fall through to server on any client-calc error
       }
