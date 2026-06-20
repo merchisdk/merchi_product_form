@@ -341,22 +341,10 @@ export const MerchiProductFormProvider = ({
 
   const inventoryRefreshTimer = React.useRef<any>(null);
 
-  function buildAvailabilityMap(rules: any): Map<number, boolean> {
-    const map = new Map<number, boolean>();
-    const allFields = [...(rules.fields || []), ...(rules.groupFields || [])];
-    for (const f of allFields) {
-      for (const o of f.options || []) {
-        // Treat undefined as available; only an explicit false disables.
-        map.set(o.id, o.available !== false);
-      }
-    }
-    return map;
-  }
-
   function applyOptionVisibility(
     variations: any[],
     visibleOptionIds: Set<number>,
-    availabilityById: Map<number, boolean>
+    unavailableOptionIds: Set<number>
   ): boolean {
     let changed = false;
     (variations || []).forEach((variation: any) => {
@@ -367,12 +355,11 @@ export const MerchiProductFormProvider = ({
           option.isVisible = isVisible;
           changed = true;
         }
-        // Availability is a per-option stock snapshot from the bundle (true for
-        // non-inventory products). Quantity-dependent sufficiency is refreshed
-        // separately via scheduleInventoryRefresh.
-        const available = availabilityById.has(option.optionId)
-          ? Boolean(availabilityById.get(option.optionId))
-          : true;
+        // Combination-aware availability: an option is unavailable when the
+        // combination of (current inventory selections + this option) has no
+        // matching stock. Non-inventory products yield an empty set -> all
+        // available.
+        const available = !unavailableOptionIds.has(option.optionId);
         if (option.available !== available) {
           option.available = available;
           changed = true;
@@ -433,27 +420,31 @@ export const MerchiProductFormProvider = ({
     const selections = toSelections(values, pricingRules);
     const result = pricing.estimateQuote(pricingRules, selections);
     if ('unsupported' in result) return null;
-    const availabilityById = buildAvailabilityMap(pricingRules);
-    // Option visibility is scoped per container, mirroring the server:
-    // independent variations resolve against independent selections only; each
-    // group resolves against its own selections + independent. Other groups
-    // never leak in (so selecting 25mm in group 2 does not reveal a gated
-    // option in group 1).
-    const independentVisible = pricing.resolveVisibleOptionIds(pricingRules, {
+    // Visibility AND availability are scoped per container, mirroring the
+    // server: independent variations resolve against independent selections
+    // only; each group resolves against its own selections + independent.
+    // Other groups never leak in. Availability is combination-aware: an option
+    // is disabled when (current inventory selections + that option) has no
+    // matching stock.
+    const independentScope = {
       quantity: selections.quantity,
       fieldValues: selections.fieldValues,
-    });
+    };
+    const independentVisible = pricing.resolveVisibleOptionIds(pricingRules, independentScope);
+    const independentUnavailable = pricing.resolveUnavailableOptionIds(pricingRules, independentScope);
     let visibilityChanged = applyOptionVisibility(
-      values.variations, independentVisible, availabilityById
+      values.variations, independentVisible, independentUnavailable
     );
     if (pricingRules.hasGroups && Array.isArray(values.variationsGroups)) {
       values.variationsGroups.forEach((g: any, i: number) => {
         g.groupCost = result.groupCosts[i] ?? 0;
-        const groupVisible = pricing.resolveVisibleOptionIds(pricingRules, {
+        const groupScope = {
           fieldValues: selections.fieldValues,
           groups: selections.groups ? [selections.groups[i]] : [],
-        });
-        if (applyOptionVisibility(g.variations, groupVisible, availabilityById)) {
+        };
+        const groupVisible = pricing.resolveVisibleOptionIds(pricingRules, groupScope);
+        const groupUnavailable = pricing.resolveUnavailableOptionIds(pricingRules, groupScope);
+        if (applyOptionVisibility(g.variations, groupVisible, groupUnavailable)) {
           visibilityChanged = true;
         }
       });
