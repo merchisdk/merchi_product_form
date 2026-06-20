@@ -78,6 +78,7 @@ interface IMerchiProductForm {
   isDraftModalOpen: boolean;
   job: any;
   loading: boolean;
+  inventoryLoading?: boolean;
   onAddToCart?: () => void;
   onBuyNow?: () => void;
   onGetQuote?: () => void;
@@ -162,6 +163,7 @@ const MerchiProductFormContext = createContext<IMerchiProductForm>({
   isDraftModalOpen: false,
   job: {},
   loading: false,
+  inventoryLoading: false,
   onAddToCart() { },
   onBuyNow() { },
   onGetQuote() { },
@@ -334,6 +336,7 @@ export const MerchiProductFormProvider = ({
   const [draftApproveCallback, setDraftAppproveCallback] = useState<((job: any) => Promise<void>) | null>(null);
   const [job, setJob] = useState<any>(defaultJob);
   const [loading, setLoading] = useState(false);
+  const [inventoryLoading, setInventoryLoading] = useState(false);
   const { control, getValues, handleSubmit, reset } = hookForm;
   const doSubmit = onSubmit ? handleSubmit(onSubmit) : undefined;
 
@@ -401,6 +404,11 @@ export const MerchiProductFormProvider = ({
     if (inventoryRefreshTimer.current) {
       clearTimeout(inventoryRefreshTimer.current);
     }
+    // Show the loading state in the inventory pills from the moment a change is
+    // made until the authoritative stock comes back (covers the debounce wait
+    // and the request). This is separate from `loading` so the instant client
+    // price never flickers to a spinner.
+    setInventoryLoading(true);
     inventoryRefreshTimer.current = setTimeout(async () => {
       try {
         let data = { ...cleanedValues, product: { id: initProduct.id } };
@@ -412,6 +420,8 @@ export const MerchiProductFormProvider = ({
         setJob((prev: any) => mergeInventory(prev, serverJob));
       } catch (e) {
         // Best-effort: if the inventory refresh fails the price is unaffected.
+      } finally {
+        setInventoryLoading(false);
       }
     }, 450);
   }
@@ -660,6 +670,7 @@ export const MerchiProductFormProvider = ({
           isDraftModalOpen,
           job,
           loading,
+          inventoryLoading,
           onAddToCart: addToCart,
           onBuyNow: buyNow,
           onGetQuote: getSubmitQuote,
