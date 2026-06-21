@@ -62,7 +62,7 @@ interface IMerchiProductForm {
   currentUser?: any;
   draftApproveCallback: ((job: any) => Promise<void>) | null;
   getQuote: any;
-  quoteMode?: 'server' | 'client';
+  quoteCalculationClientSide?: boolean;
   pricingRules?: any;
   hideCost?: boolean;
   hideCountry?: boolean;
@@ -147,7 +147,7 @@ const MerchiProductFormContext = createContext<IMerchiProductForm>({
   currentUser: {},
   draftApproveCallback: null,
   getQuote() { },
-  quoteMode: 'server',
+  quoteCalculationClientSide: false,
   pricingRules: undefined,
   hideCost: false,
   hideCountry: false,
@@ -244,7 +244,7 @@ export const MerchiProductFormProvider = ({
   isCartItem,
   initJob,
   initProduct,
-  quoteMode = 'server',
+  quoteCalculationClientSide = false,
   pricingRules,
   onAddToCart,
   onBuyNow,
@@ -316,7 +316,7 @@ export const MerchiProductFormProvider = ({
   isCartItem?: boolean;
   initJob?: any;
   initProduct: any;
-  quoteMode?: 'server' | 'client';
+  quoteCalculationClientSide?: boolean;
   pricingRules?: any;
   onAddToCart?: (job: any) => void;
   onBuyNow?: (job: any) => void;
@@ -488,7 +488,7 @@ export const MerchiProductFormProvider = ({
   async function getQuote() {
     const values = await getValues();
     const cleanedValues = cleanJobVariationsAndGroups(values);
-    if (quoteMode === 'client' && pricingRules) {
+    if (quoteCalculationClientSide && pricingRules) {
       try {
         const clientJob = applyClientQuote(cleanedValues);
         if (clientJob) {
@@ -655,7 +655,7 @@ export const MerchiProductFormProvider = ({
           control,
           draftApproveCallback,
           getQuote,
-          quoteMode,
+          quoteCalculationClientSide,
           pricingRules,
           hideCost,
           hideCountry,
