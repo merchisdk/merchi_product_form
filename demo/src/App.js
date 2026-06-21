@@ -19,8 +19,12 @@ function urlSearchParams(inputParams) {
   return new URLSearchParams(params).toString();
 }
 
+const API_URL = 'https://api.merchi.co/v6/';
+const PRODUCT_ID = 118600;
+
 function App() {
   const [product, setProduct] = useState({});
+  const [pricingRules, setPricingRules] = useState(null);
   const [loading, setLoading] = useState(false);
   const urlParmas = urlSearchParams({
     embed: {
@@ -34,7 +38,7 @@ function App() {
   });
   async function fetchProduct() {
     setLoading(true);
-    const url = `https://api.merchi.co/v6/products/118600/?${urlParmas}`;
+    const url = `${API_URL}products/${PRODUCT_ID}/?${urlParmas}`;
     try {
       const response = await fetch(url, {});
       if (!response.ok) {
@@ -48,8 +52,20 @@ function App() {
       throw new Error(e);
     }
   }
+  // Fetch the pricing-rules bundle so the form can calculate quotes on the
+  // client. Falls back to null (server mode) if the endpoint isn't available.
+  async function fetchPricingRules() {
+    try {
+      const res = await fetch(`${API_URL}products/${PRODUCT_ID}/pricing-rules/`);
+      if (!res.ok) return;
+      setPricingRules(await res.json());
+    } catch (e) {
+      // ignore: form falls back to server-side quoting
+    }
+  }
   useEffect(() => {
     fetchProduct();
+    fetchPricingRules();
   }, []);
   return (
     <div className="App">
@@ -67,7 +83,13 @@ function App() {
           Merchi
         </a>
       </header>
-      {product.id && <MerchiProductForm initProduct={product} />}
+      {product.id && (
+        <MerchiProductForm
+          initProduct={product}
+          quoteCalculationClientSide={Boolean(pricingRules)}
+          pricingRules={pricingRules || undefined}
+        />
+      )}
     </div>
   );
 }
