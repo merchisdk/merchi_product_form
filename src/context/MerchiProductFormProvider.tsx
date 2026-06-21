@@ -245,7 +245,7 @@ export const MerchiProductFormProvider = ({
   initJob,
   initProduct,
   quoteCalculationClientSide = false,
-  pricingRules,
+  pricingRules: pricingRulesProp,
   onAddToCart,
   onBuyNow,
   onGetQuote,
@@ -343,6 +343,34 @@ export const MerchiProductFormProvider = ({
   const tags = getMerchiSourceJobTags();
 
   const inventoryRefreshTimer = React.useRef<any>(null);
+
+  // The form can fetch its own pricing-rules bundle when client-side quoting is
+  // enabled, so consumers only need to set `quoteCalculationClientSide`. A
+  // `pricingRules` prop, if supplied, overrides the fetch (lets a consumer
+  // prefetch). Until rules are available the dispatcher falls back to server.
+  const [fetchedPricingRules, setFetchedPricingRules] = useState<any>(null);
+  const pricingRules = pricingRulesProp || fetchedPricingRules;
+
+  React.useEffect(() => {
+    if (!quoteCalculationClientSide || pricingRulesProp || !initProduct?.id) {
+      return;
+    }
+    let cancelled = false;
+    (async () => {
+      try {
+        const base = apiUrl.endsWith('/') ? apiUrl : `${apiUrl}/`;
+        const res = await fetch(`${base}products/${initProduct.id}/pricing-rules/`);
+        if (!res.ok) return;
+        const rules = await res.json();
+        if (!cancelled) setFetchedPricingRules(rules);
+      } catch (e) {
+        // Best-effort: form falls back to server-side quoting on failure.
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [quoteCalculationClientSide, pricingRulesProp, initProduct?.id, apiUrl]);
 
   function applyOptionVisibility(
     variations: any[],
