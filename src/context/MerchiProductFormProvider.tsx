@@ -344,15 +344,25 @@ export const MerchiProductFormProvider = ({
 
   const inventoryRefreshTimer = React.useRef<any>(null);
 
+  // The product's `clientSideCalculation` attribute is authoritative: when the
+  // product carries it (a boolean), it OVERRIDES the quoteCalculationClientSide
+  // component prop. The prop is only the fallback for products that don't carry
+  // the attribute.
+  const clientSideEnabled =
+    initProduct && typeof initProduct.clientSideCalculation === 'boolean'
+      ? initProduct.clientSideCalculation
+      : quoteCalculationClientSide;
+
   // The form can fetch its own pricing-rules bundle when client-side quoting is
-  // enabled, so consumers only need to set `quoteCalculationClientSide`. A
-  // `pricingRules` prop, if supplied, overrides the fetch (lets a consumer
-  // prefetch). Until rules are available the dispatcher falls back to server.
+  // enabled, so consumers only need to set `quoteCalculationClientSide` (or the
+  // product's clientSideCalculation attribute). A `pricingRules` prop, if
+  // supplied, overrides the fetch (lets a consumer prefetch). Until rules are
+  // available the dispatcher falls back to server.
   const [fetchedPricingRules, setFetchedPricingRules] = useState<any>(null);
   const pricingRules = pricingRulesProp || fetchedPricingRules;
 
   React.useEffect(() => {
-    if (!quoteCalculationClientSide || pricingRulesProp || !initProduct?.id) {
+    if (!clientSideEnabled || pricingRulesProp || !initProduct?.id) {
       return;
     }
     let cancelled = false;
@@ -370,7 +380,7 @@ export const MerchiProductFormProvider = ({
     return () => {
       cancelled = true;
     };
-  }, [quoteCalculationClientSide, pricingRulesProp, initProduct?.id, apiUrl]);
+  }, [clientSideEnabled, pricingRulesProp, initProduct?.id, apiUrl]);
 
   function applyOptionVisibility(
     variations: any[],
@@ -516,7 +526,7 @@ export const MerchiProductFormProvider = ({
   async function getQuote() {
     const values = await getValues();
     const cleanedValues = cleanJobVariationsAndGroups(values);
-    if (quoteCalculationClientSide && pricingRules) {
+    if (clientSideEnabled && pricingRules) {
       try {
         const clientJob = applyClientQuote(cleanedValues);
         if (clientJob) {
@@ -683,7 +693,7 @@ export const MerchiProductFormProvider = ({
           control,
           draftApproveCallback,
           getQuote,
-          quoteCalculationClientSide,
+          quoteCalculationClientSide: clientSideEnabled,
           pricingRules,
           hideCost,
           hideCountry,
