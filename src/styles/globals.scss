@@ -19,7 +19,8 @@
   }
 
   fieldset.merchi-embed-form_product-group-container,
-  fieldset.merchi-embed-form_product-group-variation-container {
+  fieldset.merchi-embed-form_product-group-variation-container,
+  &_variantion-container > fieldset {
     border: none;
     margin: 0;
     padding: 0;
@@ -553,6 +554,10 @@
       font-size: 18px;
       font-weight: 800;
     }
+  }
+
+  &_product-group-input-qty-container + &_variantion-container {
+    margin-top: 1.25rem;
   }
 
   /* quantity input */
