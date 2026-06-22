@@ -72,7 +72,7 @@
     "@types/draft-js": "^0.11.4",
     "draft-js": "^0.11.7",
     "lodash": "^4.17.21",
-    "merchi_sdk_ts": "^1.12.0",
+    "merchi_sdk_ts": "^1.13.0",
     "moment-timezone": "^0.5.45",
     "react": "^18.0.0",
     "react-country-region-selector": "^3.6.1",
