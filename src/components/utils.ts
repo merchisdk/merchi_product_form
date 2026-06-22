@@ -96,7 +96,21 @@ export function buildEmptyVariationGroup(product: any) {
   const newGroup = new productEnt.buildEmptyVariationGroup();
   newGroup.groupCost = 0;
   newGroup.quantity = 0;
-  return newGroup.toJson();
+  const groupJson = newGroup.toJson();
+  // The SDK's buildVariationOption does not set `isVisible`/`available` on the
+  // built selectable options. In server mode these are repopulated by the
+  // estimate round-trip + form reset, but in client mode (no round-trip) the
+  // options would render disabled ("- disabled"). Default them here so a freshly
+  // added group is usable; option-level conditional visibility (selectedBy) is
+  // resolved on subsequent interactions in server mode.
+  (groupJson.variations || []).forEach((variation: any) => {
+    if (variation.isVisible === undefined) variation.isVisible = true;
+    (variation.selectableOptions || []).forEach((option: any) => {
+      if (option.isVisible === undefined) option.isVisible = true;
+      if (option.available === undefined) option.available = true;
+    });
+  });
+  return groupJson;
 }
 
 export function isProductSupplierMOD(product: any) {

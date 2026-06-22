@@ -34,7 +34,9 @@ interface Props {
 }
 
 function InventoryStatus({ inventoryCount = 0, inventorySufficient }: Props) {
-  const { classNameInventoryStatus, loading } = useMerchiFormContext();
+  const { classNameInventoryStatus, loading, inventoryLoading } =
+    useMerchiFormContext();
+  const isLoading = loading || inventoryLoading;
   let color = '#65cf85';
   let msg = 'In stock';
   if (!inventorySufficient) {
@@ -50,7 +52,7 @@ function InventoryStatus({ inventoryCount = 0, inventorySufficient }: Props) {
       className={`${classNameInventoryStatus} merchi-embed-form_product-group-inventory-status`}
       style={{ background: color }}
     >
-      {loading ? (
+      {isLoading ? (
         <CgSpinner fontSize='1.1rem' className='animate_spin' />
       ) : (
         <>

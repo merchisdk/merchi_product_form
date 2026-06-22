@@ -1,5 +1,5 @@
 import logo from './logo.svg';
-import MerchiProductForm from 'merchi-product-form';
+import MerchiProductForm from 'merchi_product_form';
 import './App.css';
 import { useEffect, useState } from 'react';
 
@@ -19,6 +19,9 @@ function urlSearchParams(inputParams) {
   return new URLSearchParams(params).toString();
 }
 
+const API_URL = 'https://api.merchi.co/v6/';
+const PRODUCT_ID = 118600;
+
 function App() {
   const [product, setProduct] = useState({});
   const [loading, setLoading] = useState(false);
@@ -34,7 +37,7 @@ function App() {
   });
   async function fetchProduct() {
     setLoading(true);
-    const url = `https://api.merchi.co/v6/products/118600/?${urlParmas}`;
+    const url = `${API_URL}products/${PRODUCT_ID}/?${urlParmas}`;
     try {
       const response = await fetch(url, {});
       if (!response.ok) {
@@ -67,7 +70,13 @@ function App() {
           Merchi
         </a>
       </header>
-      {product.id && <MerchiProductForm initProduct={product} />}
+      {product.id && (
+        <MerchiProductForm
+          initProduct={product}
+          apiUrl={API_URL}
+          quoteCalculationClientSide
+        />
+      )}
     </div>
   );
 }

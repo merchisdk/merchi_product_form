@@ -7,6 +7,8 @@ import { productHasGroups } from '../utils/products';
 import { getMerchiSourceJobTags } from '../components/utils';
 import { DraftTemplateData } from '../utils/types';
 import { cleanJobVariationsAndGroups } from '../components/utils';
+import { pricing } from 'merchi_sdk_ts';
+import { toSelections } from '../utils/selections';
 type FormMethods = ReturnType<typeof useForm>;
 
 interface IMerchiProductForm {
@@ -60,6 +62,8 @@ interface IMerchiProductForm {
   currentUser?: any;
   draftApproveCallback: ((job: any) => Promise<void>) | null;
   getQuote: any;
+  quoteCalculationClientSide?: boolean;
+  pricingRules?: any;
   hideCost?: boolean;
   hideCountry?: boolean;
   hideCalculatedPrice?: boolean;
@@ -74,6 +78,7 @@ interface IMerchiProductForm {
   isDraftModalOpen: boolean;
   job: any;
   loading: boolean;
+  inventoryLoading?: boolean;
   onAddToCart?: () => void;
   onBuyNow?: () => void;
   onGetQuote?: () => void;
@@ -142,6 +147,8 @@ const MerchiProductFormContext = createContext<IMerchiProductForm>({
   currentUser: {},
   draftApproveCallback: null,
   getQuote() { },
+  quoteCalculationClientSide: false,
+  pricingRules: undefined,
   hideCost: false,
   hideCountry: false,
   hideDomainName: false,
@@ -156,6 +163,7 @@ const MerchiProductFormContext = createContext<IMerchiProductForm>({
   isDraftModalOpen: false,
   job: {},
   loading: false,
+  inventoryLoading: false,
   onAddToCart() { },
   onBuyNow() { },
   onGetQuote() { },
@@ -236,6 +244,8 @@ export const MerchiProductFormProvider = ({
   isCartItem,
   initJob,
   initProduct,
+  quoteCalculationClientSide = false,
+  pricingRules: pricingRulesProp,
   onAddToCart,
   onBuyNow,
   onGetQuote,
@@ -306,6 +316,8 @@ export const MerchiProductFormProvider = ({
   isCartItem?: boolean;
   initJob?: any;
   initProduct: any;
+  quoteCalculationClientSide?: boolean;
+  pricingRules?: any;
   onAddToCart?: (job: any) => void;
   onBuyNow?: (job: any) => void;
   onGetQuote?: (job: any) => void;
@@ -324,14 +336,207 @@ export const MerchiProductFormProvider = ({
   const [draftApproveCallback, setDraftAppproveCallback] = useState<((job: any) => Promise<void>) | null>(null);
   const [job, setJob] = useState<any>(defaultJob);
   const [loading, setLoading] = useState(false);
+  const [inventoryLoading, setInventoryLoading] = useState(false);
   const { control, getValues, handleSubmit, reset } = hookForm;
   const doSubmit = onSubmit ? handleSubmit(onSubmit) : undefined;
 
   const tags = getMerchiSourceJobTags();
 
+  const inventoryRefreshTimer = React.useRef<any>(null);
+
+  // The product's `clientSideCalculation` attribute is authoritative: when the
+  // product carries it (a boolean), it OVERRIDES the quoteCalculationClientSide
+  // component prop. The prop is only the fallback for products that don't carry
+  // the attribute.
+  const clientSideEnabled =
+    initProduct && typeof initProduct.clientSideCalculation === 'boolean'
+      ? initProduct.clientSideCalculation
+      : quoteCalculationClientSide;
+
+  // The form can fetch its own pricing-rules bundle when client-side quoting is
+  // enabled, so consumers only need to set `quoteCalculationClientSide` (or the
+  // product's clientSideCalculation attribute). A `pricingRules` prop, if
+  // supplied, overrides the fetch (lets a consumer prefetch). Until rules are
+  // available the dispatcher falls back to server.
+  const [fetchedPricingRules, setFetchedPricingRules] = useState<any>(null);
+  const pricingRules = pricingRulesProp || fetchedPricingRules;
+
+  React.useEffect(() => {
+    if (!clientSideEnabled || pricingRulesProp || !initProduct?.id) {
+      return;
+    }
+    let cancelled = false;
+    (async () => {
+      try {
+        const base = apiUrl.endsWith('/') ? apiUrl : `${apiUrl}/`;
+        const res = await fetch(`${base}products/${initProduct.id}/pricing-rules/`);
+        if (!res.ok) return;
+        const rules = await res.json();
+        if (!cancelled) setFetchedPricingRules(rules);
+      } catch (e) {
+        // Best-effort: form falls back to server-side quoting on failure.
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [clientSideEnabled, pricingRulesProp, initProduct?.id, apiUrl]);
+
+  function applyOptionVisibility(
+    variations: any[],
+    visibleOptionIds: Set<number>,
+    unavailableOptionIds: Set<number>
+  ): boolean {
+    let changed = false;
+    (variations || []).forEach((variation: any) => {
+      (variation.selectableOptions || []).forEach((option: any) => {
+        // Mirror the server's per-option isVisible (selectedBy resolution).
+        const isVisible = visibleOptionIds.has(option.optionId);
+        if (option.isVisible !== isVisible) {
+          option.isVisible = isVisible;
+          changed = true;
+        }
+        // Combination-aware availability: an option is unavailable when the
+        // combination of (current inventory selections + this option) has no
+        // matching stock. Non-inventory products yield an empty set -> all
+        // available.
+        const available = !unavailableOptionIds.has(option.optionId);
+        if (option.available !== available) {
+          option.available = available;
+          changed = true;
+        }
+      });
+    });
+    return changed;
+  }
+
+  // For inventory-limited products, refresh quantity-dependent inventory
+  // (group inventoryCount/inventorySufficient) from the authoritative server in
+  // the background, debounced, and merge it through setJob (which renders
+  // without a form reset, so the viewport never jumps). The client price stays
+  // instant; the inventory badge catches up a beat later.
+  function mergeInventory(prev: any, serverJob: any) {
+    if (!prev) return prev;
+    const merged: any = {
+      ...prev,
+      inventoryCount: serverJob.inventoryCount,
+      inventorySufficient: serverJob.inventorySufficient,
+    };
+    if (Array.isArray(prev.variationsGroups) && Array.isArray(serverJob.variationsGroups)) {
+      merged.variationsGroups = prev.variationsGroups.map((g: any, i: number) => {
+        const sg = serverJob.variationsGroups[i];
+        if (!sg) return g;
+        return {
+          ...g,
+          inventoryCount: sg.inventoryCount,
+          inventorySufficient: sg.inventorySufficient,
+          matchingInventories: sg.matchingInventories,
+        };
+      });
+    }
+    return merged;
+  }
+
+  function scheduleInventoryRefresh(cleanedValues: any) {
+    if (!pricingRules || !pricingRules.needsInventory) return;
+    if (inventoryRefreshTimer.current) {
+      clearTimeout(inventoryRefreshTimer.current);
+    }
+    // Show the loading state in the inventory pills from the moment a change is
+    // made until the authoritative stock comes back (covers the debounce wait
+    // and the request). This is separate from `loading` so the instant client
+    // price never flickers to a spinner.
+    setInventoryLoading(true);
+    inventoryRefreshTimer.current = setTimeout(async () => {
+      try {
+        let data = { ...cleanedValues, product: { id: initProduct.id } };
+        if (productHasGroups(initProduct)) {
+          delete data.quantity;
+        }
+        const r = await fetchJobQuote(data, apiUrl);
+        const serverJob = r.toJson();
+        setJob((prev: any) => mergeInventory(prev, serverJob));
+      } catch (e) {
+        // Best-effort: if the inventory refresh fails the price is unaffected.
+      } finally {
+        setInventoryLoading(false);
+      }
+    }, 450);
+  }
+
+  function applyClientQuote(values: any) {
+    const selections = toSelections(values, pricingRules);
+    const result = pricing.estimateQuote(pricingRules, selections);
+    if ('unsupported' in result) return null;
+    // Visibility AND availability are scoped per container, mirroring the
+    // server: independent variations resolve against independent selections
+    // only; each group resolves against its own selections + independent.
+    // Other groups never leak in. Availability is combination-aware: an option
+    // is disabled when (current inventory selections + that option) has no
+    // matching stock.
+    const independentScope = {
+      quantity: selections.quantity,
+      fieldValues: selections.fieldValues,
+    };
+    const independentVisible = pricing.resolveVisibleOptionIds(pricingRules, independentScope);
+    const independentUnavailable = pricing.resolveUnavailableOptionIds(pricingRules, independentScope);
+    let visibilityChanged = applyOptionVisibility(
+      values.variations, independentVisible, independentUnavailable
+    );
+    if (pricingRules.hasGroups && Array.isArray(values.variationsGroups)) {
+      values.variationsGroups.forEach((g: any, i: number) => {
+        g.groupCost = result.groupCosts[i] ?? 0;
+        const groupScope = {
+          fieldValues: selections.fieldValues,
+          groups: selections.groups ? [selections.groups[i]] : [],
+        };
+        const groupVisible = pricing.resolveVisibleOptionIds(pricingRules, groupScope);
+        const groupUnavailable = pricing.resolveUnavailableOptionIds(pricingRules, groupScope);
+        if (applyOptionVisibility(g.variations, groupVisible, groupUnavailable)) {
+          visibilityChanged = true;
+        }
+      });
+    }
+    const nextJob = {
+      ...values,
+      cost: result.cost,
+      costPerUnit: result.costPerUnit,
+      taxAmount: result.taxAmount,
+      totalCost: result.totalCost,
+      currency: result.currency,
+    };
+    setJob(nextJob);
+    // Only re-seed the form when option visibility actually changed — i.e. on
+    // selection changes, not on quantity edits. Cost/group-cost updates flow
+    // through setJob without a reset. reset() makes useFieldArray remount its
+    // items, which makes the browser lose the scroll position; capture and
+    // restore it so the viewport doesn't jump when toggling a select.
+    if (visibilityChanged) {
+      const hasWindow = typeof window !== 'undefined';
+      const scrollX = hasWindow ? window.scrollX : 0;
+      const scrollY = hasWindow ? window.scrollY : 0;
+      reset(nextJob);
+      if (hasWindow && typeof window.requestAnimationFrame === 'function') {
+        window.requestAnimationFrame(() => window.scrollTo(scrollX, scrollY));
+      }
+    }
+    return nextJob;
+  }
+
   async function getQuote() {
     const values = await getValues();
     const cleanedValues = cleanJobVariationsAndGroups(values);
+    if (clientSideEnabled && pricingRules) {
+      try {
+        const clientJob = applyClientQuote(cleanedValues);
+        if (clientJob) {
+          scheduleInventoryRefresh(cleanedValues);
+          return clientJob;
+        }
+      } catch (e) {
+        // fall through to server on any client-calc error
+      }
+    }
     setLoading(true);
     let data = { ...cleanedValues, product: { id: initProduct.id } };
     if (productHasGroups(initProduct)) {
@@ -488,6 +693,8 @@ export const MerchiProductFormProvider = ({
           control,
           draftApproveCallback,
           getQuote,
+          quoteCalculationClientSide: clientSideEnabled,
+          pricingRules,
           hideCost,
           hideCountry,
           hideCalculatedPrice,
@@ -501,6 +708,7 @@ export const MerchiProductFormProvider = ({
           isDraftModalOpen,
           job,
           loading,
+          inventoryLoading,
           onAddToCart: addToCart,
           onBuyNow: buyNow,
           onGetQuote: getSubmitQuote,
