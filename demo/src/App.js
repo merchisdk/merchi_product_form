@@ -1,5 +1,5 @@
 import logo from './logo.svg';
-import MerchiProductForm from 'merchi-product-form';
+import MerchiProductForm from 'merchi_product_form';
 import './App.css';
 import { useEffect, useState } from 'react';
 
