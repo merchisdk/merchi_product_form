@@ -62,7 +62,6 @@ interface IMerchiProductForm {
   currentUser?: any;
   draftApproveCallback: ((job: any) => Promise<void>) | null;
   getQuote: any;
-  quoteCalculationClientSide?: boolean;
   pricingRules?: any;
   hideCost?: boolean;
   hideCountry?: boolean;
@@ -147,7 +146,6 @@ const MerchiProductFormContext = createContext<IMerchiProductForm>({
   currentUser: {},
   draftApproveCallback: null,
   getQuote() { },
-  quoteCalculationClientSide: false,
   pricingRules: undefined,
   hideCost: false,
   hideCountry: false,
@@ -244,7 +242,6 @@ export const MerchiProductFormProvider = ({
   isCartItem,
   initJob,
   initProduct,
-  quoteCalculationClientSide = false,
   pricingRules: pricingRulesProp,
   onAddToCart,
   onBuyNow,
@@ -316,7 +313,6 @@ export const MerchiProductFormProvider = ({
   isCartItem?: boolean;
   initJob?: any;
   initProduct: any;
-  quoteCalculationClientSide?: boolean;
   pricingRules?: any;
   onAddToCart?: (job: any) => void;
   onBuyNow?: (job: any) => void;
@@ -344,20 +340,14 @@ export const MerchiProductFormProvider = ({
 
   const inventoryRefreshTimer = React.useRef<any>(null);
 
-  // The product's `clientSideCalculation` attribute is authoritative: when the
-  // product carries it (a boolean), it OVERRIDES the quoteCalculationClientSide
-  // component prop. The prop is only the fallback for products that don't carry
-  // the attribute.
-  const clientSideEnabled =
-    initProduct && typeof initProduct.clientSideCalculation === 'boolean'
-      ? initProduct.clientSideCalculation
-      : quoteCalculationClientSide;
+  // Client-side quoting is driven solely by the product's clientSideCalculation
+  // attribute (set by the manager). It is the single source of truth.
+  const clientSideEnabled = Boolean(initProduct?.clientSideCalculation);
 
-  // The form can fetch its own pricing-rules bundle when client-side quoting is
-  // enabled, so consumers only need to set `quoteCalculationClientSide` (or the
-  // product's clientSideCalculation attribute). A `pricingRules` prop, if
-  // supplied, overrides the fetch (lets a consumer prefetch). Until rules are
-  // available the dispatcher falls back to server.
+  // When client-side quoting is enabled the form fetches its own pricing-rules
+  // bundle. A `pricingRules` prop, if supplied, overrides the fetch (lets a
+  // consumer prefetch). Until rules are available the dispatcher falls back to
+  // server.
   const [fetchedPricingRules, setFetchedPricingRules] = useState<any>(null);
   const pricingRules = pricingRulesProp || fetchedPricingRules;
 
@@ -693,7 +683,6 @@ export const MerchiProductFormProvider = ({
           control,
           draftApproveCallback,
           getQuote,
-          quoteCalculationClientSide: clientSideEnabled,
           pricingRules,
           hideCost,
           hideCountry,

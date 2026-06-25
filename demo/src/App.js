@@ -71,11 +71,7 @@ function App() {
         </a>
       </header>
       {product.id && (
-        <MerchiProductForm
-          initProduct={product}
-          apiUrl={API_URL}
-          quoteCalculationClientSide
-        />
+        <MerchiProductForm initProduct={product} apiUrl={API_URL} />
       )}
     </div>
   );
