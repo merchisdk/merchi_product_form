@@ -1,7 +1,7 @@
 'use client';
 import * as React from 'react';
 import { useController } from 'react-hook-form';
-import { variationFieldOptionCostDetail } from './utils';
+import { splitSelectedOptions, variationFieldOptionCostDetail } from './utils';
 import { useMerchiFormContext } from '../context/MerchiProductFormProvider';
 
 interface Props {
@@ -37,11 +37,7 @@ function VariationCheckBoxOrRadioOption({
   const optionCost = variationFieldOptionCostDetail(option);
   const statusText = !isVisible ? ' - disabled' : !available ? ' - insufficient stock' : '';
   const outOfStockOrCost = statusText || optionCost;
-  const activeIds = typeof field.value === 'string'
-    ? field.value.split(',')
-    : Array.isArray(field.value)
-    ? field.value.map(String)
-    : [];
+  const activeIds = splitSelectedOptions(field.value).map(String).filter(Boolean);
   const isActive = activeIds.includes(String(optionId));
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -61,7 +57,7 @@ function VariationCheckBoxOrRadioOption({
       updatedIds = [String(optionId)];
     }
 
-    field.onChange(updatedIds.join(','));
+    field.onChange(updatedIds.filter(Boolean).join(','));
 
     getQuote();
   };
