@@ -7,6 +7,7 @@ import VariationOptionImage from './VariationOptionImage';
 import VariationError from './VariationError';
 import VariationLabel from './VariationLabel';
 import { useMerchiFormContext } from '../context/MerchiProductFormProvider';
+import { splitSelectedOptions } from './utils';
 
 function determineBoolean(value: any) {
   return isBoolean(value) ? value : value === 'true' ? true : false;
@@ -43,11 +44,7 @@ function VariationFieldOptionElement({
   const { sellerProductEditable } = variationField;
   const { optionId } = option;
   const inputId = `${name}.options.id-${optionId}`;
-  const activeIds = typeof field.value === 'string'
-    ? field.value.split(',')
-    : Array.isArray(field.value)
-    ? field.value.map(String)
-    : [];
+  const activeIds = splitSelectedOptions(field.value).map(String).filter(Boolean);
   const isActive = activeIds.includes(String(optionId));
   const optionInputType = optionType(variation);
   const doClick = () => {
@@ -66,7 +63,7 @@ function VariationFieldOptionElement({
       // Radio Logic
       updatedIds = [String(optionId)];
     }
-    field.onChange(updatedIds.length ? updatedIds.join(',') : '');
+    field.onChange(updatedIds.filter(Boolean).join(','));
 
     getQuote();
   };
