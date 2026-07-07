@@ -7,7 +7,7 @@ import VariationOptionImage from './VariationOptionImage';
 import VariationError from './VariationError';
 import VariationLabel from './VariationLabel';
 import { useMerchiFormContext } from '../context/MerchiProductFormProvider';
-import { splitSelectedOptions } from './utils';
+import { sortByPosition, splitSelectedOptions } from './utils';
 
 function determineBoolean(value: any) {
   return isBoolean(value) ? value : value === 'true' ? true : false;
@@ -111,7 +111,7 @@ export const VariationSelectElements: React.FC<Props> = ({
   name,
   variation,
 }) => {
-  const { selectableOptions } = variation;
+  const { selectableOptions = [] } = variation;
   const isImage = inputType === 'image';
   return (
     <div className={isImage ? 'merchi-image-select-container' : ''}>
@@ -129,7 +129,7 @@ export const VariationSelectElements: React.FC<Props> = ({
             : 'merchi-embed-form_color-select-container'
         }
       >
-        {selectableOptions.map((option: any, index: number) => (
+        {sortByPosition(selectableOptions).map((option: any, index: number) => (
           <VariationFieldOptionElement
             key={`variation-option-${option.optionId}-${index}`}
             disabled={disabled}
