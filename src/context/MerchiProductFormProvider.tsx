@@ -339,6 +339,9 @@ export const MerchiProductFormProvider = ({
   const tags = getMerchiSourceJobTags();
 
   const inventoryRefreshTimer = React.useRef<any>(null);
+  const serverQuoteTimer = React.useRef<any>(null);
+  const quoteRequestId = React.useRef(0);
+  const SERVER_QUOTE_DEBOUNCE_MS = 1000;
 
   // Client-side quoting is driven solely by the product's clientSideCalculation
   // attribute (set by the manager). It is the single source of truth.
@@ -371,6 +374,12 @@ export const MerchiProductFormProvider = ({
       cancelled = true;
     };
   }, [clientSideEnabled, pricingRulesProp, initProduct?.id, apiUrl]);
+
+  React.useEffect(() => () => {
+    if (serverQuoteTimer.current) {
+      clearTimeout(serverQuoteTimer.current);
+    }
+  }, []);
 
   function applyOptionVisibility(
     variations: any[],
@@ -405,6 +414,94 @@ export const MerchiProductFormProvider = ({
   // the background, debounced, and merge it through setJob (which renders
   // without a form reset, so the viewport never jumps). The client price stays
   // instant; the inventory badge catches up a beat later.
+  function resetFormPreservingScroll(values: any) {
+    const hasWindow = typeof window !== 'undefined';
+    const scrollX = hasWindow ? window.scrollX : 0;
+    const scrollY = hasWindow ? window.scrollY : 0;
+    reset(values);
+    if (hasWindow && typeof window.requestAnimationFrame === 'function') {
+      window.requestAnimationFrame(() => window.scrollTo(scrollX, scrollY));
+    }
+  }
+
+  function syncOptionVisibilityFromServer(
+    currentVariations: any[],
+    serverVariations: any[]
+  ): boolean {
+    let changed = false;
+    (currentVariations || []).forEach((variation: any, vi: number) => {
+      const serverVariation = serverVariations?.[vi];
+      if (!serverVariation) return;
+      (variation.selectableOptions || []).forEach((option: any, oi: number) => {
+        const serverOption = serverVariation.selectableOptions?.[oi];
+        if (!serverOption) return;
+        if (option.isVisible !== serverOption.isVisible) {
+          option.isVisible = serverOption.isVisible;
+          changed = true;
+        }
+        if (option.available !== serverOption.available) {
+          option.available = serverOption.available;
+          changed = true;
+        }
+      });
+    });
+    return changed;
+  }
+
+  function formQuantitiesMatchRequest(
+    formValues: any,
+    requestData: any,
+    product: any
+  ): boolean {
+    if (productHasGroups(product)) {
+      const groups = requestData.variationsGroups || [];
+      return groups.every((group: any, index: number) =>
+        Number(group.quantity) === Number(formValues.variationsGroups?.[index]?.quantity)
+      );
+    }
+    return Number(requestData.quantity) === Number(formValues.quantity);
+  }
+
+  function applyServerQuote(formValues: any, serverJob: any) {
+    const cleanedFormValues = cleanJobVariationsAndGroups({ ...formValues });
+    let visibilityChanged = syncOptionVisibilityFromServer(
+      cleanedFormValues.variations,
+      serverJob.variations
+    );
+    const mergedJob: any = {
+      ...cleanedFormValues,
+      cost: serverJob.cost,
+      costPerUnit: serverJob.costPerUnit,
+      taxAmount: serverJob.taxAmount,
+      totalCost: serverJob.totalCost,
+      currency: serverJob.currency,
+      inventoryCount: serverJob.inventoryCount,
+      inventorySufficient: serverJob.inventorySufficient,
+    };
+    if (
+      Array.isArray(cleanedFormValues.variationsGroups)
+      && Array.isArray(serverJob.variationsGroups)
+    ) {
+      mergedJob.variationsGroups = cleanedFormValues.variationsGroups.map(
+        (group: any, index: number) => {
+          const serverGroup = serverJob.variationsGroups[index];
+          if (!serverGroup) return group;
+          if (syncOptionVisibilityFromServer(group.variations, serverGroup.variations)) {
+            visibilityChanged = true;
+          }
+          return {
+            ...group,
+            groupCost: serverGroup.groupCost,
+            inventoryCount: serverGroup.inventoryCount,
+            inventorySufficient: serverGroup.inventorySufficient,
+            matchingInventories: serverGroup.matchingInventories,
+          };
+        }
+      );
+    }
+    return { mergedJob, visibilityChanged };
+  }
+
   function mergeInventory(prev: any, serverJob: any) {
     if (!prev) return prev;
     const merged: any = {
@@ -502,31 +599,15 @@ export const MerchiProductFormProvider = ({
     // items, which makes the browser lose the scroll position; capture and
     // restore it so the viewport doesn't jump when toggling a select.
     if (visibilityChanged) {
-      const hasWindow = typeof window !== 'undefined';
-      const scrollX = hasWindow ? window.scrollX : 0;
-      const scrollY = hasWindow ? window.scrollY : 0;
-      reset(nextJob);
-      if (hasWindow && typeof window.requestAnimationFrame === 'function') {
-        window.requestAnimationFrame(() => window.scrollTo(scrollX, scrollY));
-      }
+      resetFormPreservingScroll(nextJob);
     }
     return nextJob;
   }
 
-  async function getQuote() {
-    const values = await getValues();
+  async function executeServerQuote(): Promise<any | null> {
+    const values = getValues();
     const cleanedValues = cleanJobVariationsAndGroups(values);
-    if (clientSideEnabled && pricingRules) {
-      try {
-        const clientJob = applyClientQuote(cleanedValues);
-        if (clientJob) {
-          scheduleInventoryRefresh(cleanedValues);
-          return clientJob;
-        }
-      } catch (e) {
-        // fall through to server on any client-calc error
-      }
-    }
+    const requestId = ++quoteRequestId.current;
     setLoading(true);
     let data = { ...cleanedValues, product: { id: initProduct.id } };
     if (productHasGroups(initProduct)) {
@@ -536,18 +617,64 @@ export const MerchiProductFormProvider = ({
     }
     try {
       const r = await fetchJobQuote(data, apiUrl);
-      const jobJson = r.toJson();
-      setJob(jobJson);
-      reset({ ...jobJson });
-      return jobJson;
+      if (requestId !== quoteRequestId.current) {
+        return null;
+      }
+      const serverJob = r.toJson();
+      const currentValues = getValues();
+      if (!formQuantitiesMatchRequest(currentValues, data, initProduct)) {
+        return null;
+      }
+      const { mergedJob, visibilityChanged } = applyServerQuote(currentValues, serverJob);
+      setJob(mergedJob);
+      // Keep the user's in-progress quantity values; only re-seed the form when
+      // option visibility changed (mirrors client-side quoting).
+      if (visibilityChanged) {
+        resetFormPreservingScroll(mergedJob);
+      }
+      return mergedJob;
     } catch (e: any) {
       const message = e.errorMessage || e.message || 'Server error';
       showAlert({ message });
       console.error(message);
       return null;
     } finally {
-      setLoading(false);
+      if (requestId === quoteRequestId.current) {
+        setLoading(false);
+      }
     }
+  }
+
+  function getQuote(options?: { immediate?: boolean }): Promise<any | null> {
+    const values = getValues();
+    const cleanedValues = cleanJobVariationsAndGroups(values);
+    if (clientSideEnabled && pricingRules) {
+      try {
+        const clientJob = applyClientQuote(cleanedValues);
+        if (clientJob) {
+          scheduleInventoryRefresh(cleanedValues);
+          return Promise.resolve(clientJob);
+        }
+      } catch (e) {
+        // fall through to server on any client-calc error
+      }
+    }
+    if (options?.immediate) {
+      if (serverQuoteTimer.current) {
+        clearTimeout(serverQuoteTimer.current);
+        serverQuoteTimer.current = null;
+      }
+      return executeServerQuote();
+    }
+    return new Promise((resolve) => {
+      if (serverQuoteTimer.current) {
+        clearTimeout(serverQuoteTimer.current);
+      }
+      serverQuoteTimer.current = setTimeout(async () => {
+        serverQuoteTimer.current = null;
+        resolve(await executeServerQuote());
+      }, SERVER_QUOTE_DEBOUNCE_MS);
+    });
   }
 
   const launchDraftApproveModal = async () => {
@@ -574,7 +701,7 @@ export const MerchiProductFormProvider = ({
   const [isDraftModalOpen, setIsDraftModalOpen] = useState(false);
   const addToCart = onAddToCart
     ? async () => {
-      const jobData = await getQuote();
+      const jobData = await getQuote({ immediate: true });
       if (!jobData) return;
       const openDraftModal = await launchDraftApproveModal();
       if (openDraftModal) {
@@ -598,7 +725,7 @@ export const MerchiProductFormProvider = ({
 
   const buyNow = onBuyNow
     ? async () => {
-      const jobData = await getQuote();
+      const jobData = await getQuote({ immediate: true });
       if (!jobData) return;
       const openDraftModal = await launchDraftApproveModal();
       if (openDraftModal) {
@@ -614,7 +741,7 @@ export const MerchiProductFormProvider = ({
     : undefined;
   const getSubmitQuote = onGetQuote
     ? async () => {
-      const jobData = await getQuote();
+      const jobData = await getQuote({ immediate: true });
       if (!jobData) return;
       const openDraftModal = await launchDraftApproveModal();
       if (openDraftModal) {
