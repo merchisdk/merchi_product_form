@@ -7,6 +7,7 @@ import VariationOptionImage from './VariationOptionImage';
 import VariationError from './VariationError';
 import VariationLabel from './VariationLabel';
 import { useMerchiFormContext } from '../context/MerchiProductFormProvider';
+import { quoteAfterFieldChange } from './quoteAfterFieldChange';
 import { sortByPosition, splitSelectedOptions } from './utils';
 
 function determineBoolean(value: any) {
@@ -63,9 +64,11 @@ function VariationFieldOptionElement({
       // Radio Logic
       updatedIds = [String(optionId)];
     }
-    field.onChange(updatedIds.filter(Boolean).join(','));
-
-    getQuote();
+    quoteAfterFieldChange(
+      field.onChange,
+      getQuote,
+      updatedIds.filter(Boolean).join(',')
+    );
   };
   return (
     <>
@@ -84,14 +87,12 @@ function VariationFieldOptionElement({
           doClick={doClick}
           isChecked={isActive}
           option={option}
-          sellerProductEditable={sellerProductEditable}
         />
       ) : (
         <VariationOptionColour
           doClick={doClick}
           isChecked={isActive}
           option={option}
-          sellerProductEditable={sellerProductEditable}
         />
       )}
     </>

@@ -9,18 +9,17 @@ interface Props {
   doClick: () => void;
   isChecked: boolean;
   option: any;
-  sellerProductEditable?: boolean;
 }
 
 function VariationOptionColour({
   doClick,
   isChecked,
   option,
-  sellerProductEditable,
 }: Props) {
   const {
     classNameOptionColour,
     classNameOptionColourContainer,
+    hideCost,
   } = useMerchiFormContext();
   const { available, colour: color, isVisible, optionId, value } = option;
   const isActive = available && isVisible;
@@ -42,7 +41,9 @@ function VariationOptionColour({
       >
         <p className='merchi-embed-form_color-select-description'>{value}</p>
       </TooltipElement>
-      {sellerProductEditable && <small className='d-block'>{optionCost}</small>}
+      {!hideCost && optionCost && (
+        <small className='d-block'>{optionCost}</small>
+      )}
     </div>
   );
 }

@@ -5,6 +5,7 @@ import VariationError from './VariationError';
 import VariationLabel from './VariationLabel';
 import { sortByPosition, variationCostDetail } from './utils';
 import { useMerchiFormContext } from '../context/MerchiProductFormProvider';
+import { quoteAfterFieldChange } from './quoteAfterFieldChange';
 
 interface Props {
   disabled?: boolean;
@@ -48,8 +49,7 @@ const VariationSelect: React.FC<Props> = ({ disabled, name, variation }) => {
         disabled={disabled}
         className={`${classNameInput} ${validationClass}`}
         onChange={(e) => {
-          field.onChange(e); // Ensure the original onChange is called
-          getQuote();
+          quoteAfterFieldChange(field.onChange, getQuote, e.target.value);
         }}
       >
         {sortByPosition(selectableOptions).map((option: any, index: number) => (
