@@ -381,6 +381,19 @@ export const MerchiProductFormProvider = ({
     }
   }, []);
 
+  function variationsHaveFieldMetadata(jobValues: any): boolean {
+    const check = (variations: any[] | undefined) =>
+      !Array.isArray(variations) ||
+      variations.every((variation) => variation?.variationField?.fieldType != null);
+    if (!check(jobValues?.variations)) return false;
+    if (Array.isArray(jobValues?.variationsGroups)) {
+      return jobValues.variationsGroups.every((group: any) =>
+        check(group?.variations)
+      );
+    }
+    return true;
+  }
+
   function applyOptionVisibility(
     variations: any[],
     visibleOptionIds: Set<number>,
@@ -416,12 +429,42 @@ export const MerchiProductFormProvider = ({
   // instant; the inventory badge catches up a beat later.
   function resetFormPreservingScroll(values: any) {
     const hasWindow = typeof window !== 'undefined';
+    const scrollParent = findScrollParent();
     const scrollX = hasWindow ? window.scrollX : 0;
     const scrollY = hasWindow ? window.scrollY : 0;
+    const parentTop = scrollParent ? scrollParent.scrollTop : 0;
+    const parentLeft = scrollParent ? scrollParent.scrollLeft : 0;
     reset(values);
     if (hasWindow && typeof window.requestAnimationFrame === 'function') {
-      window.requestAnimationFrame(() => window.scrollTo(scrollX, scrollY));
+      window.requestAnimationFrame(() => {
+        if (scrollParent) {
+          scrollParent.scrollTop = parentTop;
+          scrollParent.scrollLeft = parentLeft;
+        } else {
+          window.scrollTo(scrollX, scrollY);
+        }
+      });
     }
+  }
+
+  function findScrollParent(): HTMLElement | null {
+    if (typeof document === 'undefined') return null;
+    const active = document.activeElement as HTMLElement | null;
+    let node: HTMLElement | null = active;
+    while (node && node !== document.body) {
+      const style = window.getComputedStyle(node);
+      const canScrollY =
+        (style.overflowY === 'auto' || style.overflowY === 'scroll') &&
+        node.scrollHeight > node.clientHeight;
+      if (canScrollY) return node;
+      // Radix ScrollArea viewport
+      if (node.getAttribute('data-slot') === 'scroll-area-viewport') return node;
+      node = node.parentElement;
+    }
+    const viewport = document.querySelector(
+      '[data-slot="dialog-content"] [data-slot="scroll-area-viewport"]'
+    ) as HTMLElement | null;
+    return viewport;
   }
 
   function syncOptionVisibilityFromServer(
@@ -432,6 +475,18 @@ export const MerchiProductFormProvider = ({
     (currentVariations || []).forEach((variation: any, vi: number) => {
       const serverVariation = serverVariations?.[vi];
       if (!serverVariation) return;
+      if (serverVariation.onceOffCost !== undefined) {
+        variation.onceOffCost = serverVariation.onceOffCost;
+      }
+      if (serverVariation.unitCost !== undefined) {
+        variation.unitCost = serverVariation.unitCost;
+      }
+      if (serverVariation.unitCostTotal !== undefined) {
+        variation.unitCostTotal = serverVariation.unitCostTotal;
+      }
+      if (serverVariation.cost !== undefined) {
+        variation.cost = serverVariation.cost;
+      }
       (variation.selectableOptions || []).forEach((option: any, oi: number) => {
         const serverOption = serverVariation.selectableOptions?.[oi];
         if (!serverOption) return;
@@ -598,7 +653,9 @@ export const MerchiProductFormProvider = ({
     // through setJob without a reset. reset() makes useFieldArray remount its
     // items, which makes the browser lose the scroll position; capture and
     // restore it so the viewport doesn't jump when toggling a select.
-    if (visibilityChanged) {
+    // Never reset with variations that lost variationField — that collapses
+    // the form (DynamicVariationInput cannot render without field metadata).
+    if (visibilityChanged && variationsHaveFieldMetadata(nextJob)) {
       resetFormPreservingScroll(nextJob);
     }
     return nextJob;
@@ -629,7 +686,7 @@ export const MerchiProductFormProvider = ({
       setJob(mergedJob);
       // Keep the user's in-progress quantity values; only re-seed the form when
       // option visibility changed (mirrors client-side quoting).
-      if (visibilityChanged) {
+      if (visibilityChanged && variationsHaveFieldMetadata(mergedJob)) {
         resetFormPreservingScroll(mergedJob);
       }
       return mergedJob;

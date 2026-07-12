@@ -5,6 +5,7 @@ import { FaPlus } from 'react-icons/fa';
 
 import { useMerchiFormContext } from '../../context/MerchiProductFormProvider';
 import { buildEmptyVariationGroup } from '../utils';
+import { quoteAfterMutation } from '../quoteAfterFieldChange';
 
 interface Props {
   addGroup: (newGroup: any) => void;
@@ -24,8 +25,7 @@ function ButtonAddGroup({ addGroup, disabled }: Props) {
       color='white'
       onClick={() => {
         const newGroup = buildEmptyVariationGroup(product);
-        addGroup(newGroup);
-        getQuote();
+        quoteAfterMutation(() => addGroup(newGroup), getQuote);
       }}
       disabled={loading || disabled}
     >

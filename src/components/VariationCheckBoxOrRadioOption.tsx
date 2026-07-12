@@ -3,6 +3,7 @@ import * as React from 'react';
 import { useController } from 'react-hook-form';
 import { splitSelectedOptions, variationFieldOptionCostDetail } from './utils';
 import { useMerchiFormContext } from '../context/MerchiProductFormProvider';
+import { quoteAfterFieldChange } from './quoteAfterFieldChange';
 
 interface Props {
   disabled?: boolean;
@@ -25,7 +26,7 @@ function VariationCheckBoxOrRadioOption({
     classNameOptionLabel,
     classNameOptionSuper,
     getQuote,
-    control, // Newly added from the context
+    control,
   } = useMerchiFormContext();
   const { field } = useController({
     name: `${name}.value`,
@@ -44,7 +45,6 @@ function VariationCheckBoxOrRadioOption({
     let updatedIds = [...activeIds];
 
     if (sellerProductEditable || inputType === 'checkbox') {
-      // Checkbox Logic
       if (e.target.checked && !updatedIds.includes(String(optionId))) {
         updatedIds.push(String(optionId));
       } else if (!e.target.checked) {
@@ -53,13 +53,14 @@ function VariationCheckBoxOrRadioOption({
         );
       }
     } else if (inputType === 'radio') {
-      // Radio Logic
       updatedIds = [String(optionId)];
     }
 
-    field.onChange(updatedIds.filter(Boolean).join(','));
-
-    getQuote();
+    quoteAfterFieldChange(
+      field.onChange,
+      getQuote,
+      updatedIds.filter(Boolean).join(',')
+    );
   };
   const optionInputId = `merchi-opt-${optionId}`;
   return (

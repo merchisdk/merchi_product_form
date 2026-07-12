@@ -1,23 +1,40 @@
 import * as React from 'react';
+import { useWatch } from 'react-hook-form';
 import { variationCostDetail } from './utils';
+import { costsFromSelectedOptions } from '../utils/selectedVariationCosts';
 import { useMerchiFormContext } from '../context/MerchiProductFormProvider';
 import { CgSpinner } from 'react-icons/cg';
 import VariationFieldInputInstructions from './VariationFieldInputInstructions';
 
 interface Props {
   forceHideCost?: boolean;
+  name?: string;
   variation: any;
   variationClassName?: string;
 }
 
 function VariationLabel({
   forceHideCost,
+  name,
   variation = {},
   variationClassName,
 }: Props) {
-  const { cost, variationField, onceOffCost, unitCost } = variation;
+  const { cost, variationField = {} } = variation;
   const { instructions, sellerProductEditable } = variationField;
-  const { hideCost, loading } = useMerchiFormContext();
+  const { control, hideCost, loading } = useMerchiFormContext();
+  const watchedValue = useWatch({
+    control,
+    name: name ? `${name}.value` : 'value',
+    disabled: !name,
+  });
+  const costSource = {
+    ...variation,
+    ...costsFromSelectedOptions(
+      variation,
+      name ? watchedValue : variation.value
+    ),
+  };
+  const { onceOffCost, unitCost } = costSource;
   const hasExtraCost = onceOffCost || unitCost;
   return (
     <>
@@ -36,7 +53,7 @@ function VariationLabel({
             ''
           ) : hasExtraCost && !sellerProductEditable ? (
             <span className='merchi-embed-form_variation-cost-detail'>
-              {variationCostDetail(variation)}
+              {variationCostDetail(costSource)}
             </span>
           ) : (
             ''

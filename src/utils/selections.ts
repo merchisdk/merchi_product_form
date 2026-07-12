@@ -33,6 +33,11 @@ function parseOptionIds(value: any): number[] {
     .filter((n) => !isNaN(n));
 }
 
+function toQuantity(value: unknown): number {
+  const n = Number(value);
+  return Number.isFinite(n) ? n : 0;
+}
+
 function buildFieldValues(
   variations: any[],
   selectableByField: Record<number, boolean>
@@ -60,13 +65,13 @@ export function toSelections(formValues: any, rules: PricingRules): Selections {
     return {
       fieldValues: buildFieldValues(formValues.variations || [], selectableByField),
       groups: (formValues.variationsGroups || []).map((g: any) => ({
-        quantity: g.quantity || 0,
+        quantity: toQuantity(g.quantity),
         fieldValues: buildFieldValues(g.variations || [], selectableByField),
       })),
     };
   }
   return {
-    quantity: formValues.quantity || 0,
+    quantity: toQuantity(formValues.quantity),
     fieldValues: buildFieldValues(formValues.variations || [], selectableByField),
   };
 }

@@ -44,6 +44,28 @@ test('reads per-group quantities and variations', () => {
   });
 });
 
+test('coerces string quantities from form inputs to numbers', () => {
+  const groupRules: any = {
+    hasGroups: true,
+    fields: [],
+    groupFields: [],
+  };
+  const values = {
+    variations: [],
+    variationsGroups: [
+      { quantity: '100', variations: [] },
+      { quantity: '1', variations: [] },
+    ],
+  };
+  expect(toSelections(values, groupRules)).toEqual({
+    fieldValues: {},
+    groups: [
+      { quantity: 100, fieldValues: {} },
+      { quantity: 1, fieldValues: {} },
+    ],
+  });
+});
+
 test('empty/absent values produce empty selections', () => {
   const values = { quantity: 0, variations: [{ variationField: { id: 1 }, value: '' }] };
   expect(toSelections(values, rules)).toEqual({

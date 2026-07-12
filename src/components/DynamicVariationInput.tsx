@@ -50,9 +50,12 @@ function DynamicVariationInput({
   variation,
 }: Props) {
   const { hookForm, showAlert } = useMerchiFormContext();
-  const { variationField } = variation;
-  const { fieldType } = variationField;
+  const variationField = variation?.variationField;
+  const fieldType = variationField?.fieldType;
   const Variation = fieldMaps.get(parseInt(fieldType, 10));
+  if (!Variation || !variationField) {
+    return null;
+  }
   return (
     <>
       <input
