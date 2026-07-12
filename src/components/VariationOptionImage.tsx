@@ -48,7 +48,7 @@ function VariationOptionImage({
           <div className='image-select-title'>{option.value}</div>
         </TooltipElement>
         {!hideCost && optionCost && (
-          <small className='d-block'>{optionCost}</small>
+          <small className='merchi-embed-form_option-cost-detail'>{optionCost}</small>
         )}
       </div>
     </div>

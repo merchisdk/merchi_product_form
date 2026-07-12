@@ -355,6 +355,7 @@
           width: 11px;
           height: 11px; // Size of the checkmark
           border-radius: 100%;
+          background-color: #2a2a2a;
           position: absolute;
           top: 50%;
           left: 11px;
@@ -467,6 +468,16 @@
   }
 
   /* other */
+  &_option-cost-detail {
+    display: block;
+    color: rgb(129, 136, 155);
+    font-size: 0.75rem;
+    font-weight: 600;
+    line-height: 1.2;
+    margin-top: 0.25rem;
+    text-align: center;
+  }
+
   &_variation-cost-detail {
     display: block;
     color: rgb(129, 136, 155);
@@ -576,6 +587,48 @@
 /* **********
  END Embed from
  ********** */
+
+/* native colour picker (COLOUR_PICKER) — circle, own line under instructions */
+.merchi-input-color-container {
+  display: block;
+
+  .variation-field-instructions {
+    display: block;
+    width: 100%;
+  }
+
+  input[type='color'] {
+    display: block;
+    clear: both;
+    box-sizing: border-box;
+    width: 50px;
+    height: 50px;
+    max-width: 50px;
+    margin-top: 0.35rem;
+    padding: 0;
+    border: 4px solid #fff;
+    border-radius: 50%;
+    box-shadow: 0 2px 2px rgba(0, 0, 0, 0.1);
+    cursor: pointer;
+    overflow: hidden;
+    -webkit-appearance: none;
+    appearance: none;
+
+    &::-webkit-color-swatch-wrapper {
+      padding: 0;
+    }
+
+    &::-webkit-color-swatch {
+      border: none;
+      border-radius: 50%;
+    }
+
+    &::-moz-color-swatch {
+      border: none;
+      border-radius: 50%;
+    }
+  }
+}
 
 /* Draft js RTE styles */
 

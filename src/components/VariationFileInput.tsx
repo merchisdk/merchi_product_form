@@ -200,6 +200,7 @@ function VariationFileInput({ disabled, name, variation }: Props) {
   return (
     <div className={classNameFileUploadContainer}>
       <VariationLabel
+        name={name}
         variationClassName='merchi-embed-form_input-file'
         variation={variation}
       />

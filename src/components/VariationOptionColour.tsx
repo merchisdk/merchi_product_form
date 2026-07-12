@@ -42,7 +42,7 @@ function VariationOptionColour({
         <p className='merchi-embed-form_color-select-description'>{value}</p>
       </TooltipElement>
       {!hideCost && optionCost && (
-        <small className='d-block'>{optionCost}</small>
+        <small className='merchi-embed-form_option-cost-detail'>{optionCost}</small>
       )}
     </div>
   );

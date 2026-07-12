@@ -47,6 +47,7 @@ const VariationInput: React.FC<Props> = ({
   return (
     <div className={`${classNameInputContainer} merchi-input-${inputType}-container`}>
       <VariationLabel
+        name={name}
         variationClassName={`merchi-input-${inputType}`}
         variation={variation}
       />

@@ -3,7 +3,7 @@
   "version": "1.12.0",
   "description": "A React component for Merchi product forms",
   "main": "lib/index.js",
-  "module": "src/index.tsx",
+  "module": "lib/index.js",
   "types": "lib/index.d.ts",
   "scripts": {
     "build": "babel src --out-dir lib --extensions .ts,.tsx --source-maps inline --verbose --copy-files && yarn copy-assets && yarn compile-sass",
@@ -74,7 +74,7 @@
     "@types/draft-js": "^0.11.4",
     "draft-js": "^0.11.7",
     "lodash": "^4.17.21",
-    "merchi_sdk_ts": "^1.17.0",
+    "merchi_sdk_ts": "file:../merchi_sdk_ts",
     "moment-timezone": "^0.5.45",
     "react-dropzone": "^14.2.3",
     "react-hook-form": "^7.45.4",

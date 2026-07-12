@@ -1,6 +1,8 @@
 import { Merchi } from 'merchi_sdk_ts';
 import { formatCurrency } from '../utils/currency';
 import { ProductType } from '../utils/types';
+export { cleanFormVariationJson } from '../utils/cleanFormVariationJson';
+import { cleanFormVariationJson } from '../utils/cleanFormVariationJson';
 const pngOptionNotFound = require('../images/product-not-found.png');
 
 function renderSingleCostIndication(
@@ -428,34 +430,6 @@ export function sortByPosition(options: any[]): any[] {
     const bPosition = typeof b.position === 'number' ? b.position : 0;
     return aPosition - bPosition;
   });
-}
-
-export function cleanFormVariationJson(variation: any) {
-  let variationJson: any = null;
-  const rawJson = variation?.json;
-  if (typeof rawJson === 'string' && rawJson && rawJson !== 'undefined') {
-    try {
-      variationJson = JSON.parse(rawJson);
-    } catch {
-      variationJson = null;
-    }
-  }
-  if (!variationJson) {
-    const { json, ...rest } = variation || {};
-    variationJson = rest;
-  }
-  const cleanVariation = {
-    ...variationJson,
-    value: variation.value,
-    variationFiles: variation.variationFiles || [],
-  };
-  if (cleanVariation.id) {
-    delete cleanVariation.id;
-  }
-  if (cleanVariation.variationArrayFieldId) {
-    delete cleanVariation.variationArrayFieldId;
-  }
-  return cleanVariation;
 }
 
 export function cleanJobVariationsAndGroups(jobJson: any) {

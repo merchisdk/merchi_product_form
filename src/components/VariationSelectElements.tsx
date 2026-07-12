@@ -117,7 +117,7 @@ export const VariationSelectElements: React.FC<Props> = ({
   return (
     <div className={isImage ? 'merchi-image-select-container' : ''}>
       <VariationLabel
-        forceHideCost={true}
+        name={name}
         variationClassName={`merchi-embed-form_input${
           isImage ? '-image' : ''
         }-select`}

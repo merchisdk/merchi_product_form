@@ -40,6 +40,7 @@ const VariationSelect: React.FC<Props> = ({ disabled, name, variation }) => {
   return (
     <div className={`${classNameInputContainer} merchi-input-select-container`}>
       <VariationLabel
+        name={name}
         variationClassName='merchi-embed-form_input-select'
         variation={variation}
       />

@@ -46,15 +46,30 @@ function Variations({
   const selectedOptionIds = getSelectedOptionIds(currentVariations);
   return (
     <>
-      {fields.map((variation: any, index: number) => {
-        const current = currentVariations[index] ?? variation;
-        if (!isDynamicVariationVisible(current, selectedOptionIds)) {
+      {fields.map((fieldItem: any, index: number) => {
+        const current = currentVariations[index];
+        // Field-array items are the source of truth for variationField /
+        // selectableOptions. Watched values can omit those after a value-only
+        // update; never let that strip metadata or the input tree crashes and
+        // the form collapses.
+        const variation = {
+          ...fieldItem,
+          value: current?.value ?? fieldItem.value,
+          variationFiles: current?.variationFiles ?? fieldItem.variationFiles,
+          onceOffCost: current?.onceOffCost ?? fieldItem.onceOffCost,
+          unitCost: current?.unitCost ?? fieldItem.unitCost,
+          cost: current?.cost ?? fieldItem.cost,
+          selectableOptions:
+            current?.selectableOptions ?? fieldItem.selectableOptions,
+          variationField: fieldItem.variationField ?? current?.variationField,
+        };
+        if (!isDynamicVariationVisible(variation, selectedOptionIds)) {
           return null;
         }
         return (
           <fieldset
             className={containerClass}
-            key={variation[keyName]}
+            key={fieldItem[keyName]}
             name={`${name}[${index}]`}
           >
             <DynamicVariationInput
