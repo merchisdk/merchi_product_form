@@ -3,6 +3,13 @@ import { formatCurrency } from '../utils/currency';
 import { ProductType } from '../utils/types';
 export { cleanFormVariationJson } from '../utils/cleanFormVariationJson';
 import { cleanFormVariationJson } from '../utils/cleanFormVariationJson';
+import { defaultGroupQuantity } from '../utils/quantity';
+export {
+  defaultGroupQuantity,
+  enforceMoqPerGroup,
+  productMinimumQuantity,
+  productMoqFloor,
+} from '../utils/quantity';
 const pngOptionNotFound = require('../images/product-not-found.png');
 
 function renderSingleCostIndication(
@@ -97,7 +104,7 @@ export function buildEmptyVariationGroup(product: any) {
   productEnt.fromJson({...product}, { makeDirty: false});
   const newGroup = new productEnt.buildEmptyVariationGroup();
   newGroup.groupCost = 0;
-  newGroup.quantity = 0;
+  newGroup.quantity = defaultGroupQuantity(product);
   const groupJson = newGroup.toJson();
   // The SDK's buildVariationOption does not set `isVisible`/`available` on the
   // built selectable options. In server mode these are repopulated by the

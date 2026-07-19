@@ -7,6 +7,14 @@
   &_button {
     &-submit {
       margin: 4px !important;
+      flex: 1 1 0;
+      min-width: 0;
+      white-space: nowrap;
+      font-size: 0.8125rem;
+      font-weight: 600;
+      line-height: 1.25;
+      padding: 0.4rem 0.75rem;
+      min-height: 2.25rem;
     }
   }
 
@@ -433,34 +441,34 @@
   /* titles */
   &_input {
     &-radio {
-      font-size: 18px;
+      font-size: 12.6px;
       font-weight: 800;
       padding-bottom: 0.25rem;
     }
 
     &-checkbox {
-      font-size: 18px;
+      font-size: 12.6px;
       font-weight: 800;
       padding-bottom: 0.25rem;
 
     }
 
     &-select {
-      font-size: 18px;
+      font-size: 12.6px;
       font-weight: 800;
       padding-bottom: 0.25rem;
 
     }
 
     &-image-select {
-      font-size: 18px;
+      font-size: 12.6px;
       font-weight: 800;
       padding-bottom: 0.25rem;
 
     }
 
     &-file {
-      font-size: 18px;
+      font-size: 12.6px;
       font-weight: 800;
       padding-bottom: 0.25rem;
 
@@ -562,7 +570,7 @@
     }
 
     &-input-qty-container {
-      font-size: 18px;
+      font-size: 12.6px;
       font-weight: 800;
     }
   }
@@ -576,9 +584,8 @@
     &-container {}
 
     &-label-container {
-      font-size: 18px;
+      font-size: 12.6px;
       font-weight: 800;
-      ;
       margin-bottom: 0.5rem;
     }
   }
@@ -763,4 +770,56 @@
 
 .variation-field-instructions img {
   max-width: 100%;
+}
+
+.merchi-product-title {
+  font-size: 1.4rem;
+  font-weight: 700;
+  line-height: 1.25;
+  margin: 0 0 0.5rem;
+}
+
+.merchi-product-origin-title {
+  font-size: 0.7875rem;
+  line-height: 1.3;
+}
+
+.merchi-product-origin-title h5 {
+  font-size: inherit;
+  font-weight: 600;
+  margin: 0 0 0.25rem;
+}
+
+.input-alert-container {
+  font-size: 12.6px;
+  font-weight: 600;
+  margin-top: 0.25rem;
+}
+
+.merchi-product-buttons-submit-container {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: stretch;
+  gap: 0.5rem;
+  width: 100%;
+
+  > * {
+    flex: 1 1 0;
+    min-width: 0;
+  }
+
+  > span {
+    display: flex;
+  }
+
+  > span > .merchi-embed-form_button-submit,
+  > .merchi-embed-form_button-submit {
+    width: 100%;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    line-height: 1.25;
+    padding: 0.4rem 0.75rem;
+    min-height: 2.25rem;
+  }
 }

@@ -6,7 +6,7 @@
     "@testing-library/jest-dom": "^6.4.0",
     "@testing-library/react": "^16.1.0",
     "@testing-library/user-event": "^14.5.0",
-    "merchi_product_form": "^1.13.0",
+    "merchi_product_form": "^1.14.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-scripts": "5.0.1",

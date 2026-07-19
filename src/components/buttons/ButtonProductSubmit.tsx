@@ -9,7 +9,7 @@ interface Props {
 
 function ButtonProductSubmit({ onClick, text }: Props) {
   const {
-    classNameButtonSubmit = 'btn btn-primary merchi-embed-form_button-submit w-100',
+    classNameButtonSubmit = 'btn btn-primary merchi-embed-form_button-submit',
     job,
     loading,
     product,
