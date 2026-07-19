@@ -9,6 +9,7 @@ import { DraftTemplateData } from '../utils/types';
 import { cleanJobVariationsAndGroups } from '../components/utils';
 import { pricing } from 'merchi_sdk_ts';
 import { toSelections } from '../utils/selections';
+import { scrollToFirstFormError } from '../utils/formErrors';
 type FormMethods = ReturnType<typeof useForm>;
 
 interface IMerchiProductForm {
@@ -187,7 +188,7 @@ export const MerchiProductFormProvider = ({
   allowAddToCart,
   btnNameAddToCart,
   classNameAlertSellerEditable = 'alert alert-light',
-  classNameButtonSubmit = 'btn btn-primary w-100 merchi-embed-form_button-submit',
+  classNameButtonSubmit = 'btn btn-primary merchi-embed-form_button-submit',
   classNameButtonGroupAdd = 'btn btn-white',
   classNameButtonGroupRemove = 'btn btn-danger',
   classNameButtonsSubmitContainer = 'merchi-product-buttons-submit-container',
@@ -326,15 +327,32 @@ export const MerchiProductFormProvider = ({
   showUnitPrice?: boolean;
 }) => {
   const defaultJob = initJob || initProduct.defaultJob || {};
-  const hookForm = useForm({ defaultValues: defaultJob });
+  const hookForm = useForm({
+    defaultValues: defaultJob,
+    // Re-check rules as the user edits after the first validation attempt.
+    reValidateMode: 'onChange',
+  });
   const [client, setClient] = useState(currentUser);
   const [alert, showAlert] = useState((null as any));
   const [draftApproveCallback, setDraftAppproveCallback] = useState<((job: any) => Promise<void>) | null>(null);
   const [job, setJob] = useState<any>(defaultJob);
   const [loading, setLoading] = useState(false);
   const [inventoryLoading, setInventoryLoading] = useState(false);
-  const { control, getValues, handleSubmit, reset } = hookForm;
-  const doSubmit = onSubmit ? handleSubmit(onSubmit) : undefined;
+  const { control, getValues, handleSubmit, reset, trigger } = hookForm;
+  const doSubmit = onSubmit
+    ? handleSubmit(onSubmit, () => {
+        scrollToFirstFormError();
+      })
+    : undefined;
+
+  /** Run field rules (including MOQ) before buy / cart / quote actions. */
+  const validateForm = async (): Promise<boolean> => {
+    const valid = await trigger();
+    if (!valid) {
+      scrollToFirstFormError();
+    }
+    return valid;
+  };
 
   const tags = getMerchiSourceJobTags();
 
@@ -758,6 +776,7 @@ export const MerchiProductFormProvider = ({
   const [isDraftModalOpen, setIsDraftModalOpen] = useState(false);
   const addToCart = onAddToCart
     ? async () => {
+      if (!(await validateForm())) return;
       const jobData = await getQuote({ immediate: true });
       if (!jobData) return;
       const openDraftModal = await launchDraftApproveModal();
@@ -782,6 +801,7 @@ export const MerchiProductFormProvider = ({
 
   const buyNow = onBuyNow
     ? async () => {
+      if (!(await validateForm())) return;
       const jobData = await getQuote({ immediate: true });
       if (!jobData) return;
       const openDraftModal = await launchDraftApproveModal();
@@ -798,6 +818,7 @@ export const MerchiProductFormProvider = ({
     : undefined;
   const getSubmitQuote = onGetQuote
     ? async () => {
+      if (!(await validateForm())) return;
       const jobData = await getQuote({ immediate: true });
       if (!jobData) return;
       const openDraftModal = await launchDraftApproveModal();
