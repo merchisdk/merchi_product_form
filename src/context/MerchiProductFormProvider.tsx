@@ -6,10 +6,17 @@ import { fetchJobQuote } from '../actions/jobs';
 import { productHasGroups } from '../utils/products';
 import { getMerchiSourceJobTags } from '../components/utils';
 import { DraftTemplateData } from '../utils/types';
-import { cleanJobVariationsAndGroups } from '../components/utils';
+import {
+  buildEmptyVariationFromField,
+  cleanJobVariationsAndGroups,
+} from '../components/utils';
 import { pricing } from 'merchi_sdk_ts';
 import { toSelections } from '../utils/selections';
 import { scrollToFirstFormError } from '../utils/formErrors';
+import {
+  buildDesiredVariationsFromFields,
+  reconcileVariations,
+} from '../utils/reconcileVariations';
 type FormMethods = ReturnType<typeof useForm>;
 
 interface IMerchiProductForm {
@@ -485,42 +492,6 @@ export const MerchiProductFormProvider = ({
     return viewport;
   }
 
-  function syncOptionVisibilityFromServer(
-    currentVariations: any[],
-    serverVariations: any[]
-  ): boolean {
-    let changed = false;
-    (currentVariations || []).forEach((variation: any, vi: number) => {
-      const serverVariation = serverVariations?.[vi];
-      if (!serverVariation) return;
-      if (serverVariation.onceOffCost !== undefined) {
-        variation.onceOffCost = serverVariation.onceOffCost;
-      }
-      if (serverVariation.unitCost !== undefined) {
-        variation.unitCost = serverVariation.unitCost;
-      }
-      if (serverVariation.unitCostTotal !== undefined) {
-        variation.unitCostTotal = serverVariation.unitCostTotal;
-      }
-      if (serverVariation.cost !== undefined) {
-        variation.cost = serverVariation.cost;
-      }
-      (variation.selectableOptions || []).forEach((option: any, oi: number) => {
-        const serverOption = serverVariation.selectableOptions?.[oi];
-        if (!serverOption) return;
-        if (option.isVisible !== serverOption.isVisible) {
-          option.isVisible = serverOption.isVisible;
-          changed = true;
-        }
-        if (option.available !== serverOption.available) {
-          option.available = serverOption.available;
-          changed = true;
-        }
-      });
-    });
-    return changed;
-  }
-
   function formQuantitiesMatchRequest(
     formValues: any,
     requestData: any,
@@ -537,12 +508,18 @@ export const MerchiProductFormProvider = ({
 
   function applyServerQuote(formValues: any, serverJob: any) {
     const cleanedFormValues = cleanJobVariationsAndGroups({ ...formValues });
-    let visibilityChanged = syncOptionVisibilityFromServer(
+    // Adopt fields the server added/removed via fill_dynamic_variations, while
+    // preserving the user's in-progress values (quantity edits, selections).
+    // Match by variationField.id / optionId — index sync breaks when the
+    // conditional field list changes length or order.
+    const independentReconcile = reconcileVariations(
       cleanedFormValues.variations,
       serverJob.variations
     );
+    let visibilityChanged = independentReconcile.visibilityChanged;
     const mergedJob: any = {
       ...cleanedFormValues,
+      variations: independentReconcile.variations,
       cost: serverJob.cost,
       costPerUnit: serverJob.costPerUnit,
       taxAmount: serverJob.taxAmount,
@@ -559,11 +536,16 @@ export const MerchiProductFormProvider = ({
         (group: any, index: number) => {
           const serverGroup = serverJob.variationsGroups[index];
           if (!serverGroup) return group;
-          if (syncOptionVisibilityFromServer(group.variations, serverGroup.variations)) {
+          const groupReconcile = reconcileVariations(
+            group.variations,
+            serverGroup.variations
+          );
+          if (groupReconcile.visibilityChanged) {
             visibilityChanged = true;
           }
           return {
             ...group,
+            variations: groupReconcile.variations,
             groupCost: serverGroup.groupCost,
             inventoryCount: serverGroup.inventoryCount,
             inventorySufficient: serverGroup.inventorySufficient,
@@ -634,15 +616,35 @@ export const MerchiProductFormProvider = ({
     // Other groups never leak in. Availability is combination-aware: an option
     // is disabled when (current inventory selections + that option) has no
     // matching stock.
+    // Field membership mirrors fill_dynamic_variations: gated fields are
+    // added/removed via resolveVisibleFields + product field templates.
     const independentScope = {
       quantity: selections.quantity,
       fieldValues: selections.fieldValues,
     };
+    const independentVisibleFields = pricing.resolveVisibleFields(
+      pricingRules,
+      independentScope
+    );
+    const desiredIndependent = buildDesiredVariationsFromFields(
+      values.variations,
+      initProduct?.independentVariationFields,
+      independentVisibleFields,
+      buildEmptyVariationFromField
+    );
+    const independentReconcile = reconcileVariations(
+      values.variations,
+      desiredIndependent
+    );
+    values.variations = independentReconcile.variations;
+
     const independentVisible = pricing.resolveVisibleOptionIds(pricingRules, independentScope);
     const independentUnavailable = pricing.resolveUnavailableOptionIds(pricingRules, independentScope);
-    let visibilityChanged = applyOptionVisibility(
-      values.variations, independentVisible, independentUnavailable
-    );
+    let visibilityChanged =
+      independentReconcile.visibilityChanged ||
+      applyOptionVisibility(
+        values.variations, independentVisible, independentUnavailable
+      );
     if (pricingRules.hasGroups && Array.isArray(values.variationsGroups)) {
       values.variationsGroups.forEach((g: any, i: number) => {
         g.groupCost = result.groupCosts[i] ?? 0;
@@ -650,6 +652,23 @@ export const MerchiProductFormProvider = ({
           fieldValues: selections.fieldValues,
           groups: selections.groups ? [selections.groups[i]] : [],
         };
+        const groupVisibleFields = pricing.resolveVisibleFields(
+          pricingRules,
+          groupScope
+        );
+        // Group visibility includes independent + this group's fields; only
+        // materialise groupVariationFields into the group row.
+        const desiredGroup = buildDesiredVariationsFromFields(
+          g.variations,
+          initProduct?.groupVariationFields,
+          groupVisibleFields,
+          buildEmptyVariationFromField
+        );
+        const groupReconcile = reconcileVariations(g.variations, desiredGroup);
+        g.variations = groupReconcile.variations;
+        if (groupReconcile.visibilityChanged) {
+          visibilityChanged = true;
+        }
         const groupVisible = pricing.resolveVisibleOptionIds(pricingRules, groupScope);
         const groupUnavailable = pricing.resolveUnavailableOptionIds(pricingRules, groupScope);
         if (applyOptionVisibility(g.variations, groupVisible, groupUnavailable)) {
@@ -666,10 +685,10 @@ export const MerchiProductFormProvider = ({
       currency: result.currency,
     };
     setJob(nextJob);
-    // Only re-seed the form when option visibility actually changed — i.e. on
-    // selection changes, not on quantity edits. Cost/group-cost updates flow
-    // through setJob without a reset. reset() makes useFieldArray remount its
-    // items, which makes the browser lose the scroll position; capture and
+    // Only re-seed the form when option/field visibility actually changed —
+    // i.e. on selection changes, not on quantity edits. Cost/group-cost updates
+    // flow through setJob without a reset. reset() makes useFieldArray remount
+    // its items, which makes the browser lose the scroll position; capture and
     // restore it so the viewport doesn't jump when toggling a select.
     // Never reset with variations that lost variationField — that collapses
     // the form (DynamicVariationInput cannot render without field metadata).
