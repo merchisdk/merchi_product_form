@@ -43,7 +43,14 @@ function Variations({
   const { watch } = hookForm;
   const { fields } = useFieldArray({ control, keyName, name });
   const currentVariations: any[] = watch(name) || [];
-  const selectedOptionIds = getSelectedOptionIds(currentVariations);
+  // Group fields can be gated by independent options (and vice versa is rare).
+  // Mirror the server: group selected_options = group.variations + job.variations.
+  const independentVariations: any[] =
+    name === 'variations' ? [] : watch('variations') || [];
+  const selectedOptionIds = getSelectedOptionIds([
+    ...independentVariations,
+    ...currentVariations,
+  ]);
   return (
     <>
       {fields.map((fieldItem: any, index: number) => {
