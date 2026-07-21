@@ -2,6 +2,7 @@
 import * as React from 'react';
 import { formatCurrency } from './currency';
 import { useMerchiFormContext } from '../context/MerchiProductFormProvider';
+import { productSetupCostDetail } from './utils';
 
 interface Props {
   unitPriceText?: string;
@@ -29,10 +30,12 @@ function ProductUnitPrice({
   const productUnitPrice = formatCurrency(unitPrice || 0, currencyOptions);
   const productBestPrice = formatCurrency(bestPrice || 0, {...currencyOptions, codeBeforeSymbol: false});
   const hasPriceRange = unitPrice !== bestPrice;
+  const setupDetail = productSetupCostDetail(product);
   return (
     <span className={classNameUnitPrice}>
       {productUnitPrice} {hasPriceRange ?
       (' ⇄ ' + productBestPrice) : ''} {showUnitPrice && unitPriceText}
+      {setupDetail}
     </span>
   );
 }

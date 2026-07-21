@@ -56,6 +56,14 @@ export function variationFieldOptionCostDetail(option: any) {
   return costDetail(onceOffCost!, unitCost!, currency!);
 }
 
+/** Product-level setup fee, same "+ $X …" style as variation once-off costs. */
+export function productSetupCostDetail(product: any) {
+  const setupPrice = parseFloat(product?.setupPrice);
+  if (!setupPrice) return '';
+  const label = product.setupPerGroup ? 'setup per group' : 'setup';
+  return renderSingleCostIndication(setupPrice, product.currency, label);
+}
+
 export function splitSelectedOptions(value: any) {
   if (Array.isArray(value)) {
     return value;
