@@ -2,6 +2,7 @@
 import * as React from 'react';
 import { useController } from 'react-hook-form';
 import VariationError from './VariationError';
+import ProductUnitPrice from './ProductUnitPrice';
 import {
   enforceMoqPerGroup,
   productMinimumQuantity,
@@ -96,10 +97,11 @@ function InputGroupQuantity({ count, disabled, name }: Props) {
   return (
     <div className={classNameInputContainer}>
       <label htmlFor={inputId}>
-        Group ({count}) quantity
-        {moqPerGroup && moq > 1 ? (
-          <small>{` (MOQ of ${moq})`}</small>
-        ) : null}
+        Group ({count}) quantity{' '}
+        <small>
+          <ProductUnitPrice />
+          {moqPerGroup && moq > 1 ? ` (MOQ of ${moq})` : null}
+        </small>
       </label>
       <input
         id={inputId}
