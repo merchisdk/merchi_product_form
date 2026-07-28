@@ -32,7 +32,11 @@ export function buildLeadJobPayload(jobJson: AnyObject): AnyObject {
   return payload;
 }
 
-export async function submitLead(jobJson: AnyObject, apiUrl: string): Promise<unknown> {
+export async function submitLead(
+  jobJson: AnyObject,
+  apiUrl: string,
+  spamExtras?: { website?: string; hcaptchaToken?: string },
+): Promise<unknown> {
   const merchi = new Merchi(
     undefined,
     undefined,
@@ -46,5 +50,10 @@ export async function submitLead(jobJson: AnyObject, apiUrl: string): Promise<un
   merchiJob.fromJson(leadPayload, { makeDirty: true, arrayValueStrict: false });
 
   const formData = merchiJob.toFormData();
+  // Honeypot + captcha are not Job attributes; append as top-level form fields.
+  formData.append('website', spamExtras?.website ?? '');
+  if (spamExtras?.hcaptchaToken) {
+    formData.append('hcaptchaToken', spamExtras.hcaptchaToken);
+  }
   return merchi.authenticatedFetch('create_new_lead/', { body: formData, method: 'POST' });
 }

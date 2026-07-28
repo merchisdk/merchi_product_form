@@ -15,6 +15,8 @@ import '../styles/globals.css';
 
 interface Props {
   allowAddToCart?: boolean;
+  apiUrl?: string;
+  hcaptchaSiteKey?: string;
   classNameAlertSellerEditable?: string;
   classNameButtonSubmit?: string;
   classNameButtonGroupAdd?: string;

@@ -70,6 +70,7 @@ interface IMerchiProductForm {
   currentUser?: any;
   draftApproveCallback: ((job: any) => Promise<void>) | null;
   getQuote: any;
+  hcaptchaSiteKey?: string;
   pricingRules?: any;
   hideCost?: boolean;
   hideCountry?: boolean;
@@ -154,6 +155,7 @@ const MerchiProductFormContext = createContext<IMerchiProductForm>({
   currentUser: {},
   draftApproveCallback: null,
   getQuote() { },
+  hcaptchaSiteKey: undefined,
   pricingRules: undefined,
   hideCost: false,
   hideCountry: false,
@@ -239,6 +241,7 @@ export const MerchiProductFormProvider = ({
   classNameUnitPrice,
   children,
   currentUser,
+  hcaptchaSiteKey,
   hideCost,
   hideCountry = false,
   hideCalculatedPrice,
@@ -310,6 +313,7 @@ export const MerchiProductFormProvider = ({
   classNameUnitPrice?: string;
   children: ReactNode;
   currentUser?: any;
+  hcaptchaSiteKey?: string;
   hideCalculatedPrice?: boolean;
   hideCost?: boolean;
   hideCountry?: boolean;
@@ -907,6 +911,7 @@ export const MerchiProductFormProvider = ({
           control,
           draftApproveCallback,
           getQuote,
+          hcaptchaSiteKey,
           pricingRules,
           hideCost,
           hideCountry,
