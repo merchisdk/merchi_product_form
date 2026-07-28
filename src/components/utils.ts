@@ -56,6 +56,14 @@ export function variationFieldOptionCostDetail(option: any) {
   return costDetail(onceOffCost!, unitCost!, currency!);
 }
 
+/** Product-level setup fee, same "+ $X …" style as variation once-off costs. */
+export function productSetupCostDetail(product: any) {
+  const setupPrice = parseFloat(product?.setupPrice);
+  if (!setupPrice) return '';
+  const label = product.setupPerGroup ? 'setup per group' : 'setup';
+  return renderSingleCostIndication(setupPrice, product.currency, label);
+}
+
 export function splitSelectedOptions(value: any) {
   if (Array.isArray(value)) {
     return value;
@@ -99,6 +107,23 @@ export function allowedFileTypes(variationField: any): string {
 
 const merchi = new Merchi();
 
+function ensureVariationOptionFlags(variation: any) {
+  if (variation.isVisible === undefined) variation.isVisible = true;
+  (variation.selectableOptions || []).forEach((option: any) => {
+    if (option.isVisible === undefined) option.isVisible = true;
+    if (option.available === undefined) option.available = true;
+  });
+}
+
+/** Build a default variation JSON for a product variation field (gated fields). */
+export function buildEmptyVariationFromField(field: any) {
+  const fieldEnt = new merchi.VariationField();
+  fieldEnt.fromJson({ ...field }, { makeDirty: false });
+  const variationJson = fieldEnt.buildEmptyVariation().toJson();
+  ensureVariationOptionFlags(variationJson);
+  return variationJson;
+}
+
 export function buildEmptyVariationGroup(product: any) {
   const productEnt = new merchi.Product();
   productEnt.fromJson({...product}, { makeDirty: false});
@@ -112,13 +137,7 @@ export function buildEmptyVariationGroup(product: any) {
   // options would render disabled ("- disabled"). Default them here so a freshly
   // added group is usable; option-level conditional visibility (selectedBy) is
   // resolved on subsequent interactions in server mode.
-  (groupJson.variations || []).forEach((variation: any) => {
-    if (variation.isVisible === undefined) variation.isVisible = true;
-    (variation.selectableOptions || []).forEach((option: any) => {
-      if (option.isVisible === undefined) option.isVisible = true;
-      if (option.available === undefined) option.available = true;
-    });
-  });
+  (groupJson.variations || []).forEach(ensureVariationOptionFlags);
   return groupJson;
 }
 

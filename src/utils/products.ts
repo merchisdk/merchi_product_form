@@ -24,9 +24,15 @@ export const embedProduct = {
   },
   draftTemplates: { file: {} },
   groupBuyStatus: {},
-  groupVariationFields: { options: { linkedFile: {} }, selectedBy: {} },
+  groupVariationFields: {
+    options: { linkedFile: {}, selectedBy: {} },
+    selectedBy: {},
+  },
   images: {},
-  independentVariationFields: { options: { linkedFile: {} }, selectedBy: {} },
+  independentVariationFields: {
+    options: { linkedFile: {}, selectedBy: {} },
+    selectedBy: {},
+  },
   publicFiles: {},
 };
 
