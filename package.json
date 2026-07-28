@@ -1,6 +1,6 @@
 {
   "name": "merchi_product_form",
-  "version": "1.14.0",
+  "version": "1.15.0",
   "description": "A React component for Merchi product forms",
   "main": "lib/index.js",
   "module": "lib/index.js",
@@ -74,13 +74,14 @@
     "@types/draft-js": "^0.11.4",
     "draft-js": "^0.11.7",
     "lodash": "^4.17.21",
-    "merchi_sdk_ts": "^1.21.0",
+    "merchi_sdk_ts": "^1.24.0",
     "moment-timezone": "^0.5.45",
     "react-dropzone": "^14.2.3",
     "react-hook-form": "^7.45.4",
     "react-icons": "^4.10.1",
     "react-tooltip": "^5.23.0",
     "sass": "^1.66.1",
-    "uuid": "^9.0.0"
+    "uuid": "^9.0.0",
+    "@hcaptcha/react-hcaptcha": "^1.8.1"
   }
 }
