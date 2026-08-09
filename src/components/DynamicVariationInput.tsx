@@ -6,6 +6,7 @@ import {
   VariationRadio,
 } from './VariationCheckboxRadio';
 import VariationFileInput from './VariationFileInput';
+import VariationColourExtractInput from './VariationColourExtractInput';
 import AlertVariationSellerEditable from './AlertVariationSellerEditable';
 import VariationFieldInstructions from './VariationFieldInstructions';
 import VariationSelect from './VariationSelect';
@@ -26,6 +27,7 @@ const fieldMaps = new Map();
 fieldMaps.set(FieldType.CHECKBOX, VariationCheckbox);
 fieldMaps.set(FieldType.COLOUR_PICKER, VariationInputCoulourPicker);
 fieldMaps.set(FieldType.FILE_UPLOAD, VariationFileInput);
+fieldMaps.set(FieldType.COLOUR_EXTRACT, VariationColourExtractInput);
 fieldMaps.set(FieldType.COLOUR_SELECT, VariationSelectColour);
 fieldMaps.set(FieldType.IMAGE_SELECT, VariationSelectImage);
 fieldMaps.set(FieldType.RADIO, VariationRadio);
