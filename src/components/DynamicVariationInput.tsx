@@ -21,6 +21,7 @@ import {
   VariationSelectImage,
 } from './VariationSelectElements';
 import VariationTurnaroundTime from './VariationTurnaroundTime';
+import VariationAreaInput from './VariationAreaInput';
 import { useMerchiFormContext } from '../context/MerchiProductFormProvider';
 
 const fieldMaps = new Map();
@@ -37,6 +38,7 @@ fieldMaps.set(FieldType.TEXT_INPUT, VariationInputText);
 fieldMaps.set(FieldType.NUMBER_INPUT, VariationInputNumber);
 fieldMaps.set(FieldType.FIELD_INSTRUCTIONS, VariationFieldInstructions);
 fieldMaps.set(FieldType.TURNAROUND_TIME, VariationTurnaroundTime);
+fieldMaps.set(FieldType.AREA, VariationAreaInput);
 
 interface Props {
   disabled?: boolean;
