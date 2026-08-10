@@ -775,6 +775,21 @@ export const MerchiProductFormProvider = ({
     });
   }
 
+  // When pricing rules arrive (async fetch), re-quote so Area/other
+  // client-side costs apply without requiring another field edit.
+  const appliedClientRulesRef = React.useRef<any>(null);
+  React.useEffect(() => {
+    if (!clientSideEnabled || !pricingRules || pricingRules.unsupported) {
+      return;
+    }
+    if (appliedClientRulesRef.current === pricingRules) {
+      return;
+    }
+    appliedClientRulesRef.current = pricingRules;
+    getQuote();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [clientSideEnabled, pricingRules]);
+
   const launchDraftApproveModal = async () => {
     // if the client has drafts which have not been approved, we launch a modal to approve them
     const designData = localStorage.getItem(`productDraftTemplate-${initProduct.id}`);

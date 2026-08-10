@@ -73,3 +73,23 @@ test('empty/absent values produce empty selections', () => {
     fieldValues: { 1: { selectedOptionIds: [] } },
   });
 });
+
+test('area field value is passed through as a non-selectable string', () => {
+  const areaRules: any = {
+    hasGroups: false,
+    fields: [{ id: 14, isSelectable: false, options: [] }],
+    groupFields: [],
+  };
+  const values = {
+    quantity: 1,
+    variations: [
+      { variationField: { id: 14, fieldType: 14 }, value: '7,4' },
+    ],
+  };
+  expect(toSelections(values, areaRules)).toEqual({
+    quantity: 1,
+    fieldValues: {
+      14: { value: '7,4' },
+    },
+  });
+});
