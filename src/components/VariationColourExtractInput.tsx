@@ -2,12 +2,13 @@
 import * as React from 'react';
 import { useState } from 'react';
 import { useFieldArray } from 'react-hook-form';
-import { FaTimes, FaTrash } from 'react-icons/fa';
+import { FaPlus, FaTimes, FaTrash } from 'react-icons/fa';
 import { CgSpinner } from 'react-icons/cg';
 import DropzoneInput from './DropzoneInput';
 import InputHiddenStatic from './InputHiddenStatic';
 import VariationError from './VariationError';
 import VariationLabel from './VariationLabel';
+import { variationFieldOptionCostDetail } from './utils';
 import { useMerchiFormContext } from '../context/MerchiProductFormProvider';
 
 interface Props {
@@ -21,6 +22,7 @@ function VariationColourExtractInput({ disabled, name, variation }: Props) {
     apiUrl,
     classNameFileUploadContainer,
     control,
+    hideCost,
     hookForm,
   } = useMerchiFormContext();
   const { setValue, watch } = hookForm;
@@ -31,16 +33,42 @@ function VariationColourExtractInput({ disabled, name, variation }: Props) {
     name: filesName,
   });
   const [extracting, setExtracting] = useState(false);
+  const [addingColour, setAddingColour] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const variationField = variation.variationField || {};
   const fieldId = variationField.id;
   const selectedOptions = watch(`${name}.selectedOptions`) || [];
+  const maxColours =
+    Number(variationField.maxColours) > 0 ? Number(variationField.maxColours) : 4;
+  const canAddColour = selectedOptions.length < maxColours;
+
+  const normaliseExtractedOption = (option: any) => {
+    const onceOffCost = option.onceOffCost ?? option.variationCost ?? 0;
+    const unitCost = option.unitCost ?? option.variationUnitCost ?? 0;
+    const id = option.id ?? option.optionId;
+    return {
+      ...option,
+      id,
+      optionId: option.optionId ?? id,
+      onceOffCost,
+      unitCost,
+      variationCost: option.variationCost ?? onceOffCost,
+      variationUnitCost: option.variationUnitCost ?? unitCost,
+      currency: option.currency || variationField.currency || variation.currency,
+      colour: option.colour || option.value || '',
+      value: option.value || option.colour || '',
+    };
+  };
 
   const syncSelectedValue = (options: any[]) => {
-    setValue(`${name}.selectedOptions`, options, { shouldDirty: true });
+    const normalised = (options || []).map(normaliseExtractedOption);
+    setValue(`${name}.selectedOptions`, normalised, { shouldDirty: true });
     setValue(
       `${name}.value`,
-      options.map((option) => option.id).filter(Boolean).join(','),
+      normalised
+        .map((option) => option.id ?? option.optionId)
+        .filter(Boolean)
+        .join(','),
       { shouldDirty: true }
     );
   };
@@ -93,6 +121,43 @@ function VariationColourExtractInput({ disabled, name, variation }: Props) {
     syncSelectedValue(next);
   };
 
+  const handleAddColour = async () => {
+    if (!fieldId) {
+      setError('Unable to add colour for this field.');
+      return;
+    }
+    if (!canAddColour) {
+      setError(`This field allows at most ${maxColours} colours.`);
+      return;
+    }
+    setAddingColour(true);
+    setError(null);
+    try {
+      const base = apiUrl.endsWith('/') ? apiUrl : `${apiUrl}/`;
+      const response = await fetch(
+        `${base}variation-fields/${fieldId}/colour-options/`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            colour: '#000000',
+            selectedCount: selectedOptions.length,
+            enforceMax: true,
+          }),
+        }
+      );
+      if (!response.ok) {
+        throw new Error(`Add colour failed (${response.status})`);
+      }
+      const data = await response.json();
+      syncSelectedValue([...(selectedOptions || []), data.option]);
+    } catch (err: any) {
+      setError(err?.message || 'Failed to add colour.');
+    } finally {
+      setAddingColour(false);
+    }
+  };
+
   return (
     <div className={classNameFileUploadContainer}>
       <VariationLabel
@@ -142,11 +207,30 @@ function VariationColourExtractInput({ disabled, name, variation }: Props) {
           </div>
         ))}
       </div>
-      {selectedOptions.length > 0 && (
-        <div className='mt-3'>
-          <div className='mb-2 font-weight-bold'>Extracted colours</div>
+      <div className='mt-3'>
+        <div className='d-flex align-items-center justify-content-between mb-2'>
+          <div className='font-weight-bold'>Colours</div>
+          {!disabled && (
+            <button
+              type='button'
+              className='btn btn-sm btn-outline-secondary'
+              disabled={!canAddColour || addingColour || extracting}
+              onClick={handleAddColour}
+            >
+              {addingColour ? (
+                <CgSpinner className='animate_spin' />
+              ) : (
+                <FaPlus className='mr-1' />
+              )}
+              Add colour
+            </button>
+          )}
+        </div>
+        {selectedOptions.length > 0 ? (
           <div className='d-flex flex-wrap'>
-            {selectedOptions.map((option: any, index: number) => (
+            {selectedOptions.map((option: any, index: number) => {
+              const optionCost = variationFieldOptionCostDetail(option);
+              return (
               <div
                 key={option.id || index}
                 className='d-inline-flex align-items-center border rounded px-2 py-1 mr-2 mb-2'
@@ -170,6 +254,11 @@ function VariationColourExtractInput({ disabled, name, variation }: Props) {
                 <span className='mx-2 text-uppercase' style={{ fontFamily: 'monospace' }}>
                   {option.colour || option.value}
                 </span>
+                {!hideCost && optionCost && (
+                  <small className='merchi-embed-form_option-cost-detail mr-1'>
+                    {optionCost}
+                  </small>
+                )}
                 {!disabled && (
                   <button
                     type='button'
@@ -191,11 +280,24 @@ function VariationColourExtractInput({ disabled, name, variation }: Props) {
                   name={`${name}.selectedOptions[${index}].value`}
                   value={option.value || option.colour || ''}
                 />
+                <InputHiddenStatic
+                  name={`${name}.selectedOptions[${index}].onceOffCost`}
+                  value={option.onceOffCost ?? option.variationCost ?? 0}
+                />
+                <InputHiddenStatic
+                  name={`${name}.selectedOptions[${index}].unitCost`}
+                  value={option.unitCost ?? option.variationUnitCost ?? 0}
+                />
               </div>
-            ))}
+              );
+            })}
           </div>
-        </div>
-      )}
+        ) : (
+          <div className='text-muted small'>
+            Upload artwork to extract colours, or add colours manually.
+          </div>
+        )}
+      </div>
     </div>
   );
 }

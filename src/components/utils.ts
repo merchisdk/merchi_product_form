@@ -19,9 +19,10 @@ function renderSingleCostIndication(
 ) {
   let currencyOptions = { currency: currencyCode, showCodeIfNoSymbol: false };
   let costString = '';
+  const amount = parseFloat(cost);
 
-  if (cost) {
-    costString = formatCurrency(parseFloat(cost), currencyOptions);
+  if (Number.isFinite(amount) && amount > 0) {
+    costString = formatCurrency(amount, currencyOptions);
     costString = ' + ' + costString + ' ' + costTypeString;
   }
   return costString;
@@ -52,7 +53,10 @@ export function variationCostDetail(variation: any) {
 }
 
 export function variationFieldOptionCostDetail(option: any) {
-  const { currency, onceOffCost, unitCost } = option;
+  const { currency } = option;
+  // Field options use variationCost; selectable VariationOptions use onceOffCost.
+  const onceOffCost = option.onceOffCost ?? option.variationCost;
+  const unitCost = option.unitCost ?? option.variationUnitCost;
   return costDetail(onceOffCost!, unitCost!, currency!);
 }
 

@@ -4,17 +4,19 @@ import { useEffect, useMemo, useState } from 'react';
 import { useController } from 'react-hook-form';
 import VariationError from './VariationError';
 import VariationLabel from './VariationLabel';
+import { quoteAfterFieldChange } from './quoteAfterFieldChange';
 import { useMerchiFormContext } from '../context/MerchiProductFormProvider';
 import {
   AreaUnit,
   DisplayModality,
   clampWithAspectRatio,
+  defaultModalityForAreaUnit,
   displayToMm,
   formatAreaSummary,
   formatAreaValue,
-  localePrefersImperial,
   mmToDisplay,
   parseAreaValue,
+  stepInDisplayUnit,
   unitLabel,
 } from '../utils/area';
 
@@ -24,11 +26,19 @@ interface Props {
   variation: any;
 }
 
+function formatDisplayValue(value: number | ''): string {
+  if (value === '') return '—';
+  const n = Number(value);
+  if (!Number.isFinite(n)) return '—';
+  return String(Number(n.toFixed(4)));
+}
+
 function VariationAreaInput({ disabled, name, variation }: Props) {
   const {
     classNameInputContainer,
     classNameInput,
     control,
+    getQuote,
   } = useMerchiFormContext();
   const variationField = variation.variationField || {};
   const areaUnit = (variationField.areaUnit || 'mm') as AreaUnit;
@@ -60,7 +70,7 @@ function VariationAreaInput({ disabled, name, variation }: Props) {
   });
 
   const [modality, setModality] = useState<DisplayModality>(() =>
-    localePrefersImperial() ? 'imperial' : 'metric'
+    defaultModalityForAreaUnit(areaUnit)
   );
 
   const parsed = parseAreaValue(field.value);
@@ -125,15 +135,15 @@ function VariationAreaInput({ disabled, name, variation }: Props) {
       w = clamped.widthMm;
     }
     if (!Number.isFinite(h) || !Number.isFinite(w) || h <= 0 || w <= 0) {
-      field.onChange('');
+      quoteAfterFieldChange(field.onChange, getQuote, '');
       return;
     }
-    field.onChange(formatAreaValue(h, w));
+    quoteAfterFieldChange(field.onChange, getQuote, formatAreaValue(h, w));
   };
 
   const updateHeight = (raw: string) => {
     if (raw === '') {
-      field.onChange('');
+      quoteAfterFieldChange(field.onChange, getQuote, '');
       return;
     }
     const n = Number(raw);
@@ -144,7 +154,7 @@ function VariationAreaInput({ disabled, name, variation }: Props) {
 
   const updateWidth = (raw: string) => {
     if (raw === '') {
-      field.onChange('');
+      quoteAfterFieldChange(field.onChange, getQuote, '');
       return;
     }
     const n = Number(raw);
@@ -173,46 +183,64 @@ function VariationAreaInput({ disabled, name, variation }: Props) {
     maxDisp?: number
   ) => {
     const id = `${name}-${dim}`;
-    const common = {
-      id,
-      'aria-label': `${variationField.name} ${dim}`,
-      disabled,
-      className: `${classNameInput} ${validationClass}`,
-      step:
-        modality === 'imperial'
-          ? 0.125
-          : areaUnit === 'm'
-            ? 0.001
-            : areaUnit === 'cm'
-              ? 0.1
-              : 1,
-    };
+    const step = stepInDisplayUnit(
+      variationField.areaStep ?? variationField.area_step,
+      modality,
+      areaUnit
+    );
     if (inputType === 'slider') {
       const min = minDisp ?? 0;
       const max = maxDisp ?? Math.max(min + 1, Number(displayValue) || min + 1);
       return (
         <input
-          {...common}
+          id={id}
           type="range"
+          aria-label={`${variationField.name} ${dim}`}
+          disabled={disabled}
+          className={`merchi-area-slider ${validationClass}`}
           value={displayValue === '' ? min : displayValue}
           onChange={(e) => onChange(e.target.value)}
           min={min}
           max={max}
+          step={step}
         />
       );
     }
     return (
       <input
-        {...common}
+        id={id}
         type="number"
+        aria-label={`${variationField.name} ${dim}`}
+        disabled={disabled}
+        className={`${classNameInput} ${validationClass}`}
         value={displayValue === '' ? '' : displayValue}
         onChange={(e) => onChange(e.target.value)}
         min={minDisp}
         max={maxDisp}
+        step={step}
         placeholder={variationField.placeholder || ''}
       />
     );
   };
+
+  const renderDimension = (
+    dim: 'height' | 'width',
+    title: string,
+    displayValue: number | '',
+    onChange: (raw: string) => void,
+    minDisp?: number,
+    maxDisp?: number
+  ) => (
+    <div className="merchi-area-dimension-row" key={dim}>
+      <label className="merchi-area-dimension-label" htmlFor={`${name}-${dim}`}>
+        <span className="merchi-area-dimension-name">{title}</span>
+        <span className="merchi-area-dimension-meta">
+          {formatDisplayValue(displayValue)} {label}
+        </span>
+      </label>
+      {renderControl(dim, displayValue, onChange, minDisp, maxDisp)}
+    </div>
+  );
 
   return (
     <div className={`${classNameInputContainer} merchi-input-area-container`}>
@@ -220,66 +248,66 @@ function VariationAreaInput({ disabled, name, variation }: Props) {
         name={name}
         variationClassName="merchi-input-area"
         variation={variation}
+        valueSummary={summary}
       />
-      <div
-        className="merchi-area-modality-toggle"
-        style={{ display: 'flex', gap: 8, marginBottom: 8 }}
-      >
-        <button
-          type="button"
-          disabled={disabled}
-          onClick={() => setModality('metric')}
-          style={{ fontWeight: modality === 'metric' ? 700 : 400 }}
+      <div className="merchi-area-modality-toggle">
+        <span
+          className={
+            modality === 'metric'
+              ? 'merchi-area-modality-label is-active'
+              : 'merchi-area-modality-label'
+          }
         >
           Metric
-        </button>
+        </span>
         <button
           type="button"
+          role="switch"
+          aria-checked={modality === 'imperial'}
+          aria-label="Use imperial units"
           disabled={disabled}
-          onClick={() => setModality('imperial')}
-          style={{ fontWeight: modality === 'imperial' ? 700 : 400 }}
+          className={
+            modality === 'imperial'
+              ? 'merchi-area-modality-switch is-on'
+              : 'merchi-area-modality-switch'
+          }
+          onClick={() =>
+            setModality(modality === 'metric' ? 'imperial' : 'metric')
+          }
+        >
+          <span className="merchi-area-modality-switch-thumb" />
+        </button>
+        <span
+          className={
+            modality === 'imperial'
+              ? 'merchi-area-modality-label is-active'
+              : 'merchi-area-modality-label'
+          }
         >
           Imperial
-        </button>
+        </span>
         {aspectLocked ? (
-          <span style={{ marginLeft: 'auto', fontSize: 12, opacity: 0.75 }}>
-            Aspect ratio locked
-          </span>
+          <span className="merchi-area-aspect-lock">Aspect ratio locked</span>
         ) : null}
       </div>
-      <div
-        className="merchi-area-dimensions"
-        style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}
-      >
-        <label style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-          <span>Height ({label})</span>
-          {renderControl(
-            'height',
-            heightDisplay === '' ? '' : Number(heightDisplay),
-            updateHeight,
-            heightMinDisp,
-            heightMaxDisp
-          )}
-        </label>
-        <label style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-          <span>Width ({label})</span>
-          {renderControl(
-            'width',
-            widthDisplay === '' ? '' : Number(widthDisplay),
-            updateWidth,
-            widthMinDisp,
-            widthMaxDisp
-          )}
-        </label>
+      <div className="merchi-area-dimensions">
+        {renderDimension(
+          'width',
+          'Width',
+          widthDisplay === '' ? '' : Number(widthDisplay),
+          updateWidth,
+          widthMinDisp,
+          widthMaxDisp
+        )}
+        {renderDimension(
+          'height',
+          'Height',
+          heightDisplay === '' ? '' : Number(heightDisplay),
+          updateHeight,
+          heightMinDisp,
+          heightMaxDisp
+        )}
       </div>
-      {summary ? (
-        <div
-          className="merchi-area-summary"
-          style={{ marginTop: 8, fontSize: 13 }}
-        >
-          {summary}
-        </div>
-      ) : null}
       <VariationError name={name} />
     </div>
   );
