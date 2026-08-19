@@ -1004,3 +1004,60 @@
     border-color: #dc3545;
   }
 }
+
+.merchi-price-matrix {
+  margin: 0.75rem 0;
+  overflow-x: auto;
+}
+
+.merchi-price-matrix_caption {
+  caption-side: top;
+  text-align: left;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  margin-bottom: 0.4rem;
+}
+
+.merchi-price-matrix_table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8125rem;
+}
+
+.merchi-price-matrix_table th,
+.merchi-price-matrix_table td {
+  padding: 0.45rem 0.65rem;
+  text-align: center;
+  border: 1px solid rgb(227, 228, 247);
+  white-space: nowrap;
+}
+
+.merchi-price-matrix_corner,
+.merchi-price-matrix_row-label {
+  text-align: left;
+  font-weight: 600;
+  background: #f7f7fb;
+}
+
+.merchi-price-matrix_th {
+  font-weight: 600;
+  background: #f7f7fb;
+}
+
+.merchi-price-matrix_col-active {
+  background: #eef4ff;
+  font-weight: 600;
+}
+
+.merchi-price-matrix_band {
+  appearance: none;
+  background: none;
+  border: 0;
+  color: inherit;
+  cursor: pointer;
+  font: inherit;
+  font-weight: inherit;
+  padding: 0;
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+}

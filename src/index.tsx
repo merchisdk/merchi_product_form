@@ -7,6 +7,7 @@ import MerchiProductForm from './components/MerchiProductForm';
 import ProductButtonsSubmit from './components/ProductButtonsSubmit';
 import ProductFeatureDeadline from './components/ProductFeatureDeadline';
 import ProductGroupBuyStatus from './components/ProductGroupBuyStatus';
+import ProductPriceMatrix from './components/ProductPriceMatrix';
 import ProductTotalCost from './components/ProductTotalCost';
 import ProductTitle from './components/ProductTitle';
 import { productFeatureImageUrl } from './utils/products';
@@ -58,6 +59,7 @@ export {
   ProductFeatureDeadline,
   productFeatureImageUrl,
   ProductGroupBuyStatus,
+  ProductPriceMatrix,
   ProductTitle,
   ProductTotalCost,
   VariationCheckBoxOrRadioOption,

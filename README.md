@@ -132,6 +132,7 @@ The `MerchiProductForm` component accepts the following props:
 | `showCurrencyCode` | `boolean?` | `false` | Show the currency code |
 | `showFeatureDeadline` | `boolean?` | `false` | Will display a countdown timer |
 | `showGroupBuyStatus` | `boolean?` | `false` | Will show the group buy status bar |
+| `showPriceMatrix` | `boolean?` | `true` | Show a quantity-break price table when the product has bulk discounts |
 | `showUnitPrice` | `boolean?` | `false` | Show the unit price to the user |
 
 ## CSS Class Props
@@ -180,6 +181,7 @@ The component provides extensive CSS class customization options:
 | `classNameProductTotal` | `string?` | `'merchi-embed-form_summary-product-cost'` | Class for the product total cost element |
 | `classNameQuantityLabelContainer` | `string?` | `'merchi-embed-form_quantity-label-container'` | Class for the product quantity label element |
 | `classNameUnitPrice` | `string?` | `undefined` | Class for the unit price element |
+| `classNamePriceMatrix` | `string?` | `'merchi-price-matrix'` | Class for the bulk price table container |
 
 ## Styling
 
@@ -196,6 +198,20 @@ The component provides extensive customization options through class name props.
 ```
 
 ## Advanced Usage
+
+### Bulk price table
+
+`ProductPriceMatrix` is included on the default form when the product has quantity-break discounts. Hosts that compose the form themselves can place it anywhere inside `MerchiProductFormProvider`:
+
+```jsx
+import { MerchiProductFormProvider, ProductPriceMatrix } from 'merchi_product_form';
+
+<MerchiProductFormProvider initProduct={product}>
+  <ProductPriceMatrix />
+</MerchiProductFormProvider>
+```
+
+Pass `showPriceMatrix={false}` to hide it. Clicking a quantity band sets the form quantity (non-group products only).
 
 ### Working with Product Variations
 

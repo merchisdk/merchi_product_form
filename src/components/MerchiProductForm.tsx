@@ -11,6 +11,7 @@ import { isProductFileDownload, isProductLeadForm, isProductSupplierMOD } from '
 import FormLead from './FormLead';
 import ProductFeatureDeadline from './ProductFeatureDeadline';
 import ProductGroupBuyStatus from './ProductGroupBuyStatus';
+import ProductPriceMatrix from './ProductPriceMatrix';
 import '../styles/globals.css';
 
 interface Props {
@@ -55,6 +56,7 @@ interface Props {
   classNameProductTotal?: string;
   classNameQuantityLabelContainer?: string;
   classNameUnitPrice?: string;
+  classNamePriceMatrix?: string;
   hideCalculatedPrice?: boolean;
   hideQuantityField?: boolean;
   hideSubmitButtons?: boolean;
@@ -68,6 +70,7 @@ interface Props {
   onSubmit?: (job: any) => void;
   showFeatureDeadline?: boolean;
   showGroupBuyStatus?: boolean;
+  showPriceMatrix?: boolean;
 }
 
 function MerchiProductForm(props: Props) {
@@ -109,6 +112,7 @@ function MerchiProductForm(props: Props) {
         <Variations />
         {!groupsFirst && <VariationsGroups />}
       </div>
+      <ProductPriceMatrix />
       <ProductTotalCost />
       {!hideSubmitButtons && <ProductButtonsSubmit />}
     </MerchiProductFormProvider>

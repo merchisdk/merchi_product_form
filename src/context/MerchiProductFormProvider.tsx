@@ -66,6 +66,7 @@ interface IMerchiProductForm {
   classNameProductTotal?: string;
   classNameQuantityLabelContainer?: string;
   classNameUnitPrice?: string;
+  classNamePriceMatrix?: string;
   control: any;
   currentUser?: any;
   draftApproveCallback: ((job: any) => Promise<void>) | null;
@@ -102,6 +103,7 @@ interface IMerchiProductForm {
   showCurrencyCode?: boolean;
   showFeatureDeadline?: boolean;
   showGroupBuyStatus?: boolean;
+  showPriceMatrix?: boolean;
   showUnitPrice?: boolean;
 }
 
@@ -151,6 +153,7 @@ const MerchiProductFormContext = createContext<IMerchiProductForm>({
   classNameProductTotal: undefined,
   classNameQuantityLabelContainer: undefined,
   classNameUnitPrice: undefined,
+  classNamePriceMatrix: undefined,
   control: {},
   currentUser: {},
   draftApproveCallback: null,
@@ -187,6 +190,7 @@ const MerchiProductFormContext = createContext<IMerchiProductForm>({
   showCurrencyCode: false,
   showFeatureDeadline: false,
   showGroupBuyStatus: false,
+  showPriceMatrix: true,
   showUnitPrice: false,
 });
 
@@ -239,6 +243,7 @@ export const MerchiProductFormProvider = ({
   classNameProductTotalContainer = 'merchi-embed-form_summary-product-cost-container',
   classNameQuantityLabelContainer = 'merchi-embed-form_quantity-label-container',
   classNameUnitPrice,
+  classNamePriceMatrix,
   children,
   currentUser,
   hcaptchaSiteKey,
@@ -263,6 +268,7 @@ export const MerchiProductFormProvider = ({
   showCurrencyCode,
   showFeatureDeadline,
   showGroupBuyStatus,
+  showPriceMatrix = true,
   showUnitPrice,
 }: {
   apiUrl?: string;
@@ -311,6 +317,7 @@ export const MerchiProductFormProvider = ({
   classNameOptionColourContainer?: string;
   classNameQuantityLabelContainer?: string;
   classNameUnitPrice?: string;
+  classNamePriceMatrix?: string;
   children: ReactNode;
   currentUser?: any;
   hcaptchaSiteKey?: string;
@@ -335,6 +342,7 @@ export const MerchiProductFormProvider = ({
   showCurrencyCode?: boolean;
   showFeatureDeadline?: boolean;
   showGroupBuyStatus?: boolean;
+  showPriceMatrix?: boolean;
   showUnitPrice?: boolean;
 }) => {
   const defaultJob = initJob || initProduct.defaultJob || {};
@@ -376,15 +384,17 @@ export const MerchiProductFormProvider = ({
   // attribute (set by the manager). It is the single source of truth.
   const clientSideEnabled = Boolean(initProduct?.clientSideCalculation);
 
-  // When client-side quoting is enabled the form fetches its own pricing-rules
-  // bundle. A `pricingRules` prop, if supplied, overrides the fetch (lets a
-  // consumer prefetch). Until rules are available the dispatcher falls back to
-  // server.
+  // Fetch pricing-rules for client-side quoting and the bulk price table.
+  // A `pricingRules` prop, if supplied, overrides the fetch.
   const [fetchedPricingRules, setFetchedPricingRules] = useState<any>(null);
   const pricingRules = pricingRulesProp || fetchedPricingRules;
 
   React.useEffect(() => {
-    if (!clientSideEnabled || pricingRulesProp || !initProduct?.id) {
+    if (
+      (!clientSideEnabled && !showPriceMatrix) ||
+      pricingRulesProp ||
+      !initProduct?.id
+    ) {
       return;
     }
     let cancelled = false;
@@ -402,7 +412,7 @@ export const MerchiProductFormProvider = ({
     return () => {
       cancelled = true;
     };
-  }, [clientSideEnabled, pricingRulesProp, initProduct?.id, apiUrl]);
+  }, [clientSideEnabled, showPriceMatrix, pricingRulesProp, initProduct?.id, apiUrl]);
 
   React.useEffect(() => () => {
     if (serverQuoteTimer.current) {
@@ -922,6 +932,7 @@ export const MerchiProductFormProvider = ({
           classNameProductTotal,
           classNameQuantityLabelContainer,
           classNameUnitPrice,
+          classNamePriceMatrix,
           client,
           control,
           draftApproveCallback,
@@ -957,6 +968,7 @@ export const MerchiProductFormProvider = ({
           showCurrencyCode,
           showFeatureDeadline,
           showGroupBuyStatus,
+          showPriceMatrix,
           showUnitPrice,
         } as any
       }
