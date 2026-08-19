@@ -1,3 +1,26 @@
+import { productMoqFloor } from './quantity';
+
+function buildPriceMatrixFn():
+  | ((rules: any, selections?: any, options?: any) => PriceMatrixData | null)
+  | null {
+  try {
+    const { pricing } = require('merchi_sdk_ts') as {
+      pricing?: {
+        buildPriceMatrix?: (
+          rules: any,
+          selections?: any,
+          options?: any
+        ) => PriceMatrixData | null;
+      };
+    };
+    return typeof pricing?.buildPriceMatrix === 'function'
+      ? pricing.buildPriceMatrix
+      : null;
+  } catch {
+    return null;
+  }
+}
+
 export interface PriceMatrixBand {
   quantity: number;
   upperLimit: number | null;
@@ -13,7 +36,7 @@ export interface PriceMatrixCell {
   totalCost: number;
 }
 
-export interface PriceMatrix {
+export interface PriceMatrixData {
   currency: string;
   taxPercent: number;
   bands: PriceMatrixBand[];
@@ -93,10 +116,43 @@ export function currentOrderQuantity(job: any, product: any): number {
   return Number.isFinite(n) ? n : 0;
 }
 
-export function activeBandIndex(matrix: PriceMatrix, quantity: number): number {
+export function activeBandIndex(matrix: PriceMatrixData, quantity: number): number {
   if (!matrix.bands.length || quantity < matrix.bands[0].quantity) return -1;
   for (let i = matrix.bands.length - 1; i >= 0; i--) {
     if (quantity >= matrix.bands[i].quantity) return i;
   }
   return -1;
+}
+
+export interface ResolvePriceMatrixOptions {
+  matrix?: PriceMatrixData | null;
+  rules?: PricingRulesLike | null;
+  product?: any;
+  selections?: { quantity?: number; fieldValues?: Record<number, any>; groups?: any[] };
+  minQuantity?: number;
+  buildPriceMatrix?: (
+    rules: any,
+    selections?: any,
+    options?: any
+  ) => PriceMatrixData | null;
+}
+
+/** Build or pass through a price table. No form context required. */
+export function resolvePriceMatrix(
+  options: ResolvePriceMatrixOptions = {}
+): PriceMatrixData | null {
+  if (options.matrix?.bands?.length) return options.matrix;
+  const buildPriceMatrix = options.buildPriceMatrix || buildPriceMatrixFn();
+  if (!buildPriceMatrix) return null;
+  const rules = resolvePricingRules(options.rules, options.product);
+  if (!rules) return null;
+  const minQuantity =
+    options.minQuantity != null
+      ? options.minQuantity
+      : productMoqFloor(options.product);
+  return buildPriceMatrix(
+    rules,
+    options.selections || { fieldValues: {} },
+    { minQuantity }
+  );
 }

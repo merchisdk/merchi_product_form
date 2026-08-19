@@ -2,6 +2,7 @@ import {
   activeBandIndex,
   currentOrderQuantity,
   pricingRulesFromProduct,
+  resolvePriceMatrix,
   resolvePricingRules,
 } from './priceMatrix';
 
@@ -87,4 +88,45 @@ test('activeBandIndex highlights the highest matching break', () => {
   expect(activeBandIndex(matrix, 49)).toBe(0);
   expect(activeBandIndex(matrix, 50)).toBe(1);
   expect(activeBandIndex({ ...matrix, bands: [] }, 10)).toBe(-1);
+});
+
+test('resolvePriceMatrix returns a provided matrix', () => {
+  const matrix = {
+    currency: 'AUD',
+    taxPercent: 10,
+    bands: [{ quantity: 1, upperLimit: null, label: '1+' }],
+    cells: [],
+  };
+  expect(resolvePriceMatrix({ matrix })).toBe(matrix);
+});
+
+test('resolvePriceMatrix builds from a product discount group', () => {
+  const matrix = resolvePriceMatrix({
+    product: {
+      currency: 'AUD',
+      unitPrice: 10,
+      unitPriceDiscountGroup: {
+        discounts: [{ lowerLimit: 100, amount: 10 }],
+      },
+    },
+    buildPriceMatrix: (rules) => ({
+      currency: rules.currency,
+      taxPercent: rules.taxPercent,
+      bands: [
+        { quantity: 1, upperLimit: 99, label: '1–99' },
+        { quantity: 100, upperLimit: null, label: '100+' },
+      ],
+      cells: [
+        { quantity: 1, costPerUnit: 10, unitPrice: 10, cost: 10, taxAmount: 0, totalCost: 10 },
+        { quantity: 100, costPerUnit: 9, unitPrice: 9, cost: 900, taxAmount: 0, totalCost: 900 },
+      ],
+    }),
+  });
+  expect(matrix?.bands.map((band) => band.quantity)).toEqual([1, 100]);
+  expect(matrix?.cells[1].costPerUnit).toBe(9);
+});
+
+test('resolvePriceMatrix returns null without breaks or a matrix', () => {
+  expect(resolvePriceMatrix({ product: { unitPrice: 10 } })).toBeNull();
+  expect(resolvePriceMatrix({})).toBeNull();
 });

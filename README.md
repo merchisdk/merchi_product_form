@@ -201,17 +201,19 @@ The component provides extensive customization options through class name props.
 
 ### Bulk price table
 
-`ProductPriceMatrix` is included on the default form when the product has quantity-break discounts. Hosts that compose the form themselves can place it anywhere inside `MerchiProductFormProvider`:
+`PriceMatrix` is a standalone table. It does not need the product form — pass a product, pricing-rules bundle, or a precomputed matrix:
 
 ```jsx
-import { MerchiProductFormProvider, ProductPriceMatrix } from 'merchi_product_form';
+import { PriceMatrix } from 'merchi_product_form';
 
-<MerchiProductFormProvider initProduct={product}>
-  <ProductPriceMatrix />
-</MerchiProductFormProvider>
+<PriceMatrix
+  product={product}
+  quantity={120}
+  onSelectBand={(qty) => setQuantity(qty)}
+/>
 ```
 
-Pass `showPriceMatrix={false}` to hide it. Clicking a quantity band sets the form quantity (non-group products only).
+`ProductPriceMatrix` is the form-connected wrapper (live selections, click-to-set quantity). It is included on the default form. Hosts that compose the form can still place it inside `MerchiProductFormProvider`. Pass `showPriceMatrix={false}` to hide it.
 
 ### Working with Product Variations
 
