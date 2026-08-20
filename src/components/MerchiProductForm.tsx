@@ -55,6 +55,7 @@ interface Props {
   classNameProductTotal?: string;
   classNameQuantityLabelContainer?: string;
   classNameUnitPrice?: string;
+  classNamePriceMatrix?: string;
   hideCalculatedPrice?: boolean;
   hideQuantityField?: boolean;
   hideSubmitButtons?: boolean;
@@ -68,6 +69,7 @@ interface Props {
   onSubmit?: (job: any) => void;
   showFeatureDeadline?: boolean;
   showGroupBuyStatus?: boolean;
+  showPriceMatrix?: boolean;
 }
 
 function MerchiProductForm(props: Props) {

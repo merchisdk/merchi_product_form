@@ -7,6 +7,8 @@ import MerchiProductForm from './components/MerchiProductForm';
 import ProductButtonsSubmit from './components/ProductButtonsSubmit';
 import ProductFeatureDeadline from './components/ProductFeatureDeadline';
 import ProductGroupBuyStatus from './components/ProductGroupBuyStatus';
+import PriceMatrix from './components/PriceMatrix';
+import ProductPriceMatrix from './components/ProductPriceMatrix';
 import ProductTotalCost from './components/ProductTotalCost';
 import ProductTitle from './components/ProductTitle';
 import { productFeatureImageUrl } from './utils/products';
@@ -57,7 +59,9 @@ export {
   ProductButtonsSubmit,
   ProductFeatureDeadline,
   productFeatureImageUrl,
+  PriceMatrix,
   ProductGroupBuyStatus,
+  ProductPriceMatrix,
   ProductTitle,
   ProductTotalCost,
   VariationCheckBoxOrRadioOption,
@@ -85,5 +89,17 @@ export {
   isProductLeadForm,
   isProductSupplierMOD,
 };
+
+export type { PriceMatrixProps } from './components/PriceMatrix';
+export type {
+  PriceMatrixBand,
+  PriceMatrixCell,
+  PriceMatrixData,
+} from './utils/priceMatrix';
+export {
+  activeBandIndex,
+  pricingRulesFromProduct,
+  resolvePriceMatrix,
+} from './utils/priceMatrix';
 
 export default MerchiProductForm;

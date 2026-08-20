@@ -132,6 +132,7 @@ The `MerchiProductForm` component accepts the following props:
 | `showCurrencyCode` | `boolean?` | `false` | Show the currency code |
 | `showFeatureDeadline` | `boolean?` | `false` | Will display a countdown timer |
 | `showGroupBuyStatus` | `boolean?` | `false` | Will show the group buy status bar |
+| `showPriceMatrix` | `boolean?` | `true` | Fetch pricing-rules for `ProductPriceMatrix`. The default form does not render the table — place it yourself |
 | `showUnitPrice` | `boolean?` | `false` | Show the unit price to the user |
 
 ## CSS Class Props
@@ -180,6 +181,7 @@ The component provides extensive CSS class customization options:
 | `classNameProductTotal` | `string?` | `'merchi-embed-form_summary-product-cost'` | Class for the product total cost element |
 | `classNameQuantityLabelContainer` | `string?` | `'merchi-embed-form_quantity-label-container'` | Class for the product quantity label element |
 | `classNameUnitPrice` | `string?` | `undefined` | Class for the unit price element |
+| `classNamePriceMatrix` | `string?` | `'merchi-price-matrix'` | Class for the bulk price table container |
 
 ## Styling
 
@@ -196,6 +198,38 @@ The component provides extensive customization options through class name props.
 ```
 
 ## Advanced Usage
+
+### Bulk price table
+
+`PriceMatrix` is a standalone table. It does not need the product form — pass a product, pricing-rules bundle, or a precomputed matrix:
+
+```jsx
+import { PriceMatrix } from 'merchi_product_form';
+
+<PriceMatrix
+  product={product}
+  quantity={120}
+  onSelectBand={(qty) => setQuantity(qty)}
+/>
+```
+
+`ProductPriceMatrix` is the form-connected wrapper (live selections, click-to-set quantity). It is **not** included on the default `MerchiProductForm` — place it where you want inside `MerchiProductFormProvider`:
+
+```jsx
+import {
+  MerchiProductFormProvider,
+  ProductPriceMatrix,
+  ProductTotalCost,
+} from 'merchi_product_form';
+
+<MerchiProductFormProvider initProduct={product}>
+  {/* your fields */}
+  <ProductPriceMatrix />
+  <ProductTotalCost />
+</MerchiProductFormProvider>
+```
+
+Pass `showPriceMatrix={false}` to hide a placed `ProductPriceMatrix`.
 
 ### Working with Product Variations
 
