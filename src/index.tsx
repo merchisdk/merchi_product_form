@@ -9,6 +9,8 @@ import ProductFeatureDeadline from './components/ProductFeatureDeadline';
 import ProductGroupBuyStatus from './components/ProductGroupBuyStatus';
 import PriceMatrix from './components/PriceMatrix';
 import ProductPriceMatrix from './components/ProductPriceMatrix';
+import PriceTierCards from './components/PriceTierCards';
+import ProductPriceTierCards from './components/ProductPriceTierCards';
 import ProductTotalCost from './components/ProductTotalCost';
 import ProductTitle from './components/ProductTitle';
 import { productFeatureImageUrl } from './utils/products';
@@ -62,6 +64,8 @@ export {
   PriceMatrix,
   ProductGroupBuyStatus,
   ProductPriceMatrix,
+  PriceTierCards,
+  ProductPriceTierCards,
   ProductTitle,
   ProductTotalCost,
   VariationCheckBoxOrRadioOption,
@@ -91,15 +95,27 @@ export {
 };
 
 export type { PriceMatrixProps } from './components/PriceMatrix';
+export type { PriceTierCardsClassNames, PriceTierCardsProps } from './components/PriceTierCards';
+export type { ProductPriceTierCardsProps } from './components/ProductPriceTierCards';
 export type {
   PriceMatrixBand,
   PriceMatrixCell,
   PriceMatrixData,
+  PricingRulesLike,
 } from './utils/priceMatrix';
+export type {
+  UseProductPriceMatrixOptions,
+  UseProductPriceMatrixResult,
+} from './hooks/useProductPriceMatrix';
 export {
   activeBandIndex,
+  currentOrderQuantity,
+  matrixVariationKey,
   pricingRulesFromProduct,
   resolvePriceMatrix,
+  resolvePricingRules,
+  volumetricDiscountPercent,
 } from './utils/priceMatrix';
+export { useProductPriceMatrix } from './hooks/useProductPriceMatrix';
 
 export default MerchiProductForm;

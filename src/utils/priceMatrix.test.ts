@@ -1,9 +1,11 @@
 import {
   activeBandIndex,
   currentOrderQuantity,
+  matrixVariationKey,
   pricingRulesFromProduct,
   resolvePriceMatrix,
   resolvePricingRules,
+  volumetricDiscountPercent,
 } from './priceMatrix';
 
 test('pricingRulesFromProduct maps unit-price discount groups', () => {
@@ -129,4 +131,31 @@ test('resolvePriceMatrix builds from a product discount group', () => {
 test('resolvePriceMatrix returns null without breaks or a matrix', () => {
   expect(resolvePriceMatrix({ product: { unitPrice: 10 } })).toBeNull();
   expect(resolvePriceMatrix({})).toBeNull();
+});
+
+test('volumetricDiscountPercent reads configured tier amount', () => {
+  const group = {
+    discounts: [
+      { lowerLimit: 100, amount: 5 },
+      { lowerLimit: 500, amount: 12.4 },
+    ],
+  };
+  expect(volumetricDiscountPercent(group, 50)).toBe(0);
+  expect(volumetricDiscountPercent(group, 100)).toBe(5);
+  expect(volumetricDiscountPercent(group, 500)).toBe(12);
+  expect(volumetricDiscountPercent(null, 500)).toBe(0);
+});
+
+test('matrixVariationKey ignores quantity changes', () => {
+  const rules = {
+    fields: [{ id: 1, isSelectable: true }],
+    groupFields: [],
+    hasGroups: false,
+  };
+  const base = {
+    quantity: 10,
+    variations: [{ variationField: { id: 1 }, value: '2' }],
+  };
+  const changedQty = { ...base, quantity: 500 };
+  expect(matrixVariationKey(base, rules)).toBe(matrixVariationKey(changedQty, rules));
 });

@@ -15,6 +15,7 @@ function ProductPriceMatrix() {
     getQuote,
     hideCalculatedPrice,
     hideCost,
+    hideQuantityField,
     hookForm,
     job,
     pricingRules,
@@ -31,13 +32,37 @@ function ProductPriceMatrix() {
     && product.groupVariationFields.length > 0;
 
   function selectBand(bandQuantity: number) {
-    if (hasGroups || !hookForm?.setValue) return;
-    hookForm.setValue('quantity', bandQuantity, {
-      shouldDirty: true,
-      shouldValidate: true,
-    });
-    getQuote();
+    if (!hookForm?.setValue) return;
+
+    if (hasGroups) {
+      const groups = hookForm.getValues('variationsGroups');
+      if (!Array.isArray(groups) || groups.length === 0) return;
+
+      const updatedGroups = groups.map((group: any, index: number) =>
+        index === 0 ? { ...group, quantity: bandQuantity } : group,
+      );
+
+      hookForm.setValue('variationsGroups', updatedGroups, {
+        shouldDirty: true,
+        shouldValidate: true,
+      });
+      hookForm.trigger(
+        updatedGroups.map((_: unknown, index: number) => `variationsGroups[${index}].quantity`),
+      );
+    } else {
+      hookForm.setValue('quantity', bandQuantity, {
+        shouldDirty: true,
+        shouldValidate: true,
+      });
+      hookForm.trigger('quantity');
+    }
+    getQuote({ immediate: true });
   }
+
+  const hasGroupRows =
+    hasGroups && Array.isArray(job?.variationsGroups) && job.variationsGroups.length > 0;
+  const canSelectBands = Boolean(hookForm?.setValue)
+    && (hasGroupRows || (!hasGroups && !hideQuantityField));
 
   return (
     <PriceMatrix
@@ -46,7 +71,7 @@ function ProductPriceMatrix() {
       selections={rules ? toSelections(job, rules) : undefined}
       minQuantity={productMoqFloor(product)}
       quantity={currentOrderQuantity(job, product)}
-      onSelectBand={hasGroups ? undefined : selectBand}
+      onSelectBand={canSelectBands ? selectBand : undefined}
       className={classNamePriceMatrix}
       showCurrency={showCurrency}
       showCurrencyCode={showCurrencyCode}

@@ -1,4 +1,20 @@
 import { productMoqFloor } from './quantity';
+import { toSelections } from './selections';
+
+function getDiscountPercentFn():
+  | ((qty: number, group: any) => number)
+  | null {
+  try {
+    const { pricing } = require('merchi_sdk_ts') as {
+      pricing?: { getDiscountPercent?: (qty: number, group: any) => number };
+    };
+    return typeof pricing?.getDiscountPercent === 'function'
+      ? pricing.getDiscountPercent
+      : null;
+  } catch {
+    return null;
+  }
+}
 
 function buildPriceMatrixFn():
   | ((rules: any, selections?: any, options?: any) => PriceMatrixData | null)
@@ -43,7 +59,7 @@ export interface PriceMatrixData {
   cells: PriceMatrixCell[];
 }
 
-interface PricingRulesLike {
+export interface PricingRulesLike {
   unsupported?: string;
   currency?: string;
   taxPercent?: number;
@@ -122,6 +138,37 @@ export function activeBandIndex(matrix: PriceMatrixData, quantity: number): numb
     if (quantity >= matrix.bands[i].quantity) return i;
   }
   return -1;
+}
+
+/** Matrix unit prices depend on variations, not the current quantity input. */
+export function matrixVariationKey(formValues: any, rules: PricingRulesLike): string {
+  const selections = toSelections(formValues, rules);
+  if (selections.groups && Array.isArray(selections.groups)) {
+    return JSON.stringify({
+      fieldValues: selections.fieldValues,
+      groupFieldValues: selections.groups.map((group) => group.fieldValues),
+    });
+  }
+  return JSON.stringify({ fieldValues: selections.fieldValues });
+}
+
+/** Display % from pricing-rules discount group (same tier logic as SDK `applyDiscount`). */
+export function volumetricDiscountPercent(
+  discountGroup: { discounts?: { lowerLimit: number; amount: number }[] } | null | undefined,
+  quantity: number,
+): number {
+  const getDiscountPercent = getDiscountPercentFn();
+  let amount = 0;
+  if (getDiscountPercent) {
+    amount = getDiscountPercent(quantity, discountGroup ?? null);
+  } else if (discountGroup?.discounts?.length) {
+    const applicable = discountGroup.discounts
+      .filter((tier) => tier.lowerLimit <= quantity)
+      .sort((a, b) => b.lowerLimit - a.lowerLimit);
+    amount = applicable.length ? applicable[0].amount : 0;
+  }
+  if (!Number.isFinite(amount) || amount <= 0) return 0;
+  return Math.round(amount);
 }
 
 export interface ResolvePriceMatrixOptions {
