@@ -132,7 +132,7 @@ The `MerchiProductForm` component accepts the following props:
 | `showCurrencyCode` | `boolean?` | `false` | Show the currency code |
 | `showFeatureDeadline` | `boolean?` | `false` | Will display a countdown timer |
 | `showGroupBuyStatus` | `boolean?` | `false` | Will show the group buy status bar |
-| `showPriceMatrix` | `boolean?` | `true` | Show a quantity-break price table when the product has bulk discounts |
+| `showPriceMatrix` | `boolean?` | `true` | Fetch pricing-rules for `ProductPriceMatrix`. The default form does not render the table — place it yourself |
 | `showUnitPrice` | `boolean?` | `false` | Show the unit price to the user |
 
 ## CSS Class Props
@@ -213,7 +213,23 @@ import { PriceMatrix } from 'merchi_product_form';
 />
 ```
 
-`ProductPriceMatrix` is the form-connected wrapper (live selections, click-to-set quantity). It is included on the default form. Hosts that compose the form can still place it inside `MerchiProductFormProvider`. Pass `showPriceMatrix={false}` to hide it.
+`ProductPriceMatrix` is the form-connected wrapper (live selections, click-to-set quantity). It is **not** included on the default `MerchiProductForm` — place it where you want inside `MerchiProductFormProvider`:
+
+```jsx
+import {
+  MerchiProductFormProvider,
+  ProductPriceMatrix,
+  ProductTotalCost,
+} from 'merchi_product_form';
+
+<MerchiProductFormProvider initProduct={product}>
+  {/* your fields */}
+  <ProductPriceMatrix />
+  <ProductTotalCost />
+</MerchiProductFormProvider>
+```
+
+Pass `showPriceMatrix={false}` to hide a placed `ProductPriceMatrix`.
 
 ### Working with Product Variations
 

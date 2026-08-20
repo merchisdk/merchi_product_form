@@ -11,7 +11,6 @@ import { isProductFileDownload, isProductLeadForm, isProductSupplierMOD } from '
 import FormLead from './FormLead';
 import ProductFeatureDeadline from './ProductFeatureDeadline';
 import ProductGroupBuyStatus from './ProductGroupBuyStatus';
-import ProductPriceMatrix from './ProductPriceMatrix';
 import '../styles/globals.css';
 
 interface Props {
@@ -112,7 +111,6 @@ function MerchiProductForm(props: Props) {
         <Variations />
         {!groupsFirst && <VariationsGroups />}
       </div>
-      <ProductPriceMatrix />
       <ProductTotalCost />
       {!hideSubmitButtons && <ProductButtonsSubmit />}
     </MerchiProductFormProvider>
