@@ -9,6 +9,7 @@ import { DraftTemplateData } from '../utils/types';
 import {
   buildEmptyVariationFromField,
   cleanJobVariationsAndGroups,
+  syncJobSelectedOptionsFromValues,
 } from '../components/utils';
 import { pricing } from 'merchi_sdk_ts';
 import { toSelections } from '../utils/selections';
@@ -690,14 +691,14 @@ export const MerchiProductFormProvider = ({
         }
       });
     }
-    const nextJob = {
+    const nextJob = syncJobSelectedOptionsFromValues({
       ...values,
       cost: result.cost,
       costPerUnit: result.costPerUnit,
       taxAmount: result.taxAmount,
       totalCost: result.totalCost,
       currency: result.currency,
-    };
+    });
     setJob(nextJob);
     // Only re-seed the form when option/field visibility actually changed —
     // i.e. on selection changes, not on quantity edits. Cost/group-cost updates
