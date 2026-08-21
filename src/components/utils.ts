@@ -1,6 +1,6 @@
 import { Merchi } from 'merchi_sdk_ts';
 import { formatCurrency } from '../utils/currency';
-import { ProductType } from '../utils/types';
+import { ProductType, FieldType } from '../utils/types';
 export { cleanFormVariationJson } from '../utils/cleanFormVariationJson';
 import { cleanFormVariationJson } from '../utils/cleanFormVariationJson';
 import { defaultGroupQuantity } from '../utils/quantity';
@@ -76,6 +76,44 @@ export function splitSelectedOptions(value: any) {
     return value.split(',');
   }
   return [];
+}
+
+export function syncSelectedOptionsFromValue(variation: any): any {
+  if (!variation || typeof variation !== 'object') return variation;
+  const fieldType = Number(variation?.variationField?.fieldType);
+  if (fieldType === FieldType.COLOUR_EXTRACT) return variation;
+
+  const selectable = variation?.selectableOptions || [];
+  if (!selectable.length) return variation;
+
+  const selectedIds = splitSelectedOptions(variation?.value)
+    .map(String)
+    .filter(Boolean);
+  if (!selectedIds.length) return variation;
+
+  const resolved = selectable.filter((option: any) =>
+    selectedIds.includes(String(option.optionId))
+  );
+  if (!resolved.length) return variation;
+
+  return { ...variation, selectedOptions: resolved };
+}
+
+export function syncJobSelectedOptionsFromValues(job: any): any {
+  if (!job || typeof job !== 'object') return job;
+  const next = { ...job };
+  if (Array.isArray(next.variations)) {
+    next.variations = next.variations.map(syncSelectedOptionsFromValue);
+  }
+  if (Array.isArray(next.variationsGroups)) {
+    next.variationsGroups = next.variationsGroups.map((group: any) => ({
+      ...group,
+      variations: Array.isArray(group?.variations)
+        ? group.variations.map(syncSelectedOptionsFromValue)
+        : group?.variations,
+    }));
+  }
+  return next;
 }
 
 export const supplierSellerEditableProductTypes: Array<number> = [
