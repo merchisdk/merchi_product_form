@@ -114,6 +114,9 @@ export {
   pricingRulesFromProduct,
   resolvePriceMatrix,
   resolvePricingRules,
+  productUnitPriceFromCell,
+  saveBaselineUnitFromMatrix,
+  savePercentVsFirstTier,
   volumetricDiscountPercent,
 } from './utils/priceMatrix';
 export { useProductPriceMatrix } from './hooks/useProductPriceMatrix';

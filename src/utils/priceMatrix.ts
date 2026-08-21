@@ -171,6 +171,23 @@ export function volumetricDiscountPercent(
   return Math.round(amount);
 }
 
+export function savePercentVsFirstTier(baselineUnit: number, unitPrice: number): number {
+  if (baselineUnit <= 0 || unitPrice >= baselineUnit) return 0;
+  return Math.round((1 - unitPrice / baselineUnit) * 100);
+}
+
+export function saveBaselineUnitFromMatrix(cells: PriceMatrixCell[]): number {
+  if (!cells.length) return 0;
+  return Math.max(...cells.map(productUnitPriceFromCell));
+}
+
+export function productUnitPriceFromCell(cell: PriceMatrixCell): number {
+  const costPerUnit = Number(cell.costPerUnit);
+  if (Number.isFinite(costPerUnit) && costPerUnit >= 0) return costPerUnit;
+  const unitPrice = Number(cell.unitPrice);
+  return Number.isFinite(unitPrice) ? unitPrice : 0;
+}
+
 export interface ResolvePriceMatrixOptions {
   matrix?: PriceMatrixData | null;
   rules?: PricingRulesLike | null;

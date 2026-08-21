@@ -11,7 +11,7 @@ export interface ProductPriceTierCardsProps {
   className?: string;
   classNames?: PriceTierCardsClassNames;
   subtitle?: string;
-  formatSetupLabel?: (product: any) => string | null;
+  formatSetupLabel?: (product: any, job?: any) => string | null;
   renderFallback?: () => React.ReactNode;
 }
 
@@ -69,7 +69,7 @@ function ProductPriceTierCards({
   }
 
   const setupLabel = formatSetupLabel
-    ? formatSetupLabel(product)
+    ? formatSetupLabel(product, job)
     : null;
 
   return (

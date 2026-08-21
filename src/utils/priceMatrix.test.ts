@@ -3,8 +3,11 @@ import {
   currentOrderQuantity,
   matrixVariationKey,
   pricingRulesFromProduct,
+  productUnitPriceFromCell,
   resolvePriceMatrix,
   resolvePricingRules,
+  saveBaselineUnitFromMatrix,
+  savePercentVsFirstTier,
   volumetricDiscountPercent,
 } from './priceMatrix';
 
@@ -158,4 +161,33 @@ test('matrixVariationKey ignores quantity changes', () => {
   };
   const changedQty = { ...base, quantity: 500 };
   expect(matrixVariationKey(base, rules)).toBe(matrixVariationKey(changedQty, rules));
+});
+
+test('productUnitPriceFromCell prefers costPerUnit over amortised unitPrice', () => {
+  expect(
+    productUnitPriceFromCell({
+      quantity: 1,
+      costPerUnit: 0.55,
+      unitPrice: 10.55,
+      cost: 10.55,
+      taxAmount: 0,
+      totalCost: 10.55,
+    }),
+  ).toBe(0.55);
+});
+
+test('savePercentVsFirstTier compares product unit prices', () => {
+  expect(savePercentVsFirstTier(10, 8)).toBe(20);
+  expect(savePercentVsFirstTier(10, 10)).toBe(0);
+  expect(savePercentVsFirstTier(0, 5)).toBe(0);
+});
+
+test('saveBaselineUnitFromMatrix uses the highest tier unit (MOQ floor safe)', () => {
+  const cells = [
+    { quantity: 1, costPerUnit: 0.55, unitPrice: 10.55, cost: 10.55, taxAmount: 0, totalCost: 10.55 },
+    { quantity: 2, costPerUnit: 0.84, unitPrice: 5.84, cost: 11.68, taxAmount: 0, totalCost: 11.68 },
+    { quantity: 500, costPerUnit: 0.68, unitPrice: 0.72, cost: 360, taxAmount: 0, totalCost: 360 },
+  ];
+  expect(saveBaselineUnitFromMatrix(cells)).toBe(0.84);
+  expect(savePercentVsFirstTier(saveBaselineUnitFromMatrix(cells), 0.68)).toBe(19);
 });

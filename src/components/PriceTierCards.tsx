@@ -3,6 +3,7 @@ import * as React from 'react';
 import { formatCurrency } from './currency';
 import {
   type PriceMatrixData,
+  productUnitPriceFromCell,
   volumetricDiscountPercent,
 } from '../utils/priceMatrix';
 
@@ -62,9 +63,9 @@ function PriceTierCards({
 }: PriceTierCardsProps) {
   const currency = currencyProp || matrix.currency || product?.currency || 'AUD';
   const canSelect = canSelectProp ?? Boolean(onSelectBand);
-  const baselineUnit = matrix.cells[0]?.unitPrice ?? 0;
-  const displayUnitPrice =
-    activeIndex >= 0 ? matrix.cells[activeIndex]?.unitPrice ?? baselineUnit : baselineUnit;
+  const firstCell = matrix.cells[0];
+  const activeCell = activeIndex >= 0 ? matrix.cells[activeIndex] : firstCell;
+  const displayUnitPrice = activeCell ? productUnitPriceFromCell(activeCell) : 0;
 
   const currencyOptions = {
     currency,
@@ -117,6 +118,7 @@ function PriceTierCards({
             const cell = matrix.cells[index];
             if (!cell) return null;
             const isActive = index === activeIndex;
+            const unitPrice = productUnitPriceFromCell(cell);
             const discount =
               index > 0 ? volumetricDiscountPercent(discountGroup, band.quantity) : 0;
 
@@ -139,7 +141,7 @@ function PriceTierCards({
               <div className={cardContentClass}>
                 <p className={bandLabelClass}>{band.label}</p>
                 <p className={unitPriceClass}>
-                  {formatCurrency(cell.unitPrice, currencyOptions)}
+                  {formatCurrency(unitPrice, currencyOptions)}
                 </p>
                 {discount > 0 ? (
                   <p className={saveLabelClass}>Save {discount}%</p>
