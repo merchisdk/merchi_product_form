@@ -1,6 +1,7 @@
 'use client';
 import * as React from 'react';
 import { formatCurrency } from './currency';
+import { productSetupCostDetail } from './utils';
 import {
   activeBandIndex,
   resolvePriceMatrix,
@@ -29,6 +30,16 @@ export interface PriceMatrixProps {
   caption?: string;
   showCurrency?: boolean;
   showCurrencyCode?: boolean;
+}
+
+function priceMatrixSetupDetail(product?: any, rules?: any): string {
+  const setupPrice = Number(product?.setupPrice ?? rules?.product?.setupPrice);
+  if (!setupPrice || setupPrice <= 0) return '';
+  return productSetupCostDetail({
+    setupPrice,
+    setupPerGroup: product?.setupPerGroup ?? rules?.product?.setupPerGroup,
+    currency: product?.currency ?? rules?.currency,
+  }).trim();
 }
 
 function PriceMatrix({
@@ -61,12 +72,20 @@ function PriceMatrix({
     codeBeforeSymbol: showCurrencyCode,
     showCodeIfNoSymbol: showCurrency,
   };
+  const setupDetail = priceMatrixSetupDetail(product, rules);
 
   return (
     <div className={className || 'merchi-price-matrix'}>
       <table className='merchi-price-matrix_table'>
-        {caption ? (
-          <caption className='merchi-price-matrix_caption'>{caption}</caption>
+        {caption || setupDetail ? (
+          <caption className='merchi-price-matrix_caption'>
+            {caption ? (
+              <span className='merchi-price-matrix_caption-title'>{caption}</span>
+            ) : null}
+            {setupDetail ? (
+              <span className='merchi-price-matrix_setup'>{setupDetail}</span>
+            ) : null}
+          </caption>
         ) : null}
         <thead>
           <tr>
@@ -116,22 +135,7 @@ function PriceMatrix({
                   index === active ? 'merchi-price-matrix_col-active' : undefined
                 }
               >
-                {formatCurrency(cell.unitPrice, currencyOptions)}
-              </td>
-            ))}
-          </tr>
-          <tr>
-            <th scope='row' className='merchi-price-matrix_row-label'>
-              Total
-            </th>
-            {matrix.cells.map((cell, index) => (
-              <td
-                key={`total-${cell.quantity}`}
-                className={
-                  index === active ? 'merchi-price-matrix_col-active' : undefined
-                }
-              >
-                {formatCurrency(cell.totalCost, currencyOptions)}
+                {formatCurrency(cell.costPerUnit, currencyOptions)}
               </td>
             ))}
           </tr>
