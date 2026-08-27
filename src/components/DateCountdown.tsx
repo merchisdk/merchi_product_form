@@ -31,10 +31,22 @@ export class CountdownTimer extends React.Component<CountProps, CountState> {
   public static defaultProps = {
     model: 'text',
   };
-  public state: CountState = {
-    timeEnd: this.props.timeEnd,
-    timeUp: false,
-  };
+  public state: CountState = CountdownTimer.partsFrom(this.props.timeEnd);
+
+  public static partsFrom(timeEnd: number): CountState {
+    if (timeEnd < 0) {
+      return { timeEnd, timeUp: true, d: 0, h: 0, m: 0, s: 0 };
+    }
+    let rest = timeEnd;
+    const s = Math.floor(rest % 60);
+    rest = rest / 60;
+    const m = Math.floor(rest % 60);
+    rest = rest / 60;
+    const h = Math.floor(rest % 24);
+    rest = rest / 24;
+    const d = Math.floor(rest);
+    return { timeEnd, timeUp: false, d, h, m, s };
+  }
   public timeCount: any;
   public componentDidMount() {
     this.timeCount = setInterval(this.count.bind(this), 1000);

@@ -23,6 +23,7 @@ import {
 import VariationTurnaroundTime from './VariationTurnaroundTime';
 import VariationAreaInput from './VariationAreaInput';
 import { useMerchiFormContext } from '../context/MerchiProductFormProvider';
+import { shouldHideSingleOptionSelection } from '../utils/singleOptionVariation';
 
 const fieldMaps = new Map();
 fieldMaps.set(FieldType.CHECKBOX, VariationCheckbox);
@@ -60,6 +61,7 @@ function DynamicVariationInput({
   if (!Variation || !variationField) {
     return null;
   }
+  const hideSelection = shouldHideSingleOptionSelection(variation);
   return (
     <>
       <input
@@ -67,13 +69,17 @@ function DynamicVariationInput({
         defaultValue={JSON.stringify(variation)}
         {...hookForm.register(`${name}[${index}].json`)}
       />
-      <AlertVariationSellerEditable variationField={variationField} />
-      <Variation
-        alertErrorCallback={showAlert}
-        disabled={disabled}
-        name={`${name}[${index}]`}
-        variation={variation}
-      />
+      {hideSelection ? null : (
+        <>
+          <AlertVariationSellerEditable variationField={variationField} />
+          <Variation
+            alertErrorCallback={showAlert}
+            disabled={disabled}
+            name={`${name}[${index}]`}
+            variation={variation}
+          />
+        </>
+      )}
     </>
   );
 }
