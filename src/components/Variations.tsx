@@ -3,6 +3,7 @@ import * as React from 'react';
 import DynamicVariationInput from './DynamicVariationInput';
 import { useFieldArray } from 'react-hook-form';
 import { useMerchiFormContext } from '../context/MerchiProductFormProvider';
+import { shouldHideSingleOptionSelection } from '../utils/singleOptionVariation';
 
 interface Props {
   containerClass?: string;
@@ -73,11 +74,13 @@ function Variations({
         if (!isDynamicVariationVisible(variation, selectedOptionIds)) {
           return null;
         }
+        const hideSelection = shouldHideSingleOptionSelection(variation);
         return (
           <fieldset
-            className={containerClass}
+            className={hideSelection ? undefined : containerClass}
             key={fieldItem[keyName]}
             name={`${name}[${index}]`}
+            hidden={hideSelection}
           >
             <DynamicVariationInput
               disabled={disabled}

@@ -40,7 +40,7 @@ function ProductGroupBuyStatus() {
   return (
     <div className='merchi-group-buy-status'>
       <div className='merchi-group-buy-status-text'>
-        Minimum order quantity target ( {groupBuyStatus}% )
+        Crowd fund target ( {groupBuyStatus}% )
       </div>
   	  <ProgressBar value={groupBuyStatus} />
   	</div>

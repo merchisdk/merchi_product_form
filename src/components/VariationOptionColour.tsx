@@ -31,7 +31,7 @@ function VariationOptionColour({
     >
       <div
         className={`${classNameOptionColour} ${isChecked ? 'image-checked' : ''} ${isActive ? 'cursor-pointer' : 'option-no-inventory'}`}
-        style={{ backgroundColor: color }}
+        style={{ backgroundColor: color || value || undefined }}
       >
         <IconCheckedOrNoStock isChecked={isChecked} noStock={!isActive} />
       </div>

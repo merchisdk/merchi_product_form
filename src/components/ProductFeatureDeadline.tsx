@@ -8,14 +8,17 @@ function ProductFeatureDeadline() {
   const { featureDeadline } = product;
   const tz = (Intl as any) && (Intl as any).DateTimeFormat() && (Intl as any).DateTimeFormat().resolvedOptions() ?
     (Intl as any).DateTimeFormat().resolvedOptions().timeZone : '';
-  const tooltip = featureDeadline ?
-    `Available until ${moment.unix(featureDeadline / 1000).tz(tz).format('ddd Do MMM')}` : '';
+  const deadlineUnix =
+    featureDeadline > 1e12 ? featureDeadline / 1000 : featureDeadline;
+  const tooltip = deadlineUnix ?
+    `Available until ${moment.unix(deadlineUnix).tz(tz).format('ddd Do MMM')}` : '';
   return (
     <>
       {featureDeadline &&
         <div className='merchi-feature-deadline-container'>
           <DateCountdown
-            deadline={featureDeadline}
+            deadline={deadlineUnix}
+            hideSeconds={false}
             tooltip={tooltip}
           />
         </div>
