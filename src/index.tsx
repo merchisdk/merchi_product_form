@@ -44,6 +44,8 @@ import Variations from './components/Variations';
 import VariationsGroups from './components/VariationsGroups';
 
 import DraftApprovePanel from './components/drafts/DraftApprovePanel';
+import ProductDraftsHost from './components/drafts/ProductDraftsHost';
+import { productAllowsClientDesign } from './utils/draftTemplates';
 import ButtonProductSubmit from './components/buttons/ButtonProductSubmit';
 import { isProductLeadForm, isProductSupplierMOD } from './components/utils';
 
@@ -52,6 +54,7 @@ export {
   AlertVariationSellerEditable,
   DynamicVariationInput,
   DraftApprovePanel,
+  ProductDraftsHost,
   FormLead,
   InputHiddenStatic,
   InputProductQuantity,
@@ -88,6 +91,7 @@ export {
   ButtonProductSubmit,
   isProductLeadForm,
   isProductSupplierMOD,
+  productAllowsClientDesign,
 };
 
 export type { PriceMatrixProps } from './components/PriceMatrix';

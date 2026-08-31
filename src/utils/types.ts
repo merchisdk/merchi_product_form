@@ -42,18 +42,50 @@ export enum FieldType {
   AREA = 14,
 }
 
+export type DraftCanvasObjectType = 'text' | 'image' | 'rect';
+
+export interface DraftCanvasObject {
+  id: string;
+  type: DraftCanvasObjectType;
+  merchiFieldId?: number;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  rotation: number;
+  scaleX: number;
+  scaleY: number;
+  text?: string;
+  fontSize?: number;
+  fill?: string;
+  fontFamily?: string;
+  align?: string;
+  src?: string;
+}
+
+export interface DraftCanvasState {
+  width: number;
+  height: number;
+  objects: DraftCanvasObject[];
+  detachedFieldIds?: number[];
+}
+
 export interface RenderedDraftPreview {
   templateId: number;
   draft: string; // base64 string of the template artwork as a draft
   canvasPreview: string; // base64 string of the template rendered with the full canvas
+  canvasJson?: DraftCanvasState;
 }
 
 export interface DraftTemplateData {
   groupIndex: number;
   productId: number;
-  templateData: any[];
+  templateData: RenderedDraftPreview[];
   previews: any[];
 }
+
+export const BLANK_TEMPLATE_ID = 0;
+export const DEFAULT_ARTBOARD = { width: 1000, height: 1000 };
 
 export interface MerchiFile {
   id?: number;
