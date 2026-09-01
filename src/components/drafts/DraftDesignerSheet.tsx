@@ -9,7 +9,9 @@ import {
   FaFont,
   FaImage,
   FaLayerGroup,
+  FaLock,
   FaPlus,
+  FaUnlock,
   FaTimes,
   FaTrash,
 } from 'react-icons/fa';
@@ -36,8 +38,45 @@ import {
   DraftCanvasObject,
   DraftCanvasState,
 } from '../../utils/types';
+import {
+  DEFAULT_DRAFT_FONT,
+  DRAFT_TEXT_FONTS,
+  cssFontFamily,
+  ensureDraftFonts,
+} from '../../utils/draftFonts';
 
 const DraftCanvas = React.lazy(() => import('./DraftCanvas'));
+
+class DraftCanvasBoundary extends React.Component<
+  { children: React.ReactNode },
+  { error: string | null }
+> {
+  constructor(props: { children: React.ReactNode }) {
+    super(props);
+    this.state = { error: null };
+  }
+
+  static getDerivedStateFromError(error: unknown) {
+    return {
+      error: error instanceof Error ? error.message : 'Canvas failed to load',
+    };
+  }
+
+  render() {
+    if (this.state.error) {
+      return (
+        <div className='merchi-product-draft-canvas-fallback'>
+          {this.state.error}
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
+function stopBubble(event: React.SyntheticEvent) {
+  event.stopPropagation();
+}
 
 interface Props {
   open: boolean;
@@ -101,6 +140,10 @@ export default function DraftDesignerSheet({
     if (open) setGroupIndex(initialGroupIndex);
   }, [open, initialGroupIndex]);
 
+  useEffect(() => {
+    if (open) ensureDraftFonts();
+  }, [open]);
+
   const variationSyncKey = JSON.stringify(
     variationsForGroup(formValues, groupIndex).map((variation: any) => ({
       id: variation?.variationField?.id,
@@ -142,10 +185,9 @@ export default function DraftDesignerSheet({
         });
       return same ? current : next;
     });
-  }, [open, variationSyncKey, template, groupIndex, formValues]);
+  }, [open, variationSyncKey, template?.id, groupIndex]);
 
   const selected = state.objects.find((obj) => obj.id === selectedId) || null;
-  const editing = state.objects.find((obj) => obj.id === editingTextId) || null;
 
   function patchSelected(patch: Partial<DraftCanvasObject>) {
     if (!selectedId) return;
@@ -171,6 +213,7 @@ export default function DraftDesignerSheet({
       scaleY: 1,
       text: 'Your text',
       fontSize: 56,
+      fontFamily: DEFAULT_DRAFT_FONT,
       fill: '#111111',
     };
     setState((current) => ({ ...current, objects: [...current.objects, obj] }));
@@ -192,6 +235,7 @@ export default function DraftDesignerSheet({
       scaleX: 1,
       scaleY: 1,
       src,
+      lockAspectRatio: true,
     };
     setState((current) => ({ ...current, objects: [...current.objects, obj] }));
     setSelectedId(id);
@@ -251,6 +295,8 @@ export default function DraftDesignerSheet({
       role='dialog'
       aria-modal='true'
       aria-label='Design artwork'
+      onMouseDown={stopBubble}
+      onClick={stopBubble}
     >
       <header className='merchi-product-draft-sheet-header'>
         <button
@@ -313,185 +359,232 @@ export default function DraftDesignerSheet({
         </div>
       ) : null}
 
-      <div className='merchi-product-draft-sheet-body'>
-        <React.Suspense
-          fallback={
-            <div className='merchi-product-draft-canvas-fallback'>Loading canvas…</div>
-          }
-        >
-          <DraftCanvas
-            state={state}
-            template={template}
-            templateSrc={templateSrc(template)}
-            selectedId={selectedId}
-            onSelect={setSelectedId}
-            onChange={setState}
-            onEditText={setEditingTextId}
-          />
-        </React.Suspense>
-      </div>
-
-      {error ? <p className='merchi-product-draft-error'>{error}</p> : null}
-
-      {selected ? (
-        <div className='merchi-product-draft-inspector'>
-          {selected.type === 'text' ? (
-            <>
-              <button
-                type='button'
-                className='merchi-product-draft-stepper'
-                onClick={() => patchSelected({
-                  fontSize: Math.max(12, (selected.fontSize || 48) - 8),
-                })}
-                aria-label='Smaller text'
-              >
-                A-
-              </button>
-              <button
-                type='button'
-                className='merchi-product-draft-stepper'
-                onClick={() => patchSelected({
-                  fontSize: Math.min(200, (selected.fontSize || 48) + 8),
-                })}
-                aria-label='Larger text'
-              >
-                A+
-              </button>
-              <label className='merchi-product-draft-color'>
-                <span className='merchi-sr-only'>Colour</span>
-                <input
-                  type='color'
-                  value={selected.fill || '#111111'}
-                  onChange={(e) => patchSelected({ fill: e.target.value })}
-                />
-              </label>
-            </>
-          ) : null}
-          {selected.type === 'rect' ? (
-            <label className='merchi-product-draft-color'>
-              <span className='merchi-sr-only'>Fill colour</span>
-              <input
-                type='color'
-                value={selected.fill || '#cccccc'}
-                onChange={(e) => patchSelected({ fill: e.target.value })}
+      <div className='merchi-product-draft-main'>
+        <div className='merchi-product-draft-sheet-body'>
+          <DraftCanvasBoundary>
+            <React.Suspense
+              fallback={
+                <div className='merchi-product-draft-canvas-fallback'>Loading canvas…</div>
+              }
+            >
+              <DraftCanvas
+                state={state}
+                template={template}
+                templateSrc={templateSrc(template)}
+                selectedId={selectedId}
+                onSelect={setSelectedId}
+                onChange={setState}
+                onEditText={(id) => {
+                  setLayersOpen(false);
+                  setSelectedId(id);
+                  setEditingTextId(id);
+                }}
               />
-            </label>
+            </React.Suspense>
+          </DraftCanvasBoundary>
+
+          {layersOpen ? (
+            <div className='merchi-product-draft-layers'>
+              <div className='merchi-product-draft-layers-head'>
+                <strong>Layers</strong>
+                <button type='button' onClick={() => setLayersOpen(false)} aria-label='Close layers'>
+                  <FaTimes />
+                </button>
+              </div>
+              {state.objects.length === 0 ? (
+                <p>No objects yet. Add text or an image.</p>
+              ) : (
+                [...state.objects].reverse().map((obj, index) => (
+                  <button
+                    key={obj.id}
+                    type='button'
+                    className={`merchi-product-draft-layer${obj.id === selectedId ? ' is-active' : ''}`}
+                    onClick={() => {
+                      setSelectedId(obj.id);
+                      setEditingTextId(null);
+                    }}
+                  >
+                    <FaPlus className='merchi-product-draft-layer-icon' />
+                    {obj.type === 'text' ? (obj.text || 'Text') : obj.type === 'image' ? 'Image' : 'Base colour'}
+                    <span>{state.objects.length - index}</span>
+                  </button>
+                ))
+              )}
+            </div>
           ) : null}
-          <button
-            type='button'
-            className='merchi-product-draft-icon-btn'
-            onClick={() => patchSelected({ scaleX: (selected.scaleX || 1) * -1 })}
-            aria-label='Flip'
-          >
-            Flip
-          </button>
-          <button
-            type='button'
-            className='merchi-product-draft-icon-btn'
-            onClick={() => moveLayer(1)}
-            aria-label='Bring forward'
-          >
-            <FaArrowUp />
-          </button>
-          <button
-            type='button'
-            className='merchi-product-draft-icon-btn'
-            onClick={() => moveLayer(-1)}
-            aria-label='Send backward'
-          >
-            <FaArrowDown />
-          </button>
-          <button
-            type='button'
-            className='merchi-product-draft-icon-btn is-danger'
-            onClick={removeSelected}
-            aria-label='Delete'
-          >
-            <FaTrash />
-          </button>
+
         </div>
-      ) : null}
 
-      <nav className='merchi-product-draft-toolbar' aria-label='Design tools'>
-        <button type='button' onClick={addText}>
-          <FaFont />
-          <span>Text</span>
-        </button>
-        <button type='button' onClick={() => fileInputRef.current?.click()}>
-          <FaImage />
-          <span>Image</span>
-        </button>
-        <button type='button' onClick={() => setLayersOpen((openNow) => !openNow)}>
-          <FaLayerGroup />
-          <span>Layers</span>
-        </button>
-        <button type='button' onClick={removeSelected} disabled={!selectedId}>
-          <FaTrash />
-          <span>Delete</span>
-        </button>
-      </nav>
-      <input
-        ref={fileInputRef}
-        type='file'
-        accept='image/*'
-        className='merchi-product-draft-file'
-        onChange={(e) => {
-          const file = e.target.files?.[0];
-          if (file) addImage(file);
-          e.target.value = '';
-        }}
-      />
+        {error ? <p className='merchi-product-draft-error'>{error}</p> : null}
 
-      {layersOpen ? (
-        <div className='merchi-product-draft-layers'>
-          <div className='merchi-product-draft-layers-head'>
-            <strong>Layers</strong>
-            <button type='button' onClick={() => setLayersOpen(false)} aria-label='Close layers'>
-              <FaTimes />
-            </button>
-          </div>
-          {state.objects.length === 0 ? (
-            <p>No objects yet. Add text or an image.</p>
-          ) : (
-            [...state.objects].reverse().map((obj, index) => (
+        <aside className='merchi-product-draft-dock'>
+          {selected ? (
+            <div className='merchi-product-draft-inspector'>
+              {selected.type === 'text' ? (
+                <>
+                  <textarea
+                    className='merchi-product-draft-text-input'
+                    value={selected.text || ''}
+                    rows={2}
+                    autoFocus={editingTextId === selected.id}
+                    aria-label='Edit text'
+                    onChange={(e) => patchSelected({ text: e.target.value })}
+                  />
+                  <label className='merchi-product-draft-font'>
+                    <span className='merchi-sr-only'>Font</span>
+                    <select
+                      aria-label='Font'
+                      value={selected.fontFamily || DEFAULT_DRAFT_FONT}
+                      style={{ fontFamily: cssFontFamily(selected.fontFamily || DEFAULT_DRAFT_FONT) }}
+                      onChange={(e) => patchSelected({ fontFamily: e.target.value })}
+                    >
+                      {DRAFT_TEXT_FONTS.map((font) => (
+                        <option
+                          key={font.value}
+                          value={font.value}
+                          style={{ fontFamily: cssFontFamily(font.value) }}
+                        >
+                          {font.label}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  <button
+                    type='button'
+                    className='merchi-product-draft-stepper'
+                    onClick={() => patchSelected({
+                      fontSize: Math.max(12, (selected.fontSize || 48) - 8),
+                    })}
+                    aria-label='Smaller text'
+                  >
+                    A-
+                  </button>
+                  <button
+                    type='button'
+                    className='merchi-product-draft-stepper'
+                    onClick={() => patchSelected({
+                      fontSize: Math.min(240, (selected.fontSize || 48) + 8),
+                    })}
+                    aria-label='Larger text'
+                  >
+                    A+
+                  </button>
+                  <label className='merchi-product-draft-color'>
+                    <span className='merchi-sr-only'>Colour</span>
+                    <input
+                      type='color'
+                      value={/^#[0-9a-fA-F]{6}$/.test(selected.fill || '') ? selected.fill : '#111111'}
+                      onChange={(e) => patchSelected({ fill: e.target.value })}
+                    />
+                  </label>
+                </>
+              ) : null}
+              {selected.type === 'image' ? (
+                <button
+                  type='button'
+                  className={`merchi-product-draft-icon-btn${selected.lockAspectRatio ? ' is-active' : ''}`}
+                  onClick={() => patchSelected({ lockAspectRatio: !selected.lockAspectRatio })}
+                  aria-label={selected.lockAspectRatio ? 'Unlock aspect ratio' : 'Lock aspect ratio'}
+                >
+                  {selected.lockAspectRatio ? <FaLock /> : <FaUnlock />}
+                  Ratio
+                </button>
+              ) : null}
+              {selected.type === 'rect' ? (
+                <label className='merchi-product-draft-color'>
+                  <span className='merchi-sr-only'>Fill colour</span>
+                  <input
+                    type='color'
+                    value={selected.fill || '#cccccc'}
+                    onChange={(e) => patchSelected({ fill: e.target.value })}
+                  />
+                </label>
+              ) : null}
               <button
-                key={obj.id}
                 type='button'
-                className={`merchi-product-draft-layer${obj.id === selectedId ? ' is-active' : ''}`}
-                onClick={() => setSelectedId(obj.id)}
+                className='merchi-product-draft-icon-btn'
+                onClick={() => patchSelected({ scaleX: (selected.scaleX || 1) * -1 })}
+                aria-label='Flip'
               >
-                <FaPlus className='merchi-product-draft-layer-icon' />
-                {obj.type === 'text' ? (obj.text || 'Text') : obj.type === 'image' ? 'Image' : 'Colour'}
-                <span>{state.objects.length - index}</span>
+                Flip
               </button>
-            ))
-          )}
-        </div>
-      ) : null}
+              <button
+                type='button'
+                className='merchi-product-draft-icon-btn'
+                onClick={() => moveLayer(1)}
+                aria-label='Bring forward'
+              >
+                <FaArrowUp />
+              </button>
+              <button
+                type='button'
+                className='merchi-product-draft-icon-btn'
+                onClick={() => moveLayer(-1)}
+                aria-label='Send backward'
+              >
+                <FaArrowDown />
+              </button>
+              <button
+                type='button'
+                className='merchi-product-draft-icon-btn is-danger'
+                onClick={removeSelected}
+                aria-label='Delete'
+              >
+                <FaTrash />
+              </button>
+            </div>
+          ) : null}
 
-      {editing ? (
-        <div className='merchi-product-draft-text-sheet'>
-          <label htmlFor='merchi-draft-text-edit'>Edit text</label>
-          <textarea
-            id='merchi-draft-text-edit'
-            value={editing.text || ''}
-            rows={3}
-            autoFocus
+          <nav className='merchi-product-draft-toolbar' aria-label='Design tools'>
+            <button
+              type='button'
+              onClick={() => {
+                setLayersOpen(false);
+                addText();
+              }}
+            >
+              <FaFont />
+              <span>Text</span>
+            </button>
+            <button
+              type='button'
+              onClick={() => {
+                setLayersOpen(false);
+                setEditingTextId(null);
+                fileInputRef.current?.click();
+              }}
+            >
+              <FaImage />
+              <span>Image</span>
+            </button>
+            <button
+              type='button'
+              onClick={() => {
+                setEditingTextId(null);
+                setLayersOpen((openNow) => !openNow);
+              }}
+            >
+              <FaLayerGroup />
+              <span>Layers</span>
+            </button>
+            <button type='button' onClick={removeSelected} disabled={!selectedId}>
+              <FaTrash />
+              <span>Delete</span>
+            </button>
+          </nav>
+          <input
+            ref={fileInputRef}
+            type='file'
+            accept='image/*'
+            className='merchi-product-draft-file'
             onChange={(e) => {
-              const value = e.target.value;
-              setState((current) => ({
-                ...current,
-                objects: current.objects.map((obj) =>
-                  obj.id === editing.id ? { ...obj, text: value } : obj
-                ),
-              }));
+              const file = e.target.files?.[0];
+              if (file) addImage(file);
+              e.target.value = '';
             }}
           />
-          <button type='button' onClick={() => setEditingTextId(null)}>
-            Apply
-          </button>
-        </div>
-      ) : null}
+        </aside>
+      </div>
     </div>,
     document.body,
   );

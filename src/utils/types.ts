@@ -44,10 +44,28 @@ export enum FieldType {
 
 export type DraftCanvasObjectType = 'text' | 'image' | 'rect';
 
+export type DraftArtworkRole =
+  | 'auto'
+  | 'text'
+  | 'image'
+  | 'text_fill'
+  | 'body_colour_fill';
+
+export interface DraftFieldBinding {
+  fieldId: number;
+  role?: DraftArtworkRole;
+  targetFieldId?: number;
+  lockAspectRatio?: boolean;
+}
+
 export interface DraftCanvasObject {
   id: string;
   type: DraftCanvasObjectType;
   merchiFieldId?: number;
+  colourFieldId?: number;
+  artworkRole?: DraftArtworkRole;
+  locked?: boolean;
+  lockAspectRatio?: boolean;
   x: number;
   y: number;
   width: number;

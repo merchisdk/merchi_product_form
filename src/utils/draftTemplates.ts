@@ -1,11 +1,14 @@
 import {
   BLANK_TEMPLATE_ID,
   DEFAULT_ARTBOARD,
+  DraftArtworkRole,
   DraftCanvasObject,
   DraftCanvasObjectType,
   DraftCanvasState,
+  DraftFieldBinding,
   FieldType,
 } from './types';
+import { DEFAULT_DRAFT_FONT } from './draftFonts';
 
 export function productAllowsClientDesign(product: any): boolean {
   return Boolean(product?.needsDrafting && product?.allowClientDraftContribution);
@@ -235,6 +238,137 @@ export function bboxToPixels(
   };
 }
 
+export function fieldBindingsFrom(template: any): DraftFieldBinding[] {
+  const raw = template?.customisationMap?.fieldBindings;
+  if (!Array.isArray(raw)) return [];
+  return raw.filter((item: any) => item && item.fieldId != null);
+}
+
+export function bindingForField(
+  bindings: DraftFieldBinding[],
+  fieldId: any,
+): DraftFieldBinding | undefined {
+  const id = Number(fieldId);
+  return bindings.find((item) => Number(item.fieldId) === id);
+}
+
+function fieldName(field: any): string {
+  return String(field?.name || '').toLowerCase();
+}
+
+function isColourKind(kind: DraftCanvasObjectType | null): boolean {
+  return kind === 'rect';
+}
+
+export function inferArtworkRole(
+  field: any,
+  linkedFields: any[] = [],
+): DraftArtworkRole {
+  const kind = canvasKindForFieldType(field?.fieldType);
+  if (kind === 'image') return 'image';
+  if (kind === 'text') return 'text';
+  if (!isColourKind(kind)) return 'auto';
+  const name = fieldName(field);
+  if (/(text|font|letter|copy)/.test(name)) return 'text_fill';
+  if (/(wrist|band|base|body|ground|blank)/.test(name)) return 'body_colour_fill';
+  const hasText = linkedFields.some(
+    (item) => canvasKindForFieldType(item?.fieldType) === 'text'
+  );
+  return hasText ? 'text_fill' : 'body_colour_fill';
+}
+
+export function resolveArtworkRole(
+  field: any,
+  template: any,
+  linkedFields: any[] = [],
+): DraftArtworkRole {
+  const inferred = inferArtworkRole(field, linkedFields);
+  if (inferred === 'body_colour_fill') return 'body_colour_fill';
+  const binding = bindingForField(fieldBindingsFrom(template), field?.id);
+  if (binding?.role && binding.role !== 'auto') return binding.role;
+  return inferred;
+}
+
+export function inferTextTargetFieldId(
+  field: any,
+  template: any,
+  linkedFields: any[] = [],
+): number | undefined {
+  const binding = bindingForField(fieldBindingsFrom(template), field?.id);
+  if (binding?.targetFieldId != null) return Number(binding.targetFieldId);
+  const textField = linkedFields.find(
+    (item) => canvasKindForFieldType(item?.fieldType) === 'text' && item?.id != null
+  );
+  return textField?.id != null ? Number(textField.id) : undefined;
+}
+
+export function fitInside(
+  box: { x: number; y: number; width: number; height: number },
+  contentWidth: number,
+  contentHeight: number,
+  lockAspectRatio = true,
+): { x: number; y: number; width: number; height: number } {
+  if (
+    !lockAspectRatio
+    || !(contentWidth > 0)
+    || !(contentHeight > 0)
+    || !(box.width > 0)
+    || !(box.height > 0)
+  ) {
+    return { ...box };
+  }
+  const scale = Math.min(box.width / contentWidth, box.height / contentHeight);
+  const width = contentWidth * scale;
+  const height = contentHeight * scale;
+  return {
+    x: box.x + (box.width - width) / 2,
+    y: box.y + (box.height - height) / 2,
+    width,
+    height,
+  };
+}
+
+export function shouldLockImageAspect(field: any, template?: any): boolean {
+  const binding = bindingForField(fieldBindingsFrom(template), field?.id);
+  if (typeof binding?.lockAspectRatio === 'boolean') return binding.lockAspectRatio;
+  if (typeof field?.aspectRatioLock === 'boolean') return field.aspectRatioLock;
+  return true;
+}
+
+export function isBackgroundFill(obj: { type?: string }): boolean {
+  return obj?.type === 'rect';
+}
+
+export function isFullArtboardFill(
+  obj: { x?: number; y?: number; width?: number; height?: number },
+  artWidth: number,
+  artHeight: number,
+): boolean {
+  return (
+    Number(obj.width) >= artWidth * 0.9
+    && Number(obj.height) >= artHeight * 0.9
+    && Number(obj.x) <= artWidth * 0.05
+    && Number(obj.y) <= artHeight * 0.05
+  );
+}
+
+function placementBoxes(
+  role: DraftArtworkRole,
+  kind: DraftCanvasObjectType,
+  template: any,
+): number[][] {
+  if (role === 'body_colour_fill' || kind === 'rect') {
+    const regions = regionsForRole(template?.customisationMap, 'body_colour_fill');
+    return regions.length ? regions : [[0, 0, 1, 1]];
+  }
+  if (kind === 'text') {
+    const placeholders = regionsForRole(template?.customisationMap, 'text_placeholder');
+    if (placeholders.length) return placeholders;
+    return regionsForRole(template?.customisationMap, 'print_area');
+  }
+  return regionsForRole(template?.customisationMap, 'print_area');
+}
+
 export function defaultPlacement(
   kind: DraftCanvasObjectType,
   index: number,
@@ -265,12 +399,6 @@ export function createObjectId(): string {
   return `obj-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 }
 
-const ROLE_FOR_KIND: Record<DraftCanvasObjectType, string> = {
-  image: 'print_area',
-  text: 'text_placeholder',
-  rect: 'body_colour_fill',
-};
-
 export function seedOrSyncCanvas(
   existing: DraftCanvasState | null | undefined,
   template: any,
@@ -283,49 +411,101 @@ export function seedOrSyncCanvas(
   }));
   const detached = new Set(existing?.detachedFieldIds || []);
   const linked = linkedVariationsForTemplate(template, variations);
+  const linkedFields = linked.map((variation) => variation?.variationField).filter(Boolean);
   const usedRegions: Record<string, number> = {};
 
   for (const variation of linked) {
-    const fieldId = variation?.variationField?.id;
+    const field = variation?.variationField;
+    if (resolveArtworkRole(field, template, linkedFields) !== 'text_fill') continue;
+    const index = objects.findIndex(
+      (obj) => obj.merchiFieldId === field?.id && obj.type === 'rect'
+    );
+    if (index >= 0) objects.splice(index, 1);
+  }
+
+  const applyColourToText = (targetFieldId: number | undefined, fill?: string, colourFieldId?: number) => {
+    if (!fill || targetFieldId == null) return false;
+    const textObj = objects.find((obj) => obj.merchiFieldId === targetFieldId && obj.type === 'text');
+    if (!textObj) return false;
+    textObj.fill = fill;
+    textObj.colourFieldId = colourFieldId;
+    return true;
+  };
+
+  const placeObject = (
+    kind: DraftCanvasObjectType,
+    role: DraftArtworkRole,
+    field: any,
+    fieldId: number,
+    content: ReturnType<typeof variationCanvasContent>,
+  ) => {
+    const boxes = placementBoxes(role, kind, template);
+    const key = `${role}:${kind}`;
+    const regionIndex = usedRegions[key] || 0;
+    usedRegions[key] = regionIndex + 1;
+    const box = boxes[regionIndex] || boxes[0];
+    const place = box
+      ? bboxToPixels(box, width, height)
+      : defaultPlacement(kind, objects.length, width, height);
+    const lockAspectRatio = kind === 'image' ? shouldLockImageAspect(field, template) : undefined;
+    const next: DraftCanvasObject = {
+      id: createObjectId(),
+      type: kind,
+      merchiFieldId: fieldId,
+      artworkRole: role,
+      locked: kind === 'rect',
+      rotation: 0,
+      scaleX: 1,
+      scaleY: 1,
+      lockAspectRatio,
+      ...place,
+      text: content.text,
+      src: content.src,
+      fill: content.fill || (kind === 'text' ? '#111111' : undefined),
+      fontFamily: kind === 'text' ? DEFAULT_DRAFT_FONT : undefined,
+      fontSize: Math.max(28, Math.round(place.height * 0.62)),
+    };
+    if (kind === 'rect') objects.unshift(next);
+    else objects.push(next);
+  };
+
+  for (const variation of linked) {
+    const field = variation?.variationField;
+    const fieldId = field?.id;
     const content = variationCanvasContent(variation);
     if (!content.kind || fieldId == null || detached.has(fieldId)) continue;
+    const role = resolveArtworkRole(field, template, linkedFields);
+    if (role === 'text_fill') continue;
 
     const found = objects.find((obj) => obj.merchiFieldId === fieldId);
     if (found) {
       if (content.kind === 'text' && content.text != null) found.text = content.text;
       if (content.kind === 'image' && content.src) found.src = content.src;
       if (content.kind === 'rect' && content.fill) found.fill = content.fill;
+      if (found.type === 'image') {
+        found.lockAspectRatio = shouldLockImageAspect(field, template);
+      }
+      if (found.type === 'rect') {
+        found.locked = true;
+        found.artworkRole = role;
+      }
       continue;
     }
 
     if (content.kind === 'text' && !content.text) continue;
     if (content.kind === 'image' && !content.src) continue;
+    placeObject(content.kind, role, field, fieldId, content);
+  }
 
-    const role = ROLE_FOR_KIND[content.kind];
-    const boxes = regionsForRole(template?.customisationMap, role);
-    const regionIndex = usedRegions[role] || 0;
-    usedRegions[role] = regionIndex + 1;
-    const box = boxes[regionIndex] || boxes[0];
-    const place = box
-      ? bboxToPixels(box, width, height)
-      : defaultPlacement(content.kind, objects.length, width, height);
-
-    const next: DraftCanvasObject = {
-      id: createObjectId(),
-      type: content.kind,
-      merchiFieldId: fieldId,
-      rotation: 0,
-      scaleX: 1,
-      scaleY: 1,
-      ...place,
-      text: content.text,
-      src: content.src,
-      fill: content.fill || (content.kind === 'text' ? '#111111' : undefined),
-      fontSize: Math.max(24, Math.round(place.height * 0.55)),
-    };
-
-    if (content.kind === 'rect') objects.unshift(next);
-    else objects.push(next);
+  for (const variation of linked) {
+    const field = variation?.variationField;
+    const fieldId = field?.id;
+    const content = variationCanvasContent(variation);
+    if (fieldId == null || detached.has(fieldId) || !content.fill) continue;
+    const role = resolveArtworkRole(field, template, linkedFields);
+    if (role !== 'text_fill') continue;
+    const targetId = inferTextTargetFieldId(field, template, linkedFields);
+    applyColourToText(targetId, content.fill, fieldId);
   }
 
   return {

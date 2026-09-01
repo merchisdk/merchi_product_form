@@ -15,7 +15,15 @@ export function useHtmlImage(src?: string | null): HTMLImageElement | undefined 
       if (!cancelled) setImage(img);
     };
     img.onerror = () => {
-      if (!cancelled) setImage(undefined);
+      if (cancelled) return;
+      const fallback = new window.Image();
+      fallback.onload = () => {
+        if (!cancelled) setImage(fallback);
+      };
+      fallback.onerror = () => {
+        if (!cancelled) setImage(undefined);
+      };
+      fallback.src = src;
     };
     img.src = src;
     return () => {

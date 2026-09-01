@@ -6,7 +6,10 @@ import {
   defaultPlacement,
   designGroupCount,
   detachField,
+  fitInside,
+  inferArtworkRole,
   isTemplateVisible,
+  resolveArtworkRole,
   linkedVariationsForTemplate,
   productAllowsClientDesign,
   regionsForRole,
@@ -182,6 +185,89 @@ test('regionsForRole and bboxToPixels convert fractional boxes', () => {
     width: 300,
     height: 200,
   });
+});
+
+test('inferArtworkRole maps colour fields to text or base', () => {
+  expect(inferArtworkRole({ fieldType: FieldType.FILE_UPLOAD })).toBe('image');
+  expect(inferArtworkRole({ fieldType: FieldType.TEXT_INPUT })).toBe('text');
+  expect(inferArtworkRole({
+    fieldType: FieldType.COLOUR_PICKER,
+    name: 'Text Colour',
+  })).toBe('text_fill');
+  expect(inferArtworkRole({
+    fieldType: FieldType.COLOUR_SELECT,
+    name: 'Wristband Colour',
+  })).toBe('body_colour_fill');
+});
+
+test('resolveArtworkRole keeps named base-colour fields as body fills', () => {
+  expect(resolveArtworkRole({
+    id: 3,
+    fieldType: FieldType.COLOUR_PICKER,
+    name: 'Wristband Colour',
+  }, {
+    customisationMap: {
+      fieldBindings: [{ fieldId: 3, role: 'text_fill', targetFieldId: 1 }],
+    },
+  }, [{ id: 1, fieldType: FieldType.TEXT_INPUT }])).toBe('body_colour_fill');
+});
+
+test('fitInside preserves ratio inside a box', () => {
+  const fitted = fitInside({ x: 0, y: 0, width: 200, height: 100 }, 100, 100, true);
+  expect(fitted.width).toBe(100);
+  expect(fitted.height).toBe(100);
+  expect(fitted.x).toBe(50);
+  expect(fitInside({ x: 0, y: 0, width: 200, height: 100 }, 100, 100, false)).toEqual({
+    x: 0, y: 0, width: 200, height: 100,
+  });
+});
+
+test('seedOrSyncCanvas applies a linked colour to text instead of a rect', () => {
+  const template = {
+    width: 1000,
+    height: 1000,
+    editedByVariationFields: [{ id: 1 }, { id: 2 }],
+    customisationMap: {
+      fieldBindings: [
+        { fieldId: 1, role: 'text' },
+        { fieldId: 2, role: 'text_fill', targetFieldId: 1 },
+      ],
+    },
+  };
+  const seeded = seedOrSyncCanvas(null, template, [
+    { variationField: { id: 1, fieldType: FieldType.TEXT_INPUT }, value: 'Hello' },
+    { variationField: { id: 2, fieldType: FieldType.COLOUR_PICKER }, value: '#ff0000' },
+  ]);
+  expect(seeded.objects).toHaveLength(1);
+  expect(seeded.objects[0].text).toBe('Hello');
+  expect(seeded.objects[0].fill).toBe('#ff0000');
+});
+
+test('seedOrSyncCanvas paints base colour even without a mapped region', () => {
+  const template = {
+    width: 1000,
+    height: 1000,
+    editedByVariationFields: [{ id: 3 }],
+  };
+  const variations = [
+    {
+      variationField: { id: 3, fieldType: FieldType.COLOUR_PICKER, name: 'Base colour' },
+      value: '#00aa00',
+    },
+  ];
+  const fallback = seedOrSyncCanvas(null, template, variations);
+  expect(fallback.objects).toHaveLength(1);
+  expect(fallback.objects[0].type).toBe('rect');
+  expect(fallback.objects[0].fill).toBe('#00aa00');
+  expect(fallback.objects[0].width).toBe(1000);
+  expect(fallback.objects[0].locked).toBe(true);
+  const withRegion = seedOrSyncCanvas(null, {
+    ...template,
+    customisationMap: {
+      regions: [{ role: 'body_colour_fill', bbox: [0, 0.8, 1, 0.2] }],
+    },
+  }, variations);
+  expect(withRegion.objects[0].y).toBeCloseTo(800);
 });
 
 test('defaultPlacement stacks text and centres images', () => {

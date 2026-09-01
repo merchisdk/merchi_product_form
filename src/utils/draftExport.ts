@@ -1,3 +1,5 @@
+import { cssFontFamily } from './draftFonts';
+import { isBackgroundFill, isFullArtboardFill } from './draftTemplates';
 import { DraftCanvasObject, DraftCanvasState } from './types';
 
 function loadHtmlImage(src: string): Promise<HTMLImageElement> {
@@ -28,7 +30,7 @@ function drawObject(
     ctx.fillRect(0, 0, obj.width, obj.height);
   } else if (obj.type === 'text') {
     ctx.fillStyle = obj.fill || '#111111';
-    ctx.font = `${obj.fontSize || 48}px ${obj.fontFamily || 'sans-serif'}`;
+    ctx.font = `${obj.fontSize || 48}px ${cssFontFamily(obj.fontFamily)}`;
     ctx.textBaseline = 'top';
     ctx.textAlign = (obj.align as CanvasTextAlign) || 'left';
     wrapText(ctx, obj.text || '', 0, 0, obj.width, (obj.fontSize || 48) * 1.2);
@@ -73,30 +75,42 @@ async function renderState(
   const ctx = canvas.getContext('2d');
   if (!ctx) return '';
 
+  const fills = state.objects.filter(isBackgroundFill);
+  const underFills = fills.filter((obj) => isFullArtboardFill(obj, canvas.width, canvas.height));
+  const regionFills = fills.filter((obj) => !isFullArtboardFill(obj, canvas.width, canvas.height));
+  const content = state.objects.filter((obj) => !isBackgroundFill(obj));
+
   if (!objectsOnly) {
     ctx.fillStyle = '#ffffff';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
-    if (templateSrc) {
-      try {
-        const template = await loadHtmlImage(templateSrc);
-        ctx.drawImage(template, 0, 0, canvas.width, canvas.height);
-      } catch {
-        // blank artboard if the template image cannot load
-      }
-    }
   }
 
-  for (const obj of state.objects) {
-    let image: HTMLImageElement | undefined;
-    if (obj.type === 'image' && obj.src) {
-      try {
-        image = await loadHtmlImage(obj.src);
-      } catch {
-        image = undefined;
+  const drawList = async (objects: DraftCanvasObject[]) => {
+    for (const obj of objects) {
+      let image: HTMLImageElement | undefined;
+      if (obj.type === 'image' && obj.src) {
+        try {
+          image = await loadHtmlImage(obj.src);
+        } catch {
+          image = undefined;
+        }
       }
+      drawObject(ctx, obj, image);
     }
-    drawObject(ctx, obj, image);
+  };
+
+  await drawList(underFills);
+  if (!objectsOnly && templateSrc) {
+    try {
+      const template = await loadHtmlImage(templateSrc);
+      ctx.drawImage(template, 0, 0, canvas.width, canvas.height);
+    } catch {
+      // blank artboard if the template image cannot load
+    }
   }
+  await drawList(regionFills);
+  await drawList(content.filter((obj) => obj.type !== 'image'));
+  await drawList(content.filter((obj) => obj.type === 'image'));
 
   return canvas.toDataURL('image/png');
 }

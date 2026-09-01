@@ -158,24 +158,24 @@ export default function DraftApprovePanel({
         </div>
       ))}
       {customFooterContent}
-      <div className={classNameDraftButtonContainer}>
+      <div className={`merchi-product-draft-button-container ${classNameDraftButtonContainer || ''}`}>
         <button
           type="button"
-          className={classNameButtonCloseDrafts}
+          className={`merchi-product-draft-btn merchi-product-draft-btn-secondary ${classNameButtonCloseDrafts || ''}`}
           onClick={() => {
             setIsDraftModalOpen(false);
           }}
           disabled={isLoading}
         >
-          Close Drafts
+          Close
         </button>
         <button
           type="button"
-          className={classNameButtonApproveDrafts}
+          className={`merchi-product-draft-btn merchi-product-draft-btn-primary ${classNameButtonApproveDrafts || ''}`}
           disabled={isLoading}
           onClick={approveDrats}
         >
-          Approve Drafts
+          {isLoading ? 'Approving…' : 'Approve drafts'}
         </button>
       </div>
     </div>

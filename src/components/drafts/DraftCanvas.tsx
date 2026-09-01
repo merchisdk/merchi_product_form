@@ -3,7 +3,8 @@ import * as React from 'react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Group, Image as KonvaImage, Layer, Line, Rect, Stage, Text, Transformer } from 'react-konva';
 import type { DraftCanvasObject, DraftCanvasState } from '../../utils/types';
-import { printAreaGuides } from '../../utils/draftTemplates';
+import { cssFontFamily } from '../../utils/draftFonts';
+import { fitInside, isBackgroundFill, isFullArtboardFill, printAreaGuides } from '../../utils/draftTemplates';
 import { useHtmlImage } from './useHtmlImage';
 
 interface Props {
@@ -45,6 +46,22 @@ const CanvasImage = React.forwardRef(function CanvasImage(
   ref: any,
 ) {
   const image = useHtmlImage(obj.src);
+  React.useEffect(() => {
+    if (!image || !obj.lockAspectRatio) return;
+    const next = fitInside(
+      { x: obj.x, y: obj.y, width: obj.width, height: obj.height },
+      image.naturalWidth || image.width,
+      image.naturalHeight || image.height,
+      true,
+    );
+    const sameRatio = Math.abs(
+      (obj.width / Math.max(obj.height, 1))
+      - (next.width / Math.max(next.height, 1))
+    ) < 0.03;
+    if (sameRatio) return;
+    onChange(next);
+  }, [image, obj.lockAspectRatio, obj.src]);
+  if (!image) return null;
   return (
     <KonvaImage
       ref={ref}
@@ -64,12 +81,28 @@ const CanvasImage = React.forwardRef(function CanvasImage(
       onDragEnd={(e) => onChange({ x: e.target.x(), y: e.target.y() })}
       onTransformEnd={(e) => {
         const node = e.target;
+        const sx = node.scaleX();
+        const sy = node.scaleY();
+        if (obj.lockAspectRatio) {
+          node.scaleX(sx < 0 ? -1 : 1);
+          node.scaleY(1);
+          onChange({
+            x: node.x(),
+            y: node.y(),
+            rotation: node.rotation(),
+            width: Math.max(16, node.width() * Math.abs(sx)),
+            height: Math.max(16, node.height() * Math.abs(sy)),
+            scaleX: sx < 0 ? -1 : 1,
+            scaleY: 1,
+          });
+          return;
+        }
         onChange({
           x: node.x(),
           y: node.y(),
           rotation: node.rotation(),
-          scaleX: node.scaleX(),
-          scaleY: node.scaleY(),
+          scaleX: sx,
+          scaleY: sy,
         });
       }}
     />
@@ -112,11 +145,22 @@ export default function DraftCanvas({
 
   useEffect(() => {
     const transformer = trRef.current;
-    const node = selectedId ? nodeRefs.current[selectedId] : null;
-    if (transformer) {
-      transformer.nodes(node ? [node] : []);
-      transformer.getLayer()?.batchDraw();
-    }
+    if (!transformer) return undefined;
+    const attach = () => {
+      const node = selectedId ? nodeRefs.current[selectedId] : null;
+      try {
+        const onStage = Boolean(
+          node && typeof node.getStage === 'function' && node.getStage()
+        );
+        transformer.nodes(onStage ? [node] : []);
+        transformer.getLayer()?.batchDraw();
+      } catch {
+        transformer.nodes([]);
+      }
+    };
+    attach();
+    const raf = requestAnimationFrame(attach);
+    return () => cancelAnimationFrame(raf);
   }, [selectedId, state.objects]);
 
   function patchObject(id: string, patch: Partial<DraftCanvasObject>) {
@@ -127,7 +171,7 @@ export default function DraftCanvas({
   }
 
   function handleWheel(e: any) {
-    e.evt.preventDefault();
+    if (e.evt?.cancelable) e.evt.preventDefault();
     const stage = stageRef.current;
     if (!stage) return;
     const pointer = stage.getPointerPosition();
@@ -150,7 +194,7 @@ export default function DraftCanvas({
   function handleTouchMove(e: any) {
     const touches = e.evt.touches;
     if (touches.length !== 2) return;
-    e.evt.preventDefault();
+    if (e.evt?.cancelable) e.evt.preventDefault();
     const dist = Math.hypot(
       touches[0].clientX - touches[1].clientX,
       touches[0].clientY - touches[1].clientY,
@@ -200,6 +244,22 @@ export default function DraftCanvas({
               onClick={() => onSelect(null)}
               onTap={() => onSelect(null)}
             />
+            {state.objects.filter((obj) => (
+              isBackgroundFill(obj) && isFullArtboardFill(obj, state.width, state.height)
+            )).map((obj) => (
+              <Rect
+                key={obj.id}
+                x={obj.x}
+                y={obj.y}
+                width={obj.width}
+                height={obj.height}
+                rotation={obj.rotation}
+                scaleX={obj.scaleX}
+                scaleY={obj.scaleY}
+                fill={obj.fill || '#cccccc'}
+                listening={false}
+              />
+            ))}
             {templateImage ? (
               <KonvaImage
                 image={templateImage}
@@ -208,6 +268,22 @@ export default function DraftCanvas({
                 listening={false}
               />
             ) : null}
+            {state.objects.filter((obj) => (
+              isBackgroundFill(obj) && !isFullArtboardFill(obj, state.width, state.height)
+            )).map((obj) => (
+              <Rect
+                key={`${obj.id}-region`}
+                x={obj.x}
+                y={obj.y}
+                width={obj.width}
+                height={obj.height}
+                rotation={obj.rotation}
+                scaleX={obj.scaleX}
+                scaleY={obj.scaleY}
+                fill={obj.fill || '#cccccc'}
+                listening={false}
+              />
+            ))}
             {guides.map((guide, index) => (
               <Line
                 key={`guide-${index}`}
@@ -229,7 +305,10 @@ export default function DraftCanvas({
                 listening={false}
               />
             ))}
-            {state.objects.map((obj) => {
+            {state.objects.filter((obj) => !isBackgroundFill(obj)).sort((a, b) => {
+              if (a.type === b.type) return 0;
+              return a.type === 'image' ? 1 : b.type === 'image' ? -1 : 0;
+            }).map((obj) => {
               const common = {
                 ref: (node: any) => {
                   if (node) nodeRefs.current[obj.id] = node;
@@ -251,24 +330,33 @@ export default function DraftCanvas({
                 onDragEnd: (e: any) => patchObject(obj.id, { x: e.target.x(), y: e.target.y() }),
                 onTransformEnd: (e: any) => {
                   const node = e.target;
+                  const sx = node.scaleX();
+                  const sy = node.scaleY();
+                  if (obj.type === 'text') {
+                    const fontSize = Math.max(12, Math.round((obj.fontSize || 48) * Math.abs(sy)));
+                    node.scaleX(sx < 0 ? -1 : 1);
+                    node.scaleY(1);
+                    patchObject(obj.id, {
+                      x: node.x(),
+                      y: node.y(),
+                      rotation: node.rotation(),
+                      width: Math.max(32, node.width() * Math.abs(sx)),
+                      height: Math.max(24, node.height() * Math.abs(sy)),
+                      fontSize,
+                      scaleX: sx < 0 ? -1 : 1,
+                      scaleY: 1,
+                    });
+                    return;
+                  }
                   patchObject(obj.id, {
                     x: node.x(),
                     y: node.y(),
                     rotation: node.rotation(),
-                    scaleX: node.scaleX(),
-                    scaleY: node.scaleY(),
+                    scaleX: sx,
+                    scaleY: sy,
                   });
                 },
               };
-              if (obj.type === 'rect') {
-                return (
-                  <Rect
-                    key={obj.id}
-                    {...common}
-                    fill={obj.fill || '#cccccc'}
-                  />
-                );
-              }
               if (obj.type === 'text') {
                 return (
                   <Text
@@ -277,9 +365,26 @@ export default function DraftCanvas({
                     text={obj.text || 'Text'}
                     fontSize={obj.fontSize || 48}
                     fill={obj.fill || '#111111'}
-                    fontFamily={obj.fontFamily || 'sans-serif'}
-                    align={obj.align || 'left'}
+                    fontFamily={cssFontFamily(obj.fontFamily)}
+                    align={obj.align || 'center'}
+                    verticalAlign='middle'
                     wrap='word'
+                    hitFunc={(context, shape) => {
+                      const width = shape.width();
+                      const height = shape.height();
+                      let textWidth = width;
+                      try {
+                        textWidth = Math.min(width, shape.getTextWidth() || width);
+                      } catch {
+                        textWidth = width;
+                      }
+                      const pad = 10;
+                      const x = (width - textWidth) / 2;
+                      context.beginPath();
+                      context.rect(x - pad, -pad, textWidth + pad * 2, height + pad * 2);
+                      context.closePath();
+                      context.fillStrokeShape(shape);
+                    }}
                   />
                 );
               }
@@ -300,6 +405,10 @@ export default function DraftCanvas({
             <Transformer
               ref={trRef}
               rotateEnabled
+              keepRatio={
+                (state.objects.find((obj) => obj.id === selectedId)?.type === 'text')
+                || Boolean(state.objects.find((obj) => obj.id === selectedId)?.lockAspectRatio)
+              }
               enabledAnchors={[
                 'top-left',
                 'top-right',
@@ -310,8 +419,9 @@ export default function DraftCanvas({
                 if (newBox.width < 16 || newBox.height < 16) return _oldBox;
                 return newBox;
               }}
-              anchorSize={18}
+              anchorSize={22}
               borderStrokeWidth={2}
+              padding={4}
             />
           </Group>
         </Layer>
