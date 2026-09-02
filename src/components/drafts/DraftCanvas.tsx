@@ -2,14 +2,15 @@
 import * as React from 'react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Group, Image as KonvaImage, Layer, Line, Rect, Stage, Text, Transformer } from 'react-konva';
-import type { DraftCanvasObject, DraftCanvasState } from '../../utils/types';
+import type { DraftCanvasHandle, DraftCanvasObject, DraftCanvasState } from '../../utils/types';
 import { cssFontFamily } from '../../utils/draftFonts';
+import { captureStageArtboard, exportDraftPngs } from '../../utils/draftExport';
 import { fitInside, isBackgroundFill, isFullArtboardFill, printAreaGuides } from '../../utils/draftTemplates';
 import { useHtmlImage } from './useHtmlImage';
 
 interface Props {
   state: DraftCanvasState;
-  templateSrc?: string | null;
+  templateSrc?: string | string[] | null;
   template?: any;
   selectedId: string | null;
   onSelect: (id: string | null) => void;
@@ -109,7 +110,7 @@ const CanvasImage = React.forwardRef(function CanvasImage(
   );
 });
 
-export default function DraftCanvas({
+const DraftCanvas = React.forwardRef<DraftCanvasHandle, Props>(function DraftCanvas({
   state,
   templateSrc,
   template,
@@ -117,10 +118,13 @@ export default function DraftCanvas({
   onSelect,
   onChange,
   onEditText,
-}: Props) {
+}, ref) {
   const containerRef = useRef<HTMLDivElement>(null);
   const stageRef = useRef<any>(null);
   const trRef = useRef<any>(null);
+  const whiteRectRef = useRef<any>(null);
+  const templateNodeRef = useRef<any>(null);
+  const guideRefs = useRef<any[]>([]);
   const nodeRefs = useRef<Record<string, any>>({});
   const [size, setSize] = useState({ width: 320, height: 360 });
   const [view, setView] = useState({ x: 0, y: 0, scale: 1 });
@@ -142,6 +146,44 @@ export default function DraftCanvas({
     observer.observe(el);
     return () => observer.disconnect();
   }, [state.width, state.height]);
+
+  React.useImperativeHandle(ref, () => ({
+    async exportPngs() {
+      const fallback = () => exportDraftPngs(state, templateSrc);
+      const stage = stageRef.current;
+      const hasTemplate = Array.isArray(templateSrc)
+        ? templateSrc.length > 0
+        : Boolean(templateSrc);
+      if (!stage?.toDataURL || (hasTemplate && !templateNodeRef.current)) {
+        return fallback();
+      }
+
+      const hide = (nodes: any[]) => nodes.forEach((node) => {
+        try { node.visible(false); } catch { /* ignore */ }
+      });
+      const show = (nodes: any[]) => nodes.forEach((node) => {
+        try { node.visible(true); } catch { /* ignore */ }
+      });
+      const chrome = [trRef.current, ...guideRefs.current].filter(Boolean);
+      const artOnly = [whiteRectRef.current, templateNodeRef.current].filter(Boolean);
+
+      try {
+        hide(chrome);
+        stage.draw();
+        const canvasPreview = captureStageArtboard(stage, view, state);
+        hide(artOnly);
+        stage.draw();
+        const draft = captureStageArtboard(stage, view, state);
+        show([...artOnly, ...chrome]);
+        stage.draw();
+        if (draft && canvasPreview) return { draft, canvasPreview };
+      } catch {
+        show([...artOnly, ...chrome]);
+        try { stage.draw(); } catch { /* ignore */ }
+      }
+      return fallback();
+    },
+  }), [state, templateSrc, view]);
 
   useEffect(() => {
     const transformer = trRef.current;
@@ -236,6 +278,7 @@ export default function DraftCanvas({
         <Layer>
           <Group x={view.x} y={view.y} scaleX={view.scale} scaleY={view.scale}>
             <Rect
+              ref={whiteRectRef}
               width={state.width}
               height={state.height}
               fill='#ffffff'
@@ -262,6 +305,7 @@ export default function DraftCanvas({
             ))}
             {templateImage ? (
               <KonvaImage
+                ref={templateNodeRef}
                 image={templateImage}
                 width={state.width}
                 height={state.height}
@@ -287,6 +331,10 @@ export default function DraftCanvas({
             {guides.map((guide, index) => (
               <Line
                 key={`guide-${index}`}
+                ref={(node) => {
+                  if (node) guideRefs.current[index] = node;
+                  else delete guideRefs.current[index];
+                }}
                 points={[
                   guide.x,
                   guide.y,
@@ -368,6 +416,7 @@ export default function DraftCanvas({
                     fontFamily={cssFontFamily(obj.fontFamily)}
                     align={obj.align || 'center'}
                     verticalAlign='middle'
+                    lineHeight={1}
                     wrap='word'
                     hitFunc={(context, shape) => {
                       const width = shape.width();
@@ -428,4 +477,6 @@ export default function DraftCanvas({
       </Stage>
     </div>
   );
-}
+});
+
+export default DraftCanvas;

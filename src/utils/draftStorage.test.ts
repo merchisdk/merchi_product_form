@@ -1,11 +1,17 @@
 import {
+  artworkPathKey,
+  clearDrafts,
   completeGroupCount,
   draftStorageKey,
   isPreviewComplete,
+  loadArtworkPath,
+  loadDrafts,
   missingDesignSlots,
   pruneDrafts,
   requiredDesignSlots,
   savedPreview,
+  saveArtworkPath,
+  saveDrafts,
   upsertGroupTemplateDraft,
 } from './draftStorage';
 import { FieldType } from './types';
@@ -21,6 +27,24 @@ const product = {
 
 test('draftStorageKey is per product', () => {
   expect(draftStorageKey(44)).toBe('productDraftTemplate-44');
+});
+
+test('clearDrafts removes saved artwork for a product', () => {
+  if (typeof window === 'undefined' || !window.localStorage) return;
+  saveDrafts(44, [{ groupIndex: 0, productId: 44, templateData: [], previews: [] }]);
+  expect(loadDrafts(44)).toHaveLength(1);
+  clearDrafts(44);
+  expect(loadDrafts(44)).toEqual([]);
+});
+
+test('artwork path defaults to self and can switch to the free design service', () => {
+  if (typeof window === 'undefined' || !window.localStorage) return;
+  window.localStorage.removeItem(artworkPathKey(44));
+  expect(loadArtworkPath(44)).toBe('self');
+  saveArtworkPath(44, 'service');
+  expect(loadArtworkPath(44)).toBe('service');
+  saveArtworkPath(44, 'self');
+  expect(loadArtworkPath(44)).toBe('self');
 });
 
 test('upsert and prune keep per-group template drafts', () => {

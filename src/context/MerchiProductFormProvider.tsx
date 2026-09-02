@@ -8,8 +8,8 @@ import { getMerchiSourceJobTags } from '../components/utils';
 import { DraftTemplateData } from '../utils/types';
 import { productAllowsClientDesign } from '../utils/draftTemplates';
 import {
+  loadArtworkPath,
   loadDrafts,
-  missingDesignSlots,
 } from '../utils/draftStorage';
 import ProductDraftsHost from '../components/drafts/ProductDraftsHost';
 import {
@@ -847,17 +847,16 @@ export const MerchiProductFormProvider = ({
       return;
     }
 
-    const formValues = hookForm.getValues();
-    const drafts = loadDrafts(initProduct.id);
-    const missing = missingDesignSlots(initProduct, formValues, drafts);
-    if (missing.length) {
-      pendingCheckoutRef.current = () => {
-        void runDraftCheckout(proceed);
-      };
-      setIsDraftDesignerOpen(true);
+    if (loadArtworkPath(initProduct.id) === 'service') {
+      proceed({
+        ...jobData,
+        ownDrafts: [],
+        clientFiles: [],
+      });
       return;
     }
 
+    const drafts = loadDrafts(initProduct.id);
     const hasSaved = drafts.some(
       (draft: DraftTemplateData) =>
         draft.productId === initProduct.id && draft.templateData?.length

@@ -33,8 +33,9 @@ import {
   savedPreview,
   upsertGroupTemplateDraft,
 } from '../../utils/draftStorage';
-import { exportDraftPngs } from '../../utils/draftExport';
+import { exportDraftPngs, templateImageSources } from '../../utils/draftExport';
 import {
+  DraftCanvasHandle,
   DraftCanvasObject,
   DraftCanvasState,
 } from '../../utils/types';
@@ -85,8 +86,8 @@ interface Props {
   onSaved: () => void;
 }
 
-function templateSrc(template: any): string | undefined {
-  return template?.file?.viewUrl || template?.file?.cachedViewUrl || undefined;
+function templateSrc(template: any, apiUrl?: string): string[] {
+  return templateImageSources(template, apiUrl);
 }
 
 function readFileAsDataUrl(file: File): Promise<string> {
@@ -105,6 +106,7 @@ export default function DraftDesignerSheet({
   onSaved,
 }: Props) {
   const {
+    apiUrl,
     classNameDraftSheet,
     hookForm,
     product,
@@ -125,6 +127,7 @@ export default function DraftDesignerSheet({
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const canvasRef = useRef<DraftCanvasHandle>(null);
 
   const templates = useMemo(
     () => templatesForGroup(
@@ -268,7 +271,13 @@ export default function DraftDesignerSheet({
     setSaving(true);
     setError(null);
     try {
-      const pngs = await exportDraftPngs(state, templateSrc(template));
+      const pngs = canvasRef.current
+        ? await canvasRef.current.exportPngs()
+        : await exportDraftPngs(
+          state,
+          templateImageSources(template, apiUrl),
+          apiUrl,
+        );
       const drafts = pruneDrafts(
         loadDrafts(product.id),
         designGroupCount(product, hookForm.getValues()),
@@ -368,9 +377,10 @@ export default function DraftDesignerSheet({
               }
             >
               <DraftCanvas
+                ref={canvasRef}
                 state={state}
                 template={template}
-                templateSrc={templateSrc(template)}
+                templateSrc={templateSrc(template, apiUrl)}
                 selectedId={selectedId}
                 onSelect={setSelectedId}
                 onChange={setState}

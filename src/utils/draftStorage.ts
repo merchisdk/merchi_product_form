@@ -31,6 +31,36 @@ export function saveDrafts(
   window.localStorage.setItem(draftStorageKey(productId), JSON.stringify(drafts));
 }
 
+export function clearDrafts(productId: number | string): void {
+  if (typeof window === 'undefined' || productId == null) return;
+  window.localStorage.removeItem(draftStorageKey(productId));
+}
+
+export type ArtworkPath = 'self' | 'service';
+
+export function artworkPathKey(productId: number | string): string {
+  return `productArtworkPath-${productId}`;
+}
+
+export function loadArtworkPath(productId: number | string): ArtworkPath {
+  if (typeof window === 'undefined' || productId == null) return 'self';
+  try {
+    return window.localStorage.getItem(artworkPathKey(productId)) === 'service'
+      ? 'service'
+      : 'self';
+  } catch {
+    return 'self';
+  }
+}
+
+export function saveArtworkPath(
+  productId: number | string,
+  path: ArtworkPath,
+): void {
+  if (typeof window === 'undefined' || productId == null) return;
+  window.localStorage.setItem(artworkPathKey(productId), path);
+}
+
 export function pruneDrafts(
   drafts: DraftTemplateData[],
   groupCount: number,

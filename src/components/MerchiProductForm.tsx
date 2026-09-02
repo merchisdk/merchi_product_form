@@ -4,6 +4,7 @@ import { MerchiProductFormProvider } from '../context/MerchiProductFormProvider'
 import InputProductQuantity from './InputProductQuantity';
 import ProductTotalCost from './ProductTotalCost';
 import ProductButtonsSubmit from './ProductButtonsSubmit';
+import { ProductDraftsCta } from './drafts/ProductDraftsHost';
 import ProductTitle from './ProductTitle';
 import Variations from './Variations';
 import VariationsGroups from './VariationsGroups';
@@ -112,6 +113,7 @@ function MerchiProductForm(props: Props) {
         {!groupsFirst && <VariationsGroups />}
       </div>
       <ProductTotalCost />
+      <ProductDraftsCta />
       {!hideSubmitButtons && <ProductButtonsSubmit />}
     </MerchiProductFormProvider>
   );

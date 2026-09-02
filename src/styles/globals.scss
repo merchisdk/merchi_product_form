@@ -1088,14 +1088,70 @@
 
 .merchi-product-draft-cta {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
+  flex-direction: column;
+  align-items: stretch;
   gap: 0.75rem;
   margin-top: 1rem;
+  margin-bottom: 0.75rem;
   padding: 0.9rem 1rem;
   border: 1px solid #e4e4e7;
   border-radius: 0.85rem;
   background: #fafafa;
+}
+
+.merchi-product-draft-cta-heading {
+  font-size: 0.95rem;
+}
+
+.merchi-product-draft-cta-tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+  padding: 4px;
+  border: 1px solid #e4e4e7;
+  border-radius: 0.85rem;
+  background: #f4f4f5;
+}
+
+.merchi-product-draft-cta-tab {
+  appearance: none;
+  min-height: 40px;
+  padding: 0.45rem 0.6rem;
+  border: 1px solid transparent;
+  border-radius: 0.7rem;
+  background: transparent;
+  color: #71717a;
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  line-height: 1.2;
+  cursor: pointer;
+}
+
+.merchi-product-draft-cta-tab.is-active {
+  background: #fff;
+  color: #111827;
+  border-color: #2563eb;
+}
+
+.merchi-product-draft-cta-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  padding: 0.85rem 1rem;
+  border: 1px solid #e4e4e7;
+  border-radius: 0.75rem;
+  background: #fff;
+}
+
+.merchi-product-draft-cta-panel span {
+  font-size: 0.8rem;
+  color: #71717a;
+}
+
+.merchi-product-draft-cta + .merchi-product-buttons-submit-container,
+.merchi-product-draft-cta + .merchi-action-buttons-container {
+  margin-top: 0;
 }
 
 .merchi-product-draft-cta-copy {
@@ -1114,6 +1170,13 @@
   color: #71717a;
 }
 
+.merchi-product-draft-cta-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.45rem;
+}
+
 .merchi-product-draft-cta-btn {
   display: inline-flex;
   align-items: center;
@@ -1127,6 +1190,22 @@
   color: #fff;
   font-weight: 600;
   font-size: 0.9rem;
+}
+
+.merchi-product-draft-cta-reset {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: #71717a;
+  font: inherit;
+  font-size: 0.8rem;
+  font-weight: 500;
+  line-height: 1.2;
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+  cursor: pointer;
+  min-height: 32px;
+  padding: 0 0.25rem;
 }
 
 .merchi-product-draft-sheet {
@@ -1176,11 +1255,21 @@
   gap: 0.35rem;
   min-width: 44px;
   min-height: 44px;
+  width: max-content;
+  max-width: none;
+  padding: 0 0.8rem;
   border: 0;
   border-radius: 0.7rem;
   background: #27272a;
   color: inherit;
   font: inherit;
+  white-space: nowrap;
+  flex: 0 0 auto;
+  overflow: visible;
+}
+
+.merchi-product-draft-icon-btn svg {
+  flex-shrink: 0;
 }
 
 .merchi-product-draft-done-btn {
@@ -1426,14 +1515,49 @@
 }
 
 .merchi-product-draft-approve-panel {
+  display: flex;
+  flex-direction: column;
   width: 100%;
+  height: 90dvh;
   max-height: 90dvh;
-  overflow: auto;
+  overflow: hidden;
   background: #fff;
   color: #111;
   border-top-left-radius: 1rem;
   border-top-right-radius: 1rem;
-  padding: 1rem;
+}
+
+.merchi-product-draft-approve-layout {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  flex: 1;
+}
+
+.merchi-product-draft-approve-intro {
+  flex-shrink: 0;
+  padding: 1.1rem 1.15rem 0.9rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.merchi-product-draft-approve-intro h2 {
+  margin: 0 0 0.35rem;
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+.merchi-product-draft-approve-intro p {
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.45;
+  color: #52525b;
+}
+
+.merchi-product-draft-approve-body {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding: 1rem 1.15rem;
 }
 
 .merchi-product-draft-button-container {
@@ -1441,9 +1565,42 @@
   flex-wrap: wrap;
   justify-content: flex-end;
   gap: 0.75rem;
-  margin-top: 1.25rem;
-  padding-top: 1rem;
+  margin-top: 0;
+  padding: 1rem 1.15rem;
   border-top: 1px solid #e5e7eb;
+  background: #fff;
+}
+
+.merchi-product-draft-approve-footer {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: stretch;
+  gap: 0.75rem;
+  flex-shrink: 0;
+  margin: 0;
+  padding: 1rem 1.15rem;
+  border-top: 1px solid #e5e7eb;
+  background: #fff;
+}
+
+.merchi-product-draft-approve-footer > :not(button) {
+  grid-column: 1 / -1;
+}
+
+.merchi-product-draft-approve-footer > button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-width: 0;
+  min-height: 44px;
+  height: 44px;
+  margin: 0;
+  padding: 0 1rem;
+  text-align: center;
+  font-size: 0.95rem;
+  font-weight: 600;
+  line-height: 1;
 }
 
 .merchi-product-draft-btn {
@@ -1477,8 +1634,8 @@
 }
 
 .merchi-product-draft-btn-primary {
-  background: #2563eb;
-  color: #fff;
+  background: var(--primary, #2563eb);
+  color: var(--primary-foreground, #fff);
 }
 
 .merchi-product-draft-approve-panel img {
@@ -1529,6 +1686,7 @@
 
   .merchi-product-draft-approve-panel {
     max-width: 560px;
+    height: min(90dvh, 52rem);
     border-radius: 1rem;
   }
 }

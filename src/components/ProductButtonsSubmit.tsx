@@ -24,7 +24,10 @@ function ProductButtonsSubmit() {
   return (
     <>
       {!productFormId && (
-        <div className={classNameButtonsSubmitContainer}>
+        <div
+          className={classNameButtonsSubmitContainer}
+          data-merchi-checkout-buttons=''
+        >
           {isSupplierMOD ? (
             <button className={classNameButtonSubmit} onClick={onGetQuote}>
               Request Customisation

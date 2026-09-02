@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { useMerchiFormContext } from '../../context/MerchiProductFormProvider';
 import { DraftTemplateData, RenderedDraftPreview, MerchiFile } from '../../utils/types';
 
@@ -54,8 +54,20 @@ async function uploadBase64Image(
     throw new Error(`Server responded with ${response.status}: ${response.statusText}`);
   } else {
     data = await response.json();
-    return data.file;
+    const uploaded = data.file;
+    if (uploaded?.id == null) {
+      throw new Error('Draft upload did not return a file id');
+    }
+    return uploaded;
   }
+}
+
+/** merchi_checkout.cleanClientFiles reads `.file`, not a bare `{ id }`. */
+function asCheckoutClientFile(file: MerchiFile) {
+  return {
+    file: { id: file.id },
+    objectId: String(file.id),
+  };
 }
 
 interface DraftApprovePanelProps {
@@ -68,9 +80,6 @@ export default function DraftApprovePanel({
 
   const {
     apiUrl,
-    classNameButtonApproveDrafts,
-    classNameButtonCloseDrafts,
-    classNameDraftButtonContainer,
     classNameDraftGroupContainer,
     classNameDraftGroupTitle,
     draftApproveCallback,
@@ -131,8 +140,11 @@ export default function DraftApprovePanel({
 
       const jobData = {
         ...job,
-        clientFiles: clientFiles.map(f => ({ id: f.id })),
-        ownDrafts: [{ images: draftFiles.map(f => ({ id: f.id })) }]
+        clientFiles: clientFiles.map(asCheckoutClientFile),
+        ownDrafts: [{
+          accepted: Math.floor(Date.now() / 1000),
+          images: draftFiles.map(f => ({ id: f.id })),
+        }]
       };
       setJob(jobData);
 
@@ -147,21 +159,36 @@ export default function DraftApprovePanel({
       setIsLoading(false);
     }
   }
+  const draftCount = draftData.length;
+  const approveLabel = draftCount === 1 ? 'Approve draft' : 'Approve drafts';
+
   return (
-    <div>
-      {draftData.map((draft, index) => (
-        <div key={index} className={classNameDraftGroupContainer}>
-          <h3 className={classNameDraftGroupTitle}>Group {index + 1}</h3>
-          {draft.templateData.map((tD: RenderedDraftPreview, tDIndex: number) => (
-            <DraftPreview key={tDIndex} templateData={tD} />
-          ))}
-        </div>
-      ))}
-      {customFooterContent}
-      <div className={`merchi-product-draft-button-container ${classNameDraftButtonContainer || ''}`}>
+    <div className='merchi-product-draft-approve-layout'>
+      <div className='merchi-product-draft-approve-intro'>
+        <h2 id='merchi-product-draft-approve-title'>
+          {approveLabel}
+        </h2>
+        <p>
+          {draftCount === 1
+            ? 'Please approve your draft before you proceed.'
+            : 'Please approve your drafts before you proceed.'}
+        </p>
+      </div>
+      <div className='merchi-product-draft-approve-body'>
+        {draftData.map((draft, index) => (
+          <div key={index} className={classNameDraftGroupContainer}>
+            <h3 className={classNameDraftGroupTitle}>Group {index + 1}</h3>
+            {draft.templateData.map((tD: RenderedDraftPreview, tDIndex: number) => (
+              <DraftPreview key={tDIndex} templateData={tD} />
+            ))}
+          </div>
+        ))}
+      </div>
+      <div className='merchi-product-draft-approve-footer'>
+        {customFooterContent}
         <button
           type="button"
-          className={`merchi-product-draft-btn merchi-product-draft-btn-secondary ${classNameButtonCloseDrafts || ''}`}
+          className='merchi-product-draft-btn merchi-product-draft-btn-secondary'
           onClick={() => {
             setIsDraftModalOpen(false);
           }}
@@ -171,11 +198,11 @@ export default function DraftApprovePanel({
         </button>
         <button
           type="button"
-          className={`merchi-product-draft-btn merchi-product-draft-btn-primary ${classNameButtonApproveDrafts || ''}`}
+          className='merchi-product-draft-btn merchi-product-draft-btn-primary'
           disabled={isLoading}
           onClick={approveDrats}
         >
-          {isLoading ? 'Approving…' : 'Approve drafts'}
+          {isLoading ? 'Approving…' : approveLabel}
         </button>
       </div>
     </div>
