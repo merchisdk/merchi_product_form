@@ -6,6 +6,12 @@ import { fetchJobQuote } from '../actions/jobs';
 import { productHasGroups } from '../utils/products';
 import { getMerchiSourceJobTags } from '../components/utils';
 import { DraftTemplateData } from '../utils/types';
+import { productAllowsClientDesign } from '../utils/draftTemplates';
+import {
+  loadArtworkPath,
+  loadDrafts,
+} from '../utils/draftStorage';
+import ProductDraftsHost from '../components/drafts/ProductDraftsHost';
 import {
   buildEmptyVariationFromField,
   cleanJobVariationsAndGroups,
@@ -32,8 +38,11 @@ interface IMerchiProductForm {
   classNameButtonApproveDrafts?: string;
   classNameButtonCloseDrafts?: string;
   classNameDraftButtonContainer?: string;
+  classNameDraftCta?: string;
   classNameDraftGroupContainer?: string;
   classNameDraftGroupTitle?: string;
+  classNameDraftSheet?: string;
+  classNameDraftToolbar?: string;
   classNameFileUploadContainer?: string;
   classNameFileUpload?: string;
   classNameFilePreviewContainer?: string;
@@ -85,7 +94,9 @@ interface IMerchiProductForm {
   hookForm: FormMethods;
   isCartItem?: boolean;
   initJob?: any;
+  isDraftDesignerOpen: boolean;
   isDraftModalOpen: boolean;
+  consumePendingCheckout?: () => (() => void) | null;
   job: any;
   loading: boolean;
   inventoryLoading?: boolean;
@@ -96,6 +107,7 @@ interface IMerchiProductForm {
   product: any;
   productFormId?: string;
   setClient: (client: any) => void;
+  setIsDraftDesignerOpen: (isOpen: boolean) => void;
   setIsDraftModalOpen: (isOpen: boolean) => void;
   setJob: (job: any) => void;
   setLoading: (loading: boolean) => void;
@@ -120,8 +132,11 @@ const MerchiProductFormContext = createContext<IMerchiProductForm>({
   classNameButtonApproveDrafts: undefined,
   classNameButtonCloseDrafts: undefined,
   classNameDraftButtonContainer: undefined,
+  classNameDraftCta: undefined,
   classNameDraftGroupContainer: undefined,
   classNameDraftGroupTitle: undefined,
+  classNameDraftSheet: undefined,
+  classNameDraftToolbar: undefined,
   classNameFileUploadContainer: undefined,
   classNameFileUpload: undefined,
   classNameFilePreviewContainer: undefined,
@@ -172,7 +187,9 @@ const MerchiProductFormContext = createContext<IMerchiProductForm>({
   hookForm: {} as any,
   isCartItem: false,
   initJob: undefined,
+  isDraftDesignerOpen: false,
   isDraftModalOpen: false,
+  consumePendingCheckout() { return null; },
   job: {},
   loading: false,
   inventoryLoading: false,
@@ -183,6 +200,7 @@ const MerchiProductFormContext = createContext<IMerchiProductForm>({
   product: {},
   productFormId: undefined,
   setClient() { },
+  setIsDraftDesignerOpen() { },
   setIsDraftModalOpen() { },
   setJob(job) { },
   setLoading(loading) { },
@@ -209,8 +227,11 @@ export const MerchiProductFormProvider = ({
   classNameButtonApproveDrafts = 'btn btn-success',
   classNameButtonCloseDrafts = 'btn btn-secondary',
   classNameDraftButtonContainer = 'merchi-product-draft-button-container',
+  classNameDraftCta = 'merchi-product-draft-cta',
   classNameDraftGroupContainer = 'merchi-product-draft-group-container',
   classNameDraftGroupTitle = 'merchi-product-draft-group-title',
+  classNameDraftSheet = 'merchi-product-draft-sheet',
+  classNameDraftToolbar = 'merchi-product-draft-toolbar',
   classNameFileUploadContainer = 'merchi-input-file-container',
   classNameFileUpload = 'merchi-embed-form_dropzone',
   classNameFilePreviewContainer = 'uploaded-variation-file',
@@ -283,8 +304,11 @@ export const MerchiProductFormProvider = ({
   classNameButtonApproveDrafts?: string;
   classNameButtonCloseDrafts?: string;
   classNameDraftButtonContainer?: string;
+  classNameDraftCta?: string;
   classNameDraftGroupContainer?: string;
   classNameDraftGroupTitle?: string;
+  classNameDraftSheet?: string;
+  classNameDraftToolbar?: string;
   classNameFileUploadContainer?: string;
   classNameFileUpload?: string;
   classNameFilePreviewContainer?: string;
@@ -801,85 +825,77 @@ export const MerchiProductFormProvider = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [clientSideEnabled, pricingRules]);
 
-  const launchDraftApproveModal = async () => {
-    // if the client has drafts which have not been approved, we launch a modal to approve them
-    const designData = localStorage.getItem(`productDraftTemplate-${initProduct.id}`);
-
-    if (designData) {
-      try {
-        const draftDataJson: DraftTemplateData[] = JSON.parse(designData);
-        for (const draft of draftDataJson) {
-          if (draft.productId === initProduct.id) {
-            return true;
-          }
-        }
-        return false;
-      } catch (e) {
-        console.error('Error parsing design data', e);
-        return false;
-      }
-    }
-    return false;
-  }
-
   const [isDraftModalOpen, setIsDraftModalOpen] = useState(false);
+  const [isDraftDesignerOpen, setIsDraftDesignerOpen] = useState(false);
+  const pendingCheckoutRef = React.useRef<(() => void) | null>(null);
+
+  const consumePendingCheckout = () => {
+    const pending = pendingCheckoutRef.current;
+    pendingCheckoutRef.current = null;
+    return pending;
+  };
+
+  const runDraftCheckout = async (
+    proceed: (jobData: any) => void,
+  ) => {
+    if (!(await validateForm())) return;
+    const jobData = await getQuote({ immediate: true });
+    if (!jobData) return;
+
+    if (!productAllowsClientDesign(initProduct)) {
+      proceed(jobData);
+      return;
+    }
+
+    if (loadArtworkPath(initProduct.id) === 'service') {
+      proceed({
+        ...jobData,
+        ownDrafts: [],
+        clientFiles: [],
+      });
+      return;
+    }
+
+    const drafts = loadDrafts(initProduct.id);
+    const hasSaved = drafts.some(
+      (draft: DraftTemplateData) =>
+        draft.productId === initProduct.id && draft.templateData?.length
+    );
+    if (hasSaved) {
+      setDraftAppproveCallback(() => async (draftJobData: any) => {
+        proceed(draftJobData || jobData);
+        return Promise.resolve();
+      });
+      setIsDraftModalOpen(true);
+      return;
+    }
+
+    proceed(jobData);
+  };
+
   const addToCart = onAddToCart
     ? async () => {
-      if (!(await validateForm())) return;
-      const jobData = await getQuote({ immediate: true });
-      if (!jobData) return;
-      const openDraftModal = await launchDraftApproveModal();
-      if (openDraftModal) {
-        setDraftAppproveCallback(() => async (draftJobData) => {
-          const finalJobData = draftJobData || jobData;
-          if (!finalJobData.product) finalJobData.product = { id: initProduct.id };
-          setTimeout(() => {
-            onAddToCart({ ...finalJobData, tags });
-          }, 0);
-          return Promise.resolve();
-        });
-        setIsDraftModalOpen(true);
-      } else {
+      await runDraftCheckout((jobData) => {
         if (!jobData.product) jobData.product = { id: initProduct.id };
         setTimeout(() => {
           onAddToCart({ ...jobData, tags });
         }, 0);
-      }
+      });
     }
     : undefined;
 
   const buyNow = onBuyNow
     ? async () => {
-      if (!(await validateForm())) return;
-      const jobData = await getQuote({ immediate: true });
-      if (!jobData) return;
-      const openDraftModal = await launchDraftApproveModal();
-      if (openDraftModal) {
-        setDraftAppproveCallback(async (draftJobData) => {
-          onBuyNow({ ...(draftJobData || jobData) });
-          return Promise.resolve();
-        });
-        setIsDraftModalOpen(true);
-      } else {
+      await runDraftCheckout((jobData) => {
         onBuyNow({ ...jobData });
-      }
+      });
     }
     : undefined;
   const getSubmitQuote = onGetQuote
     ? async () => {
-      if (!(await validateForm())) return;
-      const jobData = await getQuote({ immediate: true });
-      if (!jobData) return;
-      const openDraftModal = await launchDraftApproveModal();
-      if (openDraftModal) {
-        setDraftAppproveCallback(async (draftJobData) => {
-          onGetQuote({ ...(draftJobData || jobData) });
-          return Promise.resolve();
-        });
-        setIsDraftModalOpen(true);
-      } else {
+      await runDraftCheckout((jobData) => {
         onGetQuote({ ...jobData });
-      }
+      });
     }
     : undefined;
 
@@ -898,8 +914,11 @@ export const MerchiProductFormProvider = ({
           classNameButtonApproveDrafts,
           classNameButtonCloseDrafts,
           classNameDraftButtonContainer,
+          classNameDraftCta,
           classNameDraftGroupContainer,
           classNameDraftGroupTitle,
+          classNameDraftSheet,
+          classNameDraftToolbar,
           classNameFileUploadContainer,
           classNameFileUpload,
           classNameFilePreviewContainer,
@@ -950,7 +969,9 @@ export const MerchiProductFormProvider = ({
           hideTitle,
           hookForm,
           isCartItem,
+          isDraftDesignerOpen,
           isDraftModalOpen,
+          consumePendingCheckout,
           job,
           loading,
           inventoryLoading,
@@ -961,6 +982,7 @@ export const MerchiProductFormProvider = ({
           product: initProduct,
           productFormId,
           setClient,
+          setIsDraftDesignerOpen,
           setIsDraftModalOpen,
           setJob,
           setLoading,
@@ -979,6 +1001,7 @@ export const MerchiProductFormProvider = ({
           {children}
         </form>
       ) : children}
+      <ProductDraftsHost />
     </MerchiProductFormContext.Provider>
   );
 };

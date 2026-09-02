@@ -22,7 +22,11 @@ export const embedProduct = {
     activeTheme: { mainCss: {} },
     logo: {}
   },
-  draftTemplates: { file: {} },
+  draftTemplates: {
+    file: {},
+    selectedByVariationFieldOptions: {},
+    editedByVariationFields: {},
+  },
   groupBuyStatus: {},
   groupVariationFields: {
     options: { linkedFile: {}, selectedBy: {} },
