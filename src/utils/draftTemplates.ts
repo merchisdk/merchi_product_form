@@ -8,7 +8,7 @@ import {
   DraftFieldBinding,
   FieldType,
 } from './types';
-import { DEFAULT_DRAFT_FONT } from './draftFonts';
+import { DEFAULT_DRAFT_FONT, cssFontFamily } from './draftFonts';
 
 export function productAllowsClientDesign(product: any): boolean {
   return Boolean(product?.needsDrafting && product?.allowClientDraftContribution);
@@ -176,14 +176,41 @@ export function variationCanvasContent(variation: any): {
   }
 
   if (type === FieldType.COLOUR_PICKER) {
-    return { kind, fill: variation?.value || '#000000' };
+    return { kind, fill: normaliseCssColour(variation?.value) || '#000000' };
   }
   const ids = parseSelectedOptionIds(variation.value);
   const option = ids.length ? optionById(variation, ids[0]) : null;
+  const selected = (variation?.selectedOptions || [])[0];
   return {
     kind,
-    fill: option?.colour || option?.value || variation?.value || '#000000',
+    fill: normaliseCssColour(
+      option?.colour,
+      selected?.colour,
+      option?.value,
+      selected?.value,
+      variation?.value,
+    ),
   };
+}
+
+const HEX_COLOUR = /^#([0-9a-f]{3}|[0-9a-f]{6}|[0-9a-f]{8})$/i;
+const CSS_FUNCTION_COLOUR = /^(rgba?|hsla?)\(/i;
+
+export function normaliseCssColour(...candidates: any[]): string | undefined {
+  for (const value of candidates) {
+    if (value == null || value === '') continue;
+    const raw = String(value).trim();
+    if (!raw || /^\d+$/.test(raw)) continue;
+    if (HEX_COLOUR.test(raw)) {
+      if (raw.length === 4) {
+        return `#${raw[1]}${raw[1]}${raw[2]}${raw[2]}${raw[3]}${raw[3]}`;
+      }
+      return raw;
+    }
+    if (CSS_FUNCTION_COLOUR.test(raw)) return raw;
+    if (/^[a-z][a-z\s-]{2,}$/i.test(raw)) return raw;
+  }
+  return undefined;
 }
 
 export function linkedVariationsForTemplate(
@@ -352,14 +379,58 @@ export function isFullArtboardFill(
   );
 }
 
+export function measureDraftText(
+  text: string,
+  fontSize = 48,
+  fontFamily?: string,
+): { width: number; height: number } {
+  const lines = String(text || 'Text').split('\n');
+  const size = Math.max(12, Number(fontSize) || 48);
+  let width = 0;
+  if (typeof document !== 'undefined') {
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    if (ctx) {
+      ctx.font = `${size}px ${cssFontFamily(fontFamily)}`;
+      width = Math.max(...lines.map((line) => ctx.measureText(line || ' ').width), 0);
+    }
+  }
+  if (!(width > 0)) {
+    width = Math.max(...lines.map((line) => (line || ' ').length), 1) * size * 0.62;
+  }
+  return {
+    width: Math.ceil(width + size * 0.16),
+    height: Math.ceil(Math.max(1, lines.length) * size * 1.15),
+  };
+}
+
+export function fitTextBox(
+  obj: Pick<DraftCanvasObject, 'x' | 'y' | 'width' | 'height' | 'text' | 'fontSize' | 'fontFamily'>,
+): { x: number; y: number; width: number; height: number } {
+  const measured = measureDraftText(obj.text || 'Text', obj.fontSize, obj.fontFamily);
+  const width = Math.max(24, measured.width);
+  const height = Math.max(20, measured.height);
+  const prevW = Number(obj.width) > 0 ? Number(obj.width) : width;
+  const prevH = Number(obj.height) > 0 ? Number(obj.height) : height;
+  return {
+    width,
+    height,
+    x: (Number(obj.x) || 0) + (prevW - width) / 2,
+    y: (Number(obj.y) || 0) + (prevH - height) / 2,
+  };
+}
+
 function placementBoxes(
   role: DraftArtworkRole,
   kind: DraftCanvasObjectType,
   template: any,
 ): number[][] {
   if (role === 'body_colour_fill' || kind === 'rect') {
-    const regions = regionsForRole(template?.customisationMap, 'body_colour_fill');
-    return regions.length ? regions : [[0, 0, 1, 1]];
+    const body = regionsForRole(template?.customisationMap, 'body_colour_fill');
+    if (body.length) return body;
+    const print = regionsForRole(template?.customisationMap, 'print_area');
+    if (print.length) return print;
+    return [[0, 0, 1, 1]];
   }
   if (kind === 'text') {
     const placeholders = regionsForRole(template?.customisationMap, 'text_placeholder');
@@ -406,9 +477,9 @@ export function seedOrSyncCanvas(
 ): DraftCanvasState {
   const width = Number(template?.width) || DEFAULT_ARTBOARD.width;
   const height = Number(template?.height) || DEFAULT_ARTBOARD.height;
-  const objects: DraftCanvasObject[] = (existing?.objects || []).map((obj) => ({
-    ...obj,
-  }));
+  const objects: DraftCanvasObject[] = (existing?.objects || []).map((obj) => (
+    obj.type === 'text' ? { ...obj, ...fitTextBox(obj) } : { ...obj }
+  ));
   const detached = new Set(existing?.detachedFieldIds || []);
   const linked = linkedVariationsForTemplate(template, variations);
   const linkedFields = linked.map((variation) => variation?.variationField).filter(Boolean);
@@ -465,6 +536,7 @@ export function seedOrSyncCanvas(
       fontFamily: kind === 'text' ? DEFAULT_DRAFT_FONT : undefined,
       fontSize: Math.max(28, Math.round(place.height * 0.62)),
     };
+    if (kind === 'text') Object.assign(next, fitTextBox(next));
     if (kind === 'rect') objects.unshift(next);
     else objects.push(next);
   };
@@ -479,7 +551,10 @@ export function seedOrSyncCanvas(
 
     const found = objects.find((obj) => obj.merchiFieldId === fieldId);
     if (found) {
-      if (content.kind === 'text' && content.text != null) found.text = content.text;
+      if (content.kind === 'text' && content.text != null) {
+        found.text = content.text;
+        Object.assign(found, fitTextBox(found));
+      }
       if (content.kind === 'image' && content.src) found.src = content.src;
       if (content.kind === 'rect' && content.fill) found.fill = content.fill;
       if (found.type === 'image') {
@@ -494,6 +569,7 @@ export function seedOrSyncCanvas(
 
     if (content.kind === 'text' && !content.text) continue;
     if (content.kind === 'image' && !content.src) continue;
+    if (content.kind === 'rect' && !content.fill) continue;
     placeObject(content.kind, role, field, fieldId, content);
   }
 

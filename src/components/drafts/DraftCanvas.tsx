@@ -5,7 +5,7 @@ import { Group, Image as KonvaImage, Layer, Line, Rect, Stage, Text, Transformer
 import type { DraftCanvasHandle, DraftCanvasObject, DraftCanvasState } from '../../utils/types';
 import { cssFontFamily } from '../../utils/draftFonts';
 import { captureStageArtboard, exportDraftPngs } from '../../utils/draftExport';
-import { fitInside, isBackgroundFill, isFullArtboardFill, printAreaGuides } from '../../utils/draftTemplates';
+import { fitInside, fitTextBox, isBackgroundFill, isFullArtboardFill, printAreaGuides } from '../../utils/draftTemplates';
 import { useHtmlImage } from './useHtmlImage';
 
 interface Props {
@@ -287,9 +287,16 @@ const DraftCanvas = React.forwardRef<DraftCanvasHandle, Props>(function DraftCan
               onClick={() => onSelect(null)}
               onTap={() => onSelect(null)}
             />
-            {state.objects.filter((obj) => (
-              isBackgroundFill(obj) && isFullArtboardFill(obj, state.width, state.height)
-            )).map((obj) => (
+            {templateImage ? (
+              <KonvaImage
+                ref={templateNodeRef}
+                image={templateImage}
+                width={state.width}
+                height={state.height}
+                listening={false}
+              />
+            ) : null}
+            {state.objects.filter(isBackgroundFill).map((obj) => (
               <Rect
                 key={obj.id}
                 x={obj.x}
@@ -300,31 +307,11 @@ const DraftCanvas = React.forwardRef<DraftCanvasHandle, Props>(function DraftCan
                 scaleX={obj.scaleX}
                 scaleY={obj.scaleY}
                 fill={obj.fill || '#cccccc'}
-                listening={false}
-              />
-            ))}
-            {templateImage ? (
-              <KonvaImage
-                ref={templateNodeRef}
-                image={templateImage}
-                width={state.width}
-                height={state.height}
-                listening={false}
-              />
-            ) : null}
-            {state.objects.filter((obj) => (
-              isBackgroundFill(obj) && !isFullArtboardFill(obj, state.width, state.height)
-            )).map((obj) => (
-              <Rect
-                key={`${obj.id}-region`}
-                x={obj.x}
-                y={obj.y}
-                width={obj.width}
-                height={obj.height}
-                rotation={obj.rotation}
-                scaleX={obj.scaleX}
-                scaleY={obj.scaleY}
-                fill={obj.fill || '#cccccc'}
+                globalCompositeOperation={
+                  isFullArtboardFill(obj, state.width, state.height)
+                    ? 'multiply'
+                    : 'source-over'
+                }
                 listening={false}
               />
             ))}
@@ -384,12 +371,15 @@ const DraftCanvas = React.forwardRef<DraftCanvasHandle, Props>(function DraftCan
                     const fontSize = Math.max(12, Math.round((obj.fontSize || 48) * Math.abs(sy)));
                     node.scaleX(sx < 0 ? -1 : 1);
                     node.scaleY(1);
-                    patchObject(obj.id, {
+                    const fitted = fitTextBox({
+                      ...obj,
                       x: node.x(),
                       y: node.y(),
+                      fontSize,
+                    });
+                    patchObject(obj.id, {
+                      ...fitted,
                       rotation: node.rotation(),
-                      width: Math.max(32, node.width() * Math.abs(sx)),
-                      height: Math.max(24, node.height() * Math.abs(sy)),
                       fontSize,
                       scaleX: sx < 0 ? -1 : 1,
                       scaleY: 1,
@@ -414,26 +404,10 @@ const DraftCanvas = React.forwardRef<DraftCanvasHandle, Props>(function DraftCan
                     fontSize={obj.fontSize || 48}
                     fill={obj.fill || '#111111'}
                     fontFamily={cssFontFamily(obj.fontFamily)}
-                    align={obj.align || 'center'}
+                    align={obj.align || 'left'}
                     verticalAlign='middle'
                     lineHeight={1}
-                    wrap='word'
-                    hitFunc={(context, shape) => {
-                      const width = shape.width();
-                      const height = shape.height();
-                      let textWidth = width;
-                      try {
-                        textWidth = Math.min(width, shape.getTextWidth() || width);
-                      } catch {
-                        textWidth = width;
-                      }
-                      const pad = 10;
-                      const x = (width - textWidth) / 2;
-                      context.beginPath();
-                      context.rect(x - pad, -pad, textWidth + pad * 2, height + pad * 2);
-                      context.closePath();
-                      context.fillStrokeShape(shape);
-                    }}
+                    wrap='none'
                   />
                 );
               }

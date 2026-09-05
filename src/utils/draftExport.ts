@@ -197,8 +197,6 @@ async function renderState(
   if (!ctx) return '';
 
   const fills = state.objects.filter(isBackgroundFill);
-  const underFills = fills.filter((obj) => isFullArtboardFill(obj, state.width, state.height));
-  const regionFills = fills.filter((obj) => !isFullArtboardFill(obj, state.width, state.height));
   const content = state.objects.filter((obj) => !isBackgroundFill(obj));
 
   if (!objectsOnly) {
@@ -206,7 +204,10 @@ async function renderState(
     ctx.fillRect(0, 0, canvas.width, canvas.height);
   }
 
-  const drawList = async (objects: DraftCanvasObject[]) => {
+  const drawList = async (
+    objects: DraftCanvasObject[],
+    composite?: 'multiply' | 'source-over',
+  ) => {
     for (const obj of objects) {
       let image: HTMLImageElement | undefined;
       if (obj.type === 'image' && obj.src) {
@@ -216,11 +217,13 @@ async function renderState(
           image = undefined;
         }
       }
+      ctx.save();
+      if (composite) ctx.globalCompositeOperation = composite;
       drawObject(ctx, obj, image);
+      ctx.restore();
     }
   };
 
-  await drawList(underFills);
   if (!objectsOnly && templateSources.length) {
     try {
       const template = await loadHtmlImageFromSources(templateSources);
@@ -229,6 +232,9 @@ async function renderState(
       // blank artboard if the template image cannot load
     }
   }
+  const sheetFills = fills.filter((obj) => isFullArtboardFill(obj, state.width, state.height));
+  const regionFills = fills.filter((obj) => !isFullArtboardFill(obj, state.width, state.height));
+  await drawList(sheetFills, objectsOnly ? 'source-over' : 'multiply');
   await drawList(regionFills);
   await drawList(content.filter((obj) => obj.type !== 'image'));
   await drawList(content.filter((obj) => obj.type === 'image'));
