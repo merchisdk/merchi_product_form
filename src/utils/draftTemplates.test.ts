@@ -7,8 +7,10 @@ import {
   designGroupCount,
   detachField,
   fitInside,
+  fitTextBox,
   inferArtworkRole,
   isTemplateVisible,
+  normaliseCssColour,
   resolveArtworkRole,
   linkedVariationsForTemplate,
   productAllowsClientDesign,
@@ -101,6 +103,39 @@ test('variationCanvasContent reads text, option labels, files and colours', () =
     value: '#ff00aa',
     variationField: { fieldType: FieldType.COLOUR_PICKER },
   })).toEqual({ kind: 'rect', fill: '#ff00aa' });
+
+  expect(variationCanvasContent({
+    value: '12',
+    variationField: {
+      fieldType: FieldType.COLOUR_SELECT,
+      options: [{ id: 12, colour: '#00aa00', value: 'Green' }],
+    },
+  })).toEqual({ kind: 'rect', fill: '#00aa00' });
+
+  expect(variationCanvasContent({
+    value: '12',
+    variationField: { fieldType: FieldType.COLOUR_SELECT, options: [] },
+  })).toEqual({ kind: 'rect', fill: undefined });
+});
+
+test('normaliseCssColour ignores option ids and keeps hex or names', () => {
+  expect(normaliseCssColour('12', '#0a0')).toBe('#00aa00');
+  expect(normaliseCssColour('Green')).toBe('Green');
+  expect(normaliseCssColour(undefined, '')).toBeUndefined();
+});
+
+test('fitTextBox shrinks to the text instead of the region', () => {
+  const fitted = fitTextBox({
+    x: 0,
+    y: 0,
+    width: 800,
+    height: 200,
+    text: 'Hi',
+    fontSize: 40,
+  });
+  expect(fitted.width).toBeLessThan(200);
+  expect(fitted.height).toBeLessThan(80);
+  expect(fitted.x).toBeGreaterThan(200);
 });
 
 test('linkedVariationsForTemplate only returns editedBy fields', () => {
@@ -136,12 +171,13 @@ test('seedOrSyncCanvas places linked fields and updates content only', () => {
   expect(first.objects).toHaveLength(2);
   const text = first.objects.find((o) => o.type === 'text')!;
   expect(text.text).toBe('Acme');
-  expect(text.x).toBeCloseTo(100);
+  expect(text.width).toBeLessThan(200);
   expect(text.merchiFieldId).toBe(1);
   const image = first.objects.find((o) => o.type === 'image')!;
   expect(image.src).toBe('https://cdn.example/a.png');
   expect(image.x).toBeCloseTo(200);
 
+  const movedCenter = 333 + text.width / 2;
   text.x = 333;
   const synced = seedOrSyncCanvas(first, template, [
     { variationField: { id: 1, fieldType: FieldType.TEXT_INPUT }, value: 'Beta' },
@@ -152,7 +188,7 @@ test('seedOrSyncCanvas places linked fields and updates content only', () => {
   ]);
   const syncedText = synced.objects.find((o) => o.merchiFieldId === 1)!;
   expect(syncedText.text).toBe('Beta');
-  expect(syncedText.x).toBe(333);
+  expect(syncedText.x + syncedText.width / 2).toBeCloseTo(movedCenter);
 });
 
 test('detachField prevents re-seeding that field', () => {
@@ -268,6 +304,14 @@ test('seedOrSyncCanvas paints base colour even without a mapped region', () => {
     },
   }, variations);
   expect(withRegion.objects[0].y).toBeCloseTo(800);
+  const fromPrintArea = seedOrSyncCanvas(null, {
+    ...template,
+    customisationMap: {
+      regions: [{ role: 'print_area', bbox: [0.1, 0.4, 0.8, 0.15] }],
+    },
+  }, variations);
+  expect(fromPrintArea.objects[0].x).toBeCloseTo(100);
+  expect(fromPrintArea.objects[0].width).toBeCloseTo(800);
 });
 
 test('defaultPlacement stacks text and centres images', () => {

@@ -21,6 +21,7 @@ import {
   createObjectId,
   designGroupCount,
   detachField,
+  fitTextBox,
   productHasVariationGroups,
   seedOrSyncCanvas,
   templatesForGroup,
@@ -196,21 +197,29 @@ export default function DraftDesignerSheet({
     if (!selectedId) return;
     setState((current) => ({
       ...current,
-      objects: current.objects.map((obj) =>
-        obj.id === selectedId ? { ...obj, ...patch } : obj
-      ),
+      objects: current.objects.map((obj) => {
+        if (obj.id !== selectedId) return obj;
+        const next = { ...obj, ...patch };
+        if (
+          next.type === 'text'
+          && ('text' in patch || 'fontSize' in patch || 'fontFamily' in patch)
+        ) {
+          return { ...next, ...fitTextBox(next) };
+        }
+        return next;
+      }),
     }));
   }
 
   function addText() {
     const id = createObjectId();
-    const obj: DraftCanvasObject = {
+    const drafted: DraftCanvasObject = {
       id,
       type: 'text',
-      x: state.width * 0.15,
-      y: state.height * 0.15,
-      width: state.width * 0.7,
-      height: 72,
+      x: state.width * 0.5,
+      y: state.height * 0.35,
+      width: 1,
+      height: 1,
       rotation: 0,
       scaleX: 1,
       scaleY: 1,
@@ -218,7 +227,9 @@ export default function DraftDesignerSheet({
       fontSize: 56,
       fontFamily: DEFAULT_DRAFT_FONT,
       fill: '#111111',
+      align: 'left',
     };
+    const obj = { ...drafted, ...fitTextBox(drafted) };
     setState((current) => ({ ...current, objects: [...current.objects, obj] }));
     setSelectedId(id);
     setEditingTextId(id);
@@ -479,14 +490,16 @@ export default function DraftDesignerSheet({
                   >
                     A+
                   </button>
-                  <label className='merchi-product-draft-color'>
-                    <span className='merchi-sr-only'>Colour</span>
-                    <input
-                      type='color'
-                      value={/^#[0-9a-fA-F]{6}$/.test(selected.fill || '') ? selected.fill : '#111111'}
-                      onChange={(e) => patchSelected({ fill: e.target.value })}
-                    />
-                  </label>
+                  {selected.colourFieldId != null ? (
+                    <label className='merchi-product-draft-color'>
+                      <span className='merchi-sr-only'>Colour</span>
+                      <input
+                        type='color'
+                        value={/^#[0-9a-fA-F]{6}$/.test(selected.fill || '') ? selected.fill : '#111111'}
+                        onChange={(e) => patchSelected({ fill: e.target.value })}
+                      />
+                    </label>
+                  ) : null}
                 </>
               ) : null}
               {selected.type === 'image' ? (
