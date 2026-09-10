@@ -20,9 +20,9 @@ interface PricingField {
 }
 
 interface PricingRules {
-  fields: PricingField[];
-  groupFields: PricingField[];
-  hasGroups: boolean;
+  fields?: PricingField[];
+  groupFields?: PricingField[];
+  hasGroups?: boolean;
 }
 
 function parseOptionIds(value: any): number[] {
@@ -57,7 +57,7 @@ function buildFieldValues(
 
 export function toSelections(formValues: any, rules: PricingRules): Selections {
   const selectableByField: Record<number, boolean> = {};
-  for (const f of [...rules.fields, ...rules.groupFields] as PricingField[]) {
+  for (const f of [...(rules.fields || []), ...(rules.groupFields || [])] as PricingField[]) {
     selectableByField[f.id] = f.isSelectable;
   }
 
