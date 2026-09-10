@@ -10,8 +10,16 @@ import {
 } from './types';
 import { DEFAULT_DRAFT_FONT, cssFontFamily } from './draftFonts';
 
+export function productHasDraftTemplates(product: any): boolean {
+  return Array.isArray(product?.draftTemplates) && product.draftTemplates.length > 0;
+}
+
 export function productAllowsClientDesign(product: any): boolean {
-  return Boolean(product?.needsDrafting && product?.allowClientDraftContribution);
+  return Boolean(
+    product?.needsDrafting
+    && product?.allowClientDraftContribution
+    && productHasDraftTemplates(product),
+  );
 }
 
 export function productHasVariationGroups(product: any): boolean {

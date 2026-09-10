@@ -47,7 +47,10 @@ import DraftApprovePanel from './components/drafts/DraftApprovePanel';
 import ProductDraftsHost, {
   ProductDraftsCta,
 } from './components/drafts/ProductDraftsHost';
-import { productAllowsClientDesign } from './utils/draftTemplates';
+import {
+  productAllowsClientDesign,
+  productHasDraftTemplates,
+} from './utils/draftTemplates';
 import ButtonProductSubmit from './components/buttons/ButtonProductSubmit';
 import { isProductLeadForm, isProductSupplierMOD } from './components/utils';
 
@@ -95,6 +98,7 @@ export {
   isProductLeadForm,
   isProductSupplierMOD,
   productAllowsClientDesign,
+  productHasDraftTemplates,
 };
 
 export type { PriceMatrixProps } from './components/PriceMatrix';
