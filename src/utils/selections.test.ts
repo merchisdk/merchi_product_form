@@ -93,3 +93,7 @@ test('area field value is passed through as a non-selectable string', () => {
     },
   });
 });
+
+ test('accepts pricing rules without optional field collections', () => {
+   expect(toSelections({ quantity: 2 }, {})).toEqual({ quantity: 2, fieldValues: {} });
+ });
