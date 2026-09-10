@@ -21,13 +21,23 @@ import {
   visibleTemplatesForGroup,
 } from './draftTemplates';
 
-test('productAllowsClientDesign requires both flags', () => {
+test('productAllowsClientDesign requires both flags and a template', () => {
   expect(productAllowsClientDesign({})).toBe(false);
   expect(productAllowsClientDesign({ needsDrafting: true })).toBe(false);
   expect(productAllowsClientDesign({ allowClientDraftContribution: true })).toBe(false);
   expect(productAllowsClientDesign({
     needsDrafting: true,
     allowClientDraftContribution: true,
+  })).toBe(false);
+  expect(productAllowsClientDesign({
+    needsDrafting: true,
+    allowClientDraftContribution: true,
+    draftTemplates: [],
+  })).toBe(false);
+  expect(productAllowsClientDesign({
+    needsDrafting: true,
+    allowClientDraftContribution: true,
+    draftTemplates: [{ id: 1 }],
   })).toBe(true);
 });
 
