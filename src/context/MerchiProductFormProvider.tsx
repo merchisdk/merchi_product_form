@@ -16,6 +16,7 @@ import { toSelections } from '../utils/selections';
 import { scrollToFirstFormError } from '../utils/formErrors';
 import {
   buildDesiredVariationsFromFields,
+  productFieldsForPricingFields,
   reconcileVariations,
 } from '../utils/reconcileVariations';
 type FormMethods = ReturnType<typeof useForm>;
@@ -641,9 +642,11 @@ export const MerchiProductFormProvider = ({
       pricingRules,
       independentScope
     );
+    const independentFieldTemplates =
+      productFieldsForPricingFields(pricingRules.fields, initProduct);
     const desiredIndependent = buildDesiredVariationsFromFields(
       values.variations,
-      initProduct?.independentVariationFields,
+      independentFieldTemplates ?? initProduct?.independentVariationFields,
       independentVisibleFields,
       buildEmptyVariationFromField
     );
@@ -671,11 +674,11 @@ export const MerchiProductFormProvider = ({
           pricingRules,
           groupScope
         );
-        // Group visibility includes independent + this group's fields; only
-        // materialise groupVariationFields into the group row.
+        const groupFieldTemplates =
+          productFieldsForPricingFields(pricingRules.groupFields, initProduct);
         const desiredGroup = buildDesiredVariationsFromFields(
           g.variations,
-          initProduct?.groupVariationFields,
+          groupFieldTemplates ?? initProduct?.groupVariationFields,
           groupVisibleFields,
           buildEmptyVariationFromField
         );

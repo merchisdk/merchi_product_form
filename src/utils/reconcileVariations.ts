@@ -197,3 +197,27 @@ export function buildDesiredVariationsFromFields(
   }
   return desired;
 }
+
+export function productFieldTemplatesById(product: any): Map<number, any> {
+  const map = new Map<number, any>();
+  const add = (fields: any[] | undefined) => {
+    for (const field of fields || []) {
+      if (field?.id != null) map.set(Number(field.id), field);
+    }
+  };
+  add(product?.groupVariationFields);
+  add(product?.independentVariationFields);
+  return map;
+}
+
+export function productFieldsForPricingFields(
+  pricingFields: any[] | undefined,
+  product: any
+): any[] | null {
+  if (!Array.isArray(pricingFields)) return null;
+  const byId = productFieldTemplatesById(product);
+  if (byId.size === 0) return null;
+  return pricingFields
+    .filter((field) => field?.id != null)
+    .map((field) => byId.get(Number(field.id)) || field);
+}
