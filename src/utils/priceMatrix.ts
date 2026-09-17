@@ -1,4 +1,5 @@
 import { productMoqFloor } from './quantity';
+import { productHasGroups } from './products';
 
 function buildPriceMatrixFn():
   | ((rules: any, selections?: any, options?: any) => PriceMatrixData | null)
@@ -104,8 +105,7 @@ export function resolvePricingRules(
 }
 
 export function currentOrderQuantity(job: any, product: any): number {
-  const hasGroups = Array.isArray(product?.groupVariationFields)
-    && product.groupVariationFields.length > 0;
+  const hasGroups = productHasGroups(product);
   if (hasGroups && Array.isArray(job?.variationsGroups)) {
     return job.variationsGroups.reduce((sum: number, group: any) => {
       const n = Number(group?.quantity);

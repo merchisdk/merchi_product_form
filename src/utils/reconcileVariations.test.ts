@@ -130,6 +130,21 @@ test('buildDesiredVariationsFromFields omits fields not in the visible set', () 
   expect(desired.map((v) => v.variationField.id)).toEqual([1]);
 });
 
+test('buildDesiredVariationsFromFields can ignore independent fields in a group list', () => {
+  const fields = [
+    { id: 1, position: 0, independent: false },
+    { id: 356203, position: 0, independent: true, name: 'Date required' },
+    { id: 2, position: 1, independent: false },
+  ];
+  const desired = buildDesiredVariationsFromFields(
+    [],
+    fields.filter((field) => field.independent !== true),
+    new Set([1, 2, 356203]),
+    (field) => ({ variationField: field })
+  );
+  expect(desired.map((v) => v.variationField.id)).toEqual([1, 2]);
+});
+
 test('buildDesiredVariationsFromFields keeps current when product fields missing', () => {
   const current = [{ value: 'x', variationField: { id: 1 } }];
   expect(

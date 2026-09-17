@@ -53,6 +53,12 @@ import {
 } from './utils/draftTemplates';
 import ButtonProductSubmit from './components/buttons/ButtonProductSubmit';
 import { isProductLeadForm, isProductSupplierMOD } from './components/utils';
+import {
+  needsProductLevelQuantity,
+  productHasGroupRows,
+  productHasGroups,
+} from './utils/products';
+import { sanitizeProductVariationFields } from './utils/variationFields';
 
 
 export {
@@ -97,8 +103,12 @@ export {
   ButtonProductSubmit,
   isProductLeadForm,
   isProductSupplierMOD,
+  needsProductLevelQuantity,
   productAllowsClientDesign,
   productHasDraftTemplates,
+  productHasGroupRows,
+  productHasGroups,
+  sanitizeProductVariationFields,
 };
 
 export type { PriceMatrixProps } from './components/PriceMatrix';

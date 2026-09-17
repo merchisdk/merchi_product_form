@@ -8,7 +8,7 @@ import { ProductDraftsCta } from './drafts/ProductDraftsHost';
 import ProductTitle from './ProductTitle';
 import Variations from './Variations';
 import VariationsGroups from './VariationsGroups';
-import { isProductFileDownload, isProductLeadForm, isProductSupplierMOD } from './utils';
+import { isProductLeadForm } from './utils';
 import FormLead from './FormLead';
 import ProductFeatureDeadline from './ProductFeatureDeadline';
 import ProductGroupBuyStatus from './ProductGroupBuyStatus';
@@ -82,10 +82,7 @@ function MerchiProductForm(props: Props) {
     showFeatureDeadline,
     showGroupBuyStatus,
   } = props;
-  const { groupVariationFields, groupsFirst } = initProduct;
-  const hasGroups = groupVariationFields && groupVariationFields.length;
-  const isSupplierMOD = isProductSupplierMOD(initProduct);
-  const isDownloadableProduct = isProductFileDownload(initProduct);
+  const { groupsFirst } = initProduct;
   const isLeadForm = isProductLeadForm(initProduct);
 
   if (isLeadForm) {
@@ -101,12 +98,7 @@ function MerchiProductForm(props: Props) {
       {!hideTitle && <ProductTitle />}
       {showFeatureDeadline && <ProductFeatureDeadline />}
       {showGroupBuyStatus && <ProductGroupBuyStatus />}
-      {!!(
-        !isDownloadableProduct &&
-        !isSupplierMOD &&
-        !hasGroups &&
-        !hideQuantityField
-      ) && <InputProductQuantity />}
+      {!hideQuantityField && <InputProductQuantity />}
       <div className='merchi-embed-form_variantion-container'>
         {groupsFirst && <VariationsGroups />}
         <Variations />
