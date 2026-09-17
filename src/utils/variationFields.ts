@@ -1,12 +1,19 @@
 /** Split product fields that were serialized into the wrong array. */
 
+function numericIds(values: unknown[]): Set<number> {
+  const ids = new Set<number>();
+  for (const value of values) {
+    const id = Number(value);
+    if (Number.isFinite(id)) ids.add(id);
+  }
+  return ids;
+}
+
 export function sanitizeProductVariationFields(product: any) {
   if (!product || typeof product !== 'object') return product;
 
   const independent = [...(product.independentVariationFields || [])];
-  const independentIds = new Set(
-    independent.map((field: any) => Number(field?.id)).filter(Number.isFinite)
-  );
+  const independentIds = numericIds(independent.map((field: any) => field?.id));
   const group: any[] = [];
 
   for (const field of product.groupVariationFields || []) {
@@ -51,10 +58,9 @@ function isIndependentVariation(variation: any, independentIds: Set<number>) {
 export function liftIndependentVariationsFromGroups(job: any, product?: any) {
   if (!job || typeof job !== 'object') return job;
   const sourceProduct = product || job.product;
-  const independentIds = new Set(
+  const independentIds = numericIds(
     (sanitizeProductVariationFields(sourceProduct)?.independentVariationFields || [])
-      .map((field: any) => Number(field?.id))
-      .filter(Number.isFinite)
+      .map((field: any) => field?.id)
   );
 
   if (!Array.isArray(job.variationsGroups) || !job.variationsGroups.length) {
@@ -62,9 +68,7 @@ export function liftIndependentVariationsFromGroups(job: any, product?: any) {
   }
 
   const lifted = [...(job.variations || [])];
-  const liftedIds = new Set(
-    lifted.map(variationFieldId).filter((id: number | null) => id != null)
-  );
+  const liftedIds = numericIds(lifted.map(variationFieldId));
 
   const variationsGroups = job.variationsGroups.map((group: any) => ({
     ...group,
