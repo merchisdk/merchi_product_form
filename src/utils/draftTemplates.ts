@@ -9,6 +9,7 @@ import {
   FieldType,
 } from './types';
 import { DEFAULT_DRAFT_FONT, cssFontFamily } from './draftFonts';
+import { productHasGroups } from './products';
 
 export function productHasDraftTemplates(product: any): boolean {
   return Array.isArray(product?.draftTemplates) && product.draftTemplates.length > 0;
@@ -23,8 +24,7 @@ export function productAllowsClientDesign(product: any): boolean {
 }
 
 export function productHasVariationGroups(product: any): boolean {
-  return Array.isArray(product?.groupVariationFields)
-    && product.groupVariationFields.length > 0;
+  return productHasGroups(product);
 }
 
 export function designGroupCount(product: any, formValues: any): number {

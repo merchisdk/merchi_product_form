@@ -1,4 +1,5 @@
 import { ProductType } from "./types";
+import { sanitizeProductVariationFields } from './variationFields';
 const productNotFound = require('../images/product-not-found.png');
 
 export const supplierProductCreationTypes: Array<number> = [
@@ -61,5 +62,15 @@ export function productFeatureImageUrl(product: any, noImageSrc?: string) {
 }
 
 export function productHasGroups(product: any) {
-  return !!product?.groupVariationFields.length;
+  const fields = sanitizeProductVariationFields(product)?.groupVariationFields;
+  return Array.isArray(fields) && fields.length > 0;
+}
+
+export function productHasGroupRows(job: any) {
+  return Array.isArray(job?.variationsGroups) && job.variationsGroups.length > 0;
+}
+
+/** Product-level qty when there are no real group fields, or group rows never materialised. */
+export function needsProductLevelQuantity(product: any, job?: any) {
+  return !productHasGroups(product) || !productHasGroupRows(job);
 }

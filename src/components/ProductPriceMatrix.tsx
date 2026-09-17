@@ -3,6 +3,7 @@ import * as React from 'react';
 import { useMerchiFormContext } from '../context/MerchiProductFormProvider';
 import { toSelections } from '../utils/selections';
 import { productMoqFloor } from '../utils/quantity';
+import { productHasGroups } from '../utils/products';
 import {
   currentOrderQuantity,
   resolvePricingRules,
@@ -27,8 +28,7 @@ function ProductPriceMatrix() {
   if (!showPriceMatrix || hideCost || hideCalculatedPrice) return null;
 
   const rules = resolvePricingRules(pricingRules, product);
-  const hasGroups = Array.isArray(product?.groupVariationFields)
-    && product.groupVariationFields.length > 0;
+  const hasGroups = productHasGroups(product);
 
   function selectBand(bandQuantity: number) {
     if (hasGroups || !hookForm?.setValue) return;

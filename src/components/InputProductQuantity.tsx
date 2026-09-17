@@ -4,6 +4,8 @@ import { useController } from 'react-hook-form';
 import ProductUnitPrice from './ProductUnitPrice';
 import VariationError from './VariationError';
 import { productMoqFloor, productMinimumQuantity } from '../utils/quantity';
+import { needsProductLevelQuantity } from '../utils/products';
+import { isProductFileDownload, isProductSupplierMOD } from './utils';
 import { useMerchiFormContext } from '../context/MerchiProductFormProvider';
 
 interface Props {
@@ -20,11 +22,16 @@ function InputProductQuantity({ disabled, name = 'quantity' }: Props) {
     control,
     getQuote,
     hookForm,
+    hideQuantityField,
     product,
   } = useMerchiFormContext();
-  const { groupVariationFields } = product;
   const moq = productMinimumQuantity(product);
   const minQuantity = productMoqFloor(product);
+  const showInput =
+    !hideQuantityField &&
+    !isProductFileDownload(product) &&
+    !isProductSupplierMOD(product) &&
+    needsProductLevelQuantity(product, job);
   const validators: any = {
     required: {
       value: true,
@@ -54,8 +61,9 @@ function InputProductQuantity({ disabled, name = 'quantity' }: Props) {
   const { field, fieldState } = useController({
     name: name,
     control,
-    rules: validators,
+    rules: showInput ? validators : undefined,
   });
+  if (!showInput) return null;
   return (
     <div className={classNameInputContainer}>
       <div className={classNameQuantityLabelContainer}>
@@ -66,28 +74,24 @@ function InputProductQuantity({ disabled, name = 'quantity' }: Props) {
           </small>
         </div>
       </div>
-      {groupVariationFields && groupVariationFields.length ? (
-        <div>{job.quantity}</div>
-      ) : (
-        <input
-          id={inputId}
-          disabled={disabled}
-          min={minQuantity}
-          type='number'
-          className={classNameInput}
-          aria-invalid={fieldState.invalid || undefined}
-          {...field}
-          onChange={(e: any) => {
-            field.onChange(e);
-            hookForm.trigger(name);
-            getQuote();
-          }}
-          onBlur={() => {
-            field.onBlur();
-            hookForm.trigger(name);
-          }}
-        />
-      )}
+      <input
+        id={inputId}
+        disabled={disabled}
+        min={minQuantity}
+        type='number'
+        className={classNameInput}
+        aria-invalid={fieldState.invalid || undefined}
+        {...field}
+        onChange={(e: any) => {
+          field.onChange(e);
+          hookForm.trigger(name);
+          getQuote();
+        }}
+        onBlur={() => {
+          field.onBlur();
+          hookForm.trigger(name);
+        }}
+      />
       <VariationError name={name} />
     </div>
   );

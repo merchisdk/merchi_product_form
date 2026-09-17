@@ -25,6 +25,11 @@ import {
   productFieldsForPricingFields,
   reconcileVariations,
 } from '../utils/reconcileVariations';
+import {
+  groupFieldTemplates as groupFieldTemplatesFromProduct,
+  liftIndependentVariationsFromGroups,
+  sanitizeProductVariationFields,
+} from '../utils/variationFields';
 type FormMethods = ReturnType<typeof useForm>;
 
 interface IMerchiProductForm {
@@ -371,7 +376,11 @@ export const MerchiProductFormProvider = ({
   showPriceMatrix?: boolean;
   showUnitPrice?: boolean;
 }) => {
-  const defaultJob = initJob || initProduct.defaultJob || {};
+  const product = sanitizeProductVariationFields(initProduct);
+  const defaultJob = liftIndependentVariationsFromGroups(
+    initJob || product.defaultJob || {},
+    product
+  );
   const hookForm = useForm({
     defaultValues: defaultJob,
     // Re-check rules as the user edits after the first validation attempt.
@@ -632,7 +641,7 @@ export const MerchiProductFormProvider = ({
     inventoryRefreshTimer.current = setTimeout(async () => {
       try {
         let data = { ...cleanedValues, product: { id: initProduct.id } };
-        if (productHasGroups(initProduct)) {
+        if (productHasGroups(product)) {
           delete data.quantity;
         }
         const r = await fetchJobQuote(data, apiUrl);
@@ -667,10 +676,10 @@ export const MerchiProductFormProvider = ({
       independentScope
     );
     const independentFieldTemplates =
-      productFieldsForPricingFields(pricingRules.fields, initProduct);
+      productFieldsForPricingFields(pricingRules.fields, product);
     const desiredIndependent = buildDesiredVariationsFromFields(
       values.variations,
-      independentFieldTemplates ?? initProduct?.independentVariationFields,
+      independentFieldTemplates ?? product?.independentVariationFields,
       independentVisibleFields,
       buildEmptyVariationFromField
     );
@@ -699,10 +708,10 @@ export const MerchiProductFormProvider = ({
           groupScope
         );
         const groupFieldTemplates =
-          productFieldsForPricingFields(pricingRules.groupFields, initProduct);
+          productFieldsForPricingFields(pricingRules.groupFields, product);
         const desiredGroup = buildDesiredVariationsFromFields(
           g.variations,
-          groupFieldTemplates ?? initProduct?.groupVariationFields,
+          groupFieldTemplates ?? groupFieldTemplatesFromProduct(product),
           groupVisibleFields,
           buildEmptyVariationFromField
         );
@@ -746,7 +755,7 @@ export const MerchiProductFormProvider = ({
     const requestId = ++quoteRequestId.current;
     setLoading(true);
     let data = { ...cleanedValues, product: { id: initProduct.id } };
-    if (productHasGroups(initProduct)) {
+    if (productHasGroups(product)) {
       // if the product has group variation fields we delete quantity
       // because each group has it's own quantity
       delete data.quantity;
@@ -758,7 +767,7 @@ export const MerchiProductFormProvider = ({
       }
       const serverJob = r.toJson();
       const currentValues = getValues();
-      if (!formQuantitiesMatchRequest(currentValues, data, initProduct)) {
+      if (!formQuantitiesMatchRequest(currentValues, data, product)) {
         return null;
       }
       const { mergedJob, visibilityChanged } = applyServerQuote(currentValues, serverJob);
@@ -842,8 +851,9 @@ export const MerchiProductFormProvider = ({
     proceed: (jobData: any) => void,
   ) => {
     if (!(await validateForm())) return;
-    const jobData = await getQuote({ immediate: true });
-    if (!jobData) return;
+    const quoted = await getQuote({ immediate: true });
+    if (!quoted) return;
+    const jobData = liftIndependentVariationsFromGroups(quoted, product);
 
     if (!productAllowsClientDesign(initProduct)) {
       proceed(jobData);
@@ -982,7 +992,7 @@ export const MerchiProductFormProvider = ({
           onBuyNow: buyNow,
           onGetQuote: getSubmitQuote,
           onSubmit,
-          product: initProduct,
+          product,
           productFormId,
           setClient,
           setIsDraftDesignerOpen,
