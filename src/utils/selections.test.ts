@@ -74,6 +74,54 @@ test('empty/absent values produce empty selections', () => {
   });
 });
 
+test('colour extract sends colour count even when value is empty', () => {
+  const colourRules: any = {
+    hasGroups: false,
+    fields: [{ id: 13, fieldType: 13, isSelectable: true, options: [] }],
+    groupFields: [],
+  };
+  const values = {
+    quantity: 30,
+    variations: [{
+      variationField: { id: 13, fieldType: 13 },
+      value: '',
+      selectedOptions: [{ id: 4 }, { id: 5 }, { id: 6 }],
+      variationFiles: [],
+    }],
+  };
+  expect(toSelections(values, colourRules)).toEqual({
+    quantity: 30,
+    fieldValues: {
+      13: {
+        selectedOptionIds: [4, 5, 6],
+        colourCount: 3,
+        hasFiles: false,
+      },
+    },
+  });
+});
+
+test('colour extract marks an uploaded file', () => {
+  const colourRules: any = {
+    hasGroups: false,
+    fields: [{ id: 13, fieldType: 13, isSelectable: true }],
+    groupFields: [],
+  };
+  const values = {
+    quantity: 1,
+    variations: [{
+      variationField: { id: 13 },
+      value: '9',
+      variationFiles: [{ id: 'file-1' }],
+    }],
+  };
+  expect(toSelections(values, colourRules).fieldValues[13]).toEqual({
+    selectedOptionIds: [9],
+    colourCount: 1,
+    hasFiles: true,
+  });
+});
+
 test('area field value is passed through as a non-selectable string', () => {
   const areaRules: any = {
     hasGroups: false,
