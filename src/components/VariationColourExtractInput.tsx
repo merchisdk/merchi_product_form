@@ -22,6 +22,7 @@ function VariationColourExtractInput({ disabled, name, variation }: Props) {
     apiUrl,
     classNameFileUploadContainer,
     control,
+    getQuote,
     hideCost,
     hookForm,
   } = useMerchiFormContext();
@@ -71,6 +72,9 @@ function VariationColourExtractInput({ disabled, name, variation }: Props) {
         .join(','),
       { shouldDirty: true }
     );
+    // Colour cards render from form state immediately. The total only
+    // moves when a quote runs, which other inputs trigger themselves.
+    Promise.resolve().then(() => getQuote());
   };
 
   const extractColours = async (file: any) => {
