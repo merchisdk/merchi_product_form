@@ -2,23 +2,49 @@
 import * as React from 'react';
 import { useLayoutEffect, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { FaPaintBrush } from 'react-icons/fa';
+import { FaChevronDown, FaDownload, FaPaintBrush, FaTimes } from 'react-icons/fa';
 import { useMerchiFormContext } from '../../context/MerchiProductFormProvider';
+import DropzoneInput from '../DropzoneInput';
+import { templateDownloadHref, templateImageSources } from '../../utils/draftExport';
 import {
+  downloadableDraftTemplates,
   productAllowsClientDesign,
 } from '../../utils/draftTemplates';
 import { isProductLeadForm } from '../utils';
 import {
   ArtworkPath,
+  TemplateUpload,
   clearDrafts,
   completeGroupCount,
   loadArtworkPath,
   loadDrafts,
+  loadTemplateUploads,
   missingDesignSlots,
   saveArtworkPath,
+  saveDesignMethod,
+  saveTemplateUploads,
 } from '../../utils/draftStorage';
 import DraftApprovePanel from './DraftApprovePanel';
 import DraftDesignerSheet from './DraftDesignerSheet';
+
+function TemplateAvatar({ src, name }: { src: string; name: string }) {
+  const [failed, setFailed] = useState(false);
+  if (!src || failed) {
+    return (
+      <span className='merchi-product-draft-template-avatar is-empty' aria-hidden='true'>
+        {name.slice(0, 1).toUpperCase()}
+      </span>
+    );
+  }
+  return (
+    <img
+      className='merchi-product-draft-template-avatar'
+      src={src}
+      alt=''
+      onError={() => setFailed(true)}
+    />
+  );
+}
 
 function findCheckoutButtonsEl(): HTMLElement | null {
   const marked = document.querySelector('[data-merchi-checkout-buttons]');
@@ -33,6 +59,7 @@ function findCheckoutButtonsEl(): HTMLElement | null {
 
 export function ProductDraftsCta() {
   const {
+    apiUrl,
     classNameDraftCta,
     hookForm,
     job,
@@ -42,6 +69,8 @@ export function ProductDraftsCta() {
   } = useMerchiFormContext();
   const [draftRevision, setDraftRevision] = useState(0);
   const [artworkPath, setArtworkPath] = useState<ArtworkPath>('self');
+  const [templatesOpen, setTemplatesOpen] = useState(false);
+  const [uploads, setUploads] = useState<TemplateUpload[]>([]);
 
   const allowed = productAllowsClientDesign(product);
   const formValues = hookForm.watch ? hookForm.watch() : hookForm.getValues?.() || {};
@@ -52,15 +81,28 @@ export function ProductDraftsCta() {
     () => completeGroupCount(product, formValues, drafts),
     [product, formValues, drafts, draftRevision],
   );
-  const missing = useMemo(
-    () => missingDesignSlots(product, formValues, drafts),
-    [product, formValues, drafts, draftRevision],
-  );
   const hasSaved = status.complete > 0;
+  const downloads = useMemo(() => {
+    const templates = downloadableDraftTemplates(product, formValues);
+    return templates
+      .map((template, index) => {
+        const name = String(template?.name || template?.file?.name || '').trim()
+          || `Template ${index + 1}`;
+        return {
+          key: template?.id ?? index,
+          href: templateDownloadHref(template, apiUrl),
+          preview: templateImageSources(template, apiUrl)[0] || '',
+          name,
+          fileName: String(template?.file?.name || '').trim() || name,
+        };
+      })
+      .filter((item) => item.href);
+  }, [apiUrl, formValues, product]);
 
   React.useEffect(() => {
     if (!product?.id) return;
     setArtworkPath(loadArtworkPath(product.id));
+    setUploads(loadTemplateUploads(product.id));
   }, [product?.id]);
 
   if (!allowed || isProductLeadForm(product)) return null;
@@ -77,6 +119,8 @@ export function ProductDraftsCta() {
     );
     if (!confirmed) return;
     clearDrafts(product.id);
+    saveTemplateUploads(product.id, []);
+    setUploads([]);
     setJob({
       ...job,
       ownDrafts: [],
@@ -84,7 +128,54 @@ export function ProductDraftsCta() {
     });
     setDraftRevision((value) => value + 1);
     choosePath('self');
+    saveDesignMethod(product.id, 'designer');
+    setTemplatesOpen(false);
     setIsDraftDesignerOpen(true);
+  }
+
+  function openDesigner() {
+    if (product?.id) saveDesignMethod(product.id, 'designer');
+    setTemplatesOpen(false);
+    setIsDraftDesignerOpen(true);
+  }
+
+  function toggleTemplates() {
+    setTemplatesOpen((open) => {
+      const next = !open;
+      if (next && product?.id) saveDesignMethod(product.id, 'templates');
+      return next;
+    });
+  }
+
+  function rememberUploads(next: TemplateUpload[]) {
+    setUploads(next);
+    if (product?.id) {
+      saveTemplateUploads(product.id, next);
+      saveDesignMethod(product.id, 'templates');
+    }
+  }
+
+  function addUpload(file: any) {
+    if (file?.id == null || !product?.id) return;
+    const productId = product.id;
+    setUploads((current) => {
+      const next = [
+        ...current.filter((item) => String(item.id) !== String(file.id)),
+        {
+          id: file.id,
+          name: String(file.name || 'Upload'),
+          viewUrl: file.viewUrl || file.cachedViewUrl || '',
+          downloadUrl: file.downloadUrl || '',
+        },
+      ];
+      saveTemplateUploads(productId, next);
+      saveDesignMethod(productId, 'templates');
+      return next;
+    });
+  }
+
+  function removeUpload(id: number | string) {
+    rememberUploads(uploads.filter((item) => String(item.id) !== String(id)));
   }
 
   return (
@@ -112,9 +203,6 @@ export function ProductDraftsCta() {
       </div>
       {artworkPath === 'self' ? (
         <div className='merchi-product-draft-cta-panel' role='tabpanel'>
-          <span>
-            Use the online designer to place text, colours, and logos on the template.
-          </span>
           {hasSaved ? (
             <span>
               {status.total === 1
@@ -122,25 +210,92 @@ export function ProductDraftsCta() {
                 : `${status.complete} of ${status.total} groups saved`}
             </span>
           ) : null}
-          <div className='merchi-product-draft-cta-actions'>
+          <div className='merchi-product-draft-cta-choices'>
             <button
               type='button'
               className='merchi-product-draft-cta-btn'
-              onClick={() => setIsDraftDesignerOpen(true)}
+              onClick={openDesigner}
             >
               <FaPaintBrush />
-              {missing.length ? 'Open designer' : 'Edit'}
+              Open Designer
             </button>
-            {hasSaved ? (
-              <button
-                type='button'
-                className='merchi-product-draft-cta-reset'
-                onClick={startAgain}
-              >
-                Start again
-              </button>
-            ) : null}
+            <button
+              type='button'
+              className={`merchi-product-draft-cta-download${templatesOpen ? ' is-open' : ''}`}
+              aria-expanded={templatesOpen}
+              aria-controls='merchi-template-downloads'
+              onClick={toggleTemplates}
+            >
+              <FaDownload />
+              Download templates
+              <FaChevronDown />
+            </button>
           </div>
+          {templatesOpen ? (
+            <div
+              id='merchi-template-downloads'
+              className='merchi-product-draft-template-menu'
+            >
+              <p>Download the templates, edit them and then reupload them</p>
+              {downloads.length ? (
+                <ul className='merchi-product-draft-template-list'>
+                  {downloads.map((item) => (
+                    <li key={item.key}>
+                      <TemplateAvatar src={item.preview} name={item.name} />
+                      <span className='merchi-product-draft-template-name'>{item.name}</span>
+                      <a
+                        className='merchi-product-draft-template-download'
+                        href={item.href}
+                        download={item.fileName || true}
+                        target='_blank'
+                        rel='noopener noreferrer'
+                      >
+                        <FaDownload />
+                        Download
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <span>No templates are available to download.</span>
+              )}
+              <div className='merchi-product-draft-template-drop'>
+                <DropzoneInput
+                  multiple
+                  accept='.jpg,.jpeg,.png,.gif,.pdf,.svg,.ai,.eps'
+                  placeholder='Upload edited templates'
+                  onUploadSuccess={addUpload}
+                />
+              </div>
+              {uploads.length ? (
+                <ul className='merchi-product-draft-upload-list'>
+                  {uploads.map((file) => (
+                    <li key={file.id}>
+                      <TemplateAvatar src={file.viewUrl || ''} name={file.name} />
+                      <span className='merchi-product-draft-template-name'>{file.name}</span>
+                      <button
+                        type='button'
+                        className='merchi-product-draft-upload-remove'
+                        aria-label={`Remove ${file.name}`}
+                        onClick={() => removeUpload(file.id)}
+                      >
+                        <FaTimes />
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              ) : null}
+            </div>
+          ) : null}
+          {hasSaved ? (
+            <button
+              type='button'
+              className='merchi-product-draft-cta-reset'
+              onClick={startAgain}
+            >
+              Start again
+            </button>
+          ) : null}
         </div>
       ) : (
         <div className='merchi-product-draft-cta-panel' role='tabpanel'>

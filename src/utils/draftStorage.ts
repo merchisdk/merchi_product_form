@@ -61,6 +61,71 @@ export function saveArtworkPath(
   window.localStorage.setItem(artworkPathKey(productId), path);
 }
 
+export type DesignMethod = 'designer' | 'templates';
+
+export interface TemplateUpload {
+  id: number | string;
+  name: string;
+  viewUrl?: string;
+  downloadUrl?: string;
+}
+
+export function designMethodKey(productId: number | string): string {
+  return `productDesignMethod-${productId}`;
+}
+
+export function loadDesignMethod(productId: number | string): DesignMethod {
+  if (typeof window === 'undefined' || productId == null) return 'designer';
+  try {
+    return window.localStorage.getItem(designMethodKey(productId)) === 'templates'
+      ? 'templates'
+      : 'designer';
+  } catch {
+    return 'designer';
+  }
+}
+
+export function saveDesignMethod(
+  productId: number | string,
+  method: DesignMethod,
+): void {
+  if (typeof window === 'undefined' || productId == null) return;
+  window.localStorage.setItem(designMethodKey(productId), method);
+}
+
+export function templateUploadsKey(productId: number | string): string {
+  return `productTemplateUploads-${productId}`;
+}
+
+export function loadTemplateUploads(productId: number | string): TemplateUpload[] {
+  if (typeof window === 'undefined' || productId == null) return [];
+  try {
+    const raw = window.localStorage.getItem(templateUploadsKey(productId));
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed.filter((file) => file?.id != null) : [];
+  } catch {
+    return [];
+  }
+}
+
+export function saveTemplateUploads(
+  productId: number | string,
+  files: TemplateUpload[],
+): void {
+  if (typeof window === 'undefined' || productId == null) return;
+  window.localStorage.setItem(templateUploadsKey(productId), JSON.stringify(files));
+}
+
+export function checkoutClientFiles(files: TemplateUpload[]) {
+  return (files || [])
+    .filter((file) => file?.id != null)
+    .map((file) => ({
+      file: { id: file.id },
+      objectId: String(file.id),
+    }));
+}
+
 export function pruneDrafts(
   drafts: DraftTemplateData[],
   groupCount: number,

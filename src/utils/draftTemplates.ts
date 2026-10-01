@@ -105,6 +105,54 @@ export function templatesForGroup(
   return visible.length ? visible : [blankTemplate(product)];
 }
 
+function templateHasFile(template: any): boolean {
+  const file = template?.file;
+  if (!file) return false;
+  return Boolean(
+    file.id
+    || file.downloadUrl
+    || file.cachedDownloadUrl
+    || file.viewUrl
+    || file.cachedViewUrl,
+  );
+}
+
+function uniqueFileTemplates(templates: any[]): any[] {
+  const seen = new Set<string>();
+  const result: any[] = [];
+  for (const template of templates) {
+    if (!templateHasFile(template)) continue;
+    const file = template.file || {};
+    const key = template?.id != null
+      ? `id:${template.id}`
+      : `file:${file.id || file.downloadUrl || file.viewUrl}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    result.push(template);
+  }
+  return result;
+}
+
+/** Blank templates the customer can download for the options currently selected. */
+export function downloadableDraftTemplates(product: any, formValues: any): any[] {
+  const independent = formValues?.variations || [];
+  const groups = productHasVariationGroups(product)
+    && Array.isArray(formValues?.variationsGroups)
+    && formValues.variationsGroups.length
+    ? formValues.variationsGroups
+    : [{}];
+  const matched: any[] = [];
+  for (const group of groups) {
+    matched.push(...visibleTemplatesForGroup(
+      product,
+      independent,
+      group?.variations || [],
+    ));
+  }
+  if (matched.length) return uniqueFileTemplates(matched);
+  return uniqueFileTemplates(product?.draftTemplates || []);
+}
+
 export function canvasKindForFieldType(
   fieldType: any,
 ): DraftCanvasObjectType | null {

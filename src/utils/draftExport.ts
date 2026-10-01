@@ -33,6 +33,14 @@ export function templateImageSources(template: any, apiUrl?: string): string[] {
   )];
 }
 
+export function templateDownloadHref(template: any, apiUrl?: string): string {
+  const file = template?.file;
+  if (!file) return '';
+  const preferred = file.downloadUrl || file.cachedDownloadUrl;
+  if (preferred) return resolveFileUrl(String(preferred), apiUrl);
+  return templateImageSources(template, apiUrl)[0] || '';
+}
+
 function loadImageElement(src: string, cors: boolean): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
     const img = new Image();

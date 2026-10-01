@@ -5,6 +5,7 @@ import {
   canvasKindForFieldType,
   defaultPlacement,
   designGroupCount,
+  downloadableDraftTemplates,
   detachField,
   fitInside,
   fitTextBox,
@@ -79,6 +80,43 @@ test('visibleTemplatesForGroup uses independent and group selections', () => {
     [{ value: '99' }],
     []
   ).map((t: any) => t.id)).toEqual([1, 2]);
+});
+
+test('downloadableDraftTemplates uses the templates for the current selection', () => {
+  const product = {
+    draftTemplates: [
+      { id: 1, name: 'Shared', file: { downloadUrl: 'https://cdn.example/shared.png' } },
+      {
+        id: 2,
+        name: 'Youth',
+        file: { downloadUrl: 'https://cdn.example/youth.png' },
+        selectedByVariationFieldOptions: [{ id: 9 }],
+      },
+    ],
+  };
+  expect(downloadableDraftTemplates(product, {}).map((template: any) => template.id)).toEqual([1]);
+  expect(downloadableDraftTemplates(product, {
+    variations: [{ value: '9' }],
+  }).map((template: any) => template.id)).toEqual([1, 2]);
+});
+
+test('downloadableDraftTemplates offers every file when no template matches yet', () => {
+  const product = {
+    draftTemplates: [
+      {
+        id: 2,
+        file: { id: 8 },
+        selectedByVariationFieldOptions: [{ id: 9 }],
+      },
+    ],
+  };
+  expect(downloadableDraftTemplates(product, {}).map((template: any) => template.id)).toEqual([2]);
+});
+
+test('downloadableDraftTemplates skips templates without a file', () => {
+  expect(downloadableDraftTemplates({
+    draftTemplates: [{ id: 1, file: null }, { id: 2 }],
+  }, {})).toEqual([]);
 });
 
 test('canvasKindForFieldType maps injectable types and skips the rest', () => {

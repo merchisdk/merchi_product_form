@@ -8,8 +8,11 @@ import { getMerchiSourceJobTags } from '../components/utils';
 import { DraftTemplateData } from '../utils/types';
 import { productAllowsClientDesign } from '../utils/draftTemplates';
 import {
+  checkoutClientFiles,
   loadArtworkPath,
+  loadDesignMethod,
   loadDrafts,
+  loadTemplateUploads,
 } from '../utils/draftStorage';
 import ProductDraftsHost from '../components/drafts/ProductDraftsHost';
 import {
@@ -861,11 +864,24 @@ export const MerchiProductFormProvider = ({
     }
 
     if (loadArtworkPath(initProduct.id) === 'service') {
-      proceed({
+      const serviceJob = {
         ...jobData,
-        ownDrafts: [],
         clientFiles: [],
-      });
+      };
+      // Do not send ownDrafts: [] — checkout encodes that as
+      // ownDrafts-count=0, which used to create an empty approved draft.
+      delete serviceJob.ownDrafts;
+      proceed(serviceJob);
+      return;
+    }
+
+    if (loadDesignMethod(initProduct.id) === 'templates') {
+      const uploadJob = {
+        ...jobData,
+        clientFiles: checkoutClientFiles(loadTemplateUploads(initProduct.id)),
+      };
+      delete uploadJob.ownDrafts;
+      proceed(uploadJob);
       return;
     }
 
