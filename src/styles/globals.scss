@@ -1177,19 +1177,154 @@
   gap: 0.45rem;
 }
 
-.merchi-product-draft-cta-btn {
+.merchi-product-draft-cta-choices {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.45rem;
+}
+
+.merchi-product-draft-cta-btn,
+.merchi-product-draft-cta-download {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 0.4rem;
+  width: 100%;
   min-height: 44px;
-  padding: 0.55rem 0.95rem;
-  border: 0;
+  padding: 0.55rem 0.75rem;
   border-radius: 0.7rem;
+  font: inherit;
+  font-weight: 600;
+  font-size: 0.85rem;
+  line-height: 1.2;
+  cursor: pointer;
+}
+
+.merchi-product-draft-cta-btn {
+  border: 0;
   background: #111827;
   color: #fff;
+}
+
+.merchi-product-draft-cta-download {
+  border: 1px solid #d4d4d8;
+  background: #fff;
+  color: #111827;
+}
+
+.merchi-product-draft-cta-download svg:last-child {
+  transition: transform 0.15s ease;
+}
+
+.merchi-product-draft-cta-download.is-open {
+  border-color: #2563eb;
+  background: #fff;
+}
+
+.merchi-product-draft-cta-download.is-open svg:last-child {
+  transform: rotate(180deg);
+}
+
+.merchi-product-draft-template-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 0.85rem;
+  border: 1px solid #e4e4e7;
+  border-radius: 0.75rem;
+  background: #fafafa;
+  box-shadow: 0 10px 24px rgba(17, 24, 39, 0.06);
+}
+
+.merchi-product-draft-template-menu p {
+  margin: 0;
+  font-size: 0.8rem;
+  line-height: 1.4;
+  color: #71717a;
+}
+
+.merchi-product-draft-template-list,
+.merchi-product-draft-upload-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.merchi-product-draft-template-list li,
+.merchi-product-draft-upload-list li {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  min-height: 56px;
+  padding: 0.4rem 0.5rem;
+  border: 1px solid #e4e4e7;
+  border-radius: 0.7rem;
+  background: #fff;
+}
+
+.merchi-product-draft-template-avatar {
+  width: 40px;
+  height: 40px;
+  flex: 0 0 40px;
+  border-radius: 0.55rem;
+  object-fit: cover;
+  background: #f4f4f5;
+  border: 1px solid #e4e4e7;
+}
+
+.merchi-product-draft-template-avatar.is-empty {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #3f3f46;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.merchi-product-draft-cta-panel span.merchi-product-draft-template-name {
+  min-width: 0;
+  flex: 1;
+  color: #111827;
+  font-size: 0.85rem;
   font-weight: 600;
-  font-size: 0.9rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.merchi-product-draft-template-download,
+.merchi-product-draft-upload-remove {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  flex: 0 0 auto;
+  min-height: 34px;
+  padding: 0.35rem 0.7rem;
+  border: 1px solid #e4e4e7;
+  border-radius: 0.55rem;
+  background: #fff;
+  color: #111827;
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.merchi-product-draft-upload-remove {
+  width: 34px;
+  padding: 0;
+  color: #71717a;
+}
+
+.merchi-product-draft-template-drop .merchi-embed-form_dropzone {
+  z-index: 1;
+  margin: 0;
+  padding: 1rem 0.85rem;
 }
 
 .merchi-product-draft-cta-reset {

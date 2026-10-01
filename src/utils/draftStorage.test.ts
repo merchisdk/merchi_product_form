@@ -4,14 +4,19 @@ import {
   completeGroupCount,
   draftStorageKey,
   isPreviewComplete,
+  checkoutClientFiles,
   loadArtworkPath,
+  loadDesignMethod,
   loadDrafts,
+  loadTemplateUploads,
   missingDesignSlots,
   pruneDrafts,
   requiredDesignSlots,
   savedPreview,
   saveArtworkPath,
+  saveDesignMethod,
   saveDrafts,
+  saveTemplateUploads,
   upsertGroupTemplateDraft,
 } from './draftStorage';
 import { FieldType } from './types';
@@ -45,6 +50,22 @@ test('artwork path defaults to self and can switch to the free design service', 
   expect(loadArtworkPath(44)).toBe('service');
   saveArtworkPath(44, 'self');
   expect(loadArtworkPath(44)).toBe('self');
+});
+
+test('template uploads are remembered and shaped for checkout', () => {
+  if (typeof window === 'undefined' || !window.localStorage) return;
+  expect(loadDesignMethod(44)).toBe('designer');
+  saveDesignMethod(44, 'templates');
+  expect(loadDesignMethod(44)).toBe('templates');
+  saveTemplateUploads(44, [{ id: 9, name: 'front.png', viewUrl: 'https://cdn.example/front.png' }]);
+  expect(loadTemplateUploads(44)).toEqual([
+    { id: 9, name: 'front.png', viewUrl: 'https://cdn.example/front.png' },
+  ]);
+  expect(checkoutClientFiles(loadTemplateUploads(44))).toEqual([
+    { file: { id: 9 }, objectId: '9' },
+  ]);
+  saveTemplateUploads(44, []);
+  saveDesignMethod(44, 'designer');
 });
 
 test('upsert and prune keep per-group template drafts', () => {

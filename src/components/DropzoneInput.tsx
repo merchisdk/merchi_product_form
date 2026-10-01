@@ -1,9 +1,10 @@
 import * as React from 'react';
 import { useState } from 'react';
-import { Accept, useDropzone } from 'react-dropzone';
+import { useDropzone } from 'react-dropzone';
 import { CgSpinner } from 'react-icons/cg';
 import { FaRegImage, FaPlus } from 'react-icons/fa';
 import { useMerchiFormContext } from '../context/MerchiProductFormProvider';
+import { dropzoneAccept } from '../utils/dropzoneAccept';
 
 interface Props {
   accept?: string;
@@ -59,10 +60,9 @@ function DropzoneInput({
     }
   };
 
-  const acceptFiles: Accept = accept as any;
   const { getRootProps, getInputProps } = useDropzone({
     onDrop: handleFileChange,
-    accept: acceptFiles,
+    accept: dropzoneAccept(accept),
     disabled,
     multiple,
   });

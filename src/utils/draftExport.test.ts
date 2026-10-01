@@ -1,6 +1,7 @@
 import {
   applyKonvaObjectTransform,
   captureStageArtboard,
+  templateDownloadHref,
   templateImageSources,
   wrapLines,
 } from './draftExport';
@@ -17,6 +18,22 @@ test('templateImageSources prefers the public file view and resolves relative UR
     'http://127.0.0.1:5000/testfiles/abc/',
     'https://cdn.example/template.png',
   ]);
+});
+
+test('templateDownloadHref prefers the file download URL', () => {
+  expect(templateDownloadHref({
+    file: {
+      id: 44,
+      viewUrl: '/testfiles/abc/',
+      downloadUrl: '/files/44/download/',
+    },
+  }, 'http://127.0.0.1:5000/v6/')).toBe('http://127.0.0.1:5000/files/44/download/');
+});
+
+test('templateDownloadHref falls back to the public view', () => {
+  expect(templateDownloadHref({
+    file: { id: 44, viewUrl: '/testfiles/abc/' },
+  }, 'http://127.0.0.1:5000/v6/')).toBe('http://127.0.0.1:5000/v6/public-files/44/view/');
 });
 
 test('wrapLines keeps a short phrase on one line', () => {
