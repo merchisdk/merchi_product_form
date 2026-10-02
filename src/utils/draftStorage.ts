@@ -126,6 +126,21 @@ export function checkoutClientFiles(files: TemplateUpload[]) {
     }));
 }
 
+/** Attach reuploaded templates as print files and as the job's client draft. */
+export function templateCheckoutJob(jobData: any, files: TemplateUpload[]) {
+  const clientFiles = checkoutClientFiles(files);
+  const next = { ...jobData, clientFiles };
+  if (!clientFiles.length) {
+    delete next.ownDrafts;
+    return next;
+  }
+  next.ownDrafts = [{
+    accepted: Math.floor(Date.now() / 1000),
+    images: clientFiles.map((entry) => ({ id: entry.file.id })),
+  }];
+  return next;
+}
+
 export function pruneDrafts(
   drafts: DraftTemplateData[],
   groupCount: number,
