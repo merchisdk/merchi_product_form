@@ -8,11 +8,11 @@ import { getMerchiSourceJobTags } from '../components/utils';
 import { DraftTemplateData } from '../utils/types';
 import { productAllowsClientDesign } from '../utils/draftTemplates';
 import {
-  checkoutClientFiles,
   loadArtworkPath,
   loadDesignMethod,
   loadDrafts,
   loadTemplateUploads,
+  templateCheckoutJob,
 } from '../utils/draftStorage';
 import ProductDraftsHost from '../components/drafts/ProductDraftsHost';
 import {
@@ -876,12 +876,7 @@ export const MerchiProductFormProvider = ({
     }
 
     if (loadDesignMethod(initProduct.id) === 'templates') {
-      const uploadJob = {
-        ...jobData,
-        clientFiles: checkoutClientFiles(loadTemplateUploads(initProduct.id)),
-      };
-      delete uploadJob.ownDrafts;
-      proceed(uploadJob);
+      proceed(templateCheckoutJob(jobData, loadTemplateUploads(initProduct.id)));
       return;
     }
 
