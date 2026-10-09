@@ -30,12 +30,12 @@ export const embedProduct = {
   },
   groupBuyStatus: {},
   groupVariationFields: {
-    options: { linkedFile: {}, selectedBy: {} },
+    options: { linkedFile: {}, linkedProductImage: {}, selectedBy: {} },
     selectedBy: {},
   },
   images: {},
   independentVariationFields: {
-    options: { linkedFile: {}, selectedBy: {} },
+    options: { linkedFile: {}, linkedProductImage: {}, selectedBy: {} },
     selectedBy: {},
   },
   publicFiles: {},
