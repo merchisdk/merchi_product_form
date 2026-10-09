@@ -59,6 +59,7 @@ import {
   productHasGroups,
 } from './utils/products';
 import { sanitizeProductVariationFields } from './utils/variationFields';
+import { useLinkedProductImage } from './useLinkedProductImage';
 
 
 export {
@@ -81,6 +82,7 @@ export {
   ProductTotalCost,
   VariationCheckBoxOrRadioOption,
   useMerchiFormContext,
+  useLinkedProductImage,
   VariationCheckbox,
   VariationError,
   VariationFieldInstructions,
