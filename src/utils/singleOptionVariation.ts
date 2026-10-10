@@ -19,6 +19,10 @@ export function visibleSelectableOptions(variation: any): any[] {
 
 export function shouldHideSingleOptionSelection(variation: any): boolean {
   const fieldType = Number(variation?.variationField?.fieldType);
+  if (fieldType === FieldType.PANTONE_COLOUR_SELECT) {
+    if (variation?.variationField?.allowAllPantones) return false;
+    return visibleSelectableOptions(variation).length <= 1;
+  }
   if (!SINGLE_OPTION_FIELD_TYPES.has(fieldType)) return false;
   return visibleSelectableOptions(variation).length <= 1;
 }

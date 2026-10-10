@@ -22,6 +22,7 @@ import {
 } from './VariationSelectElements';
 import VariationTurnaroundTime from './VariationTurnaroundTime';
 import VariationAreaInput from './VariationAreaInput';
+import { VariationPantoneSelect } from './VariationPantoneSelect';
 import { useMerchiFormContext } from '../context/MerchiProductFormProvider';
 import { shouldHideSingleOptionSelection } from '../utils/singleOptionVariation';
 
@@ -31,6 +32,7 @@ fieldMaps.set(FieldType.COLOUR_PICKER, VariationInputCoulourPicker);
 fieldMaps.set(FieldType.FILE_UPLOAD, VariationFileInput);
 fieldMaps.set(FieldType.COLOUR_EXTRACT, VariationColourExtractInput);
 fieldMaps.set(FieldType.COLOUR_SELECT, VariationSelectColour);
+fieldMaps.set(FieldType.PANTONE_COLOUR_SELECT, VariationPantoneSelect);
 fieldMaps.set(FieldType.IMAGE_SELECT, VariationSelectImage);
 fieldMaps.set(FieldType.RADIO, VariationRadio);
 fieldMaps.set(FieldType.SELECT, VariationSelect);

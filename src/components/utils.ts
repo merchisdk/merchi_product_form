@@ -1,4 +1,4 @@
-import { Merchi } from 'merchi_sdk_ts';
+import { Merchi, VariationField } from 'merchi_sdk_ts';
 import { formatCurrency } from '../utils/currency';
 import { ProductType, FieldType } from '../utils/types';
 export { cleanFormVariationJson } from '../utils/cleanFormVariationJson';
@@ -147,6 +147,18 @@ export function allowedFileTypes(variationField: any): string {
   return allowedTypes.join(',');
 }
 
+// Published SDK drops unknown keys. Register the flag on the class this
+// package constructs, or an allow-all Pantone field is treated as a limited
+// field with no options and the preview hides it.
+const VariationFieldClass = VariationField as unknown as {
+  property: (options?: { type?: unknown }) => (target: object, key: string) => void;
+  prototype: object;
+};
+VariationFieldClass.property({ type: Boolean })(
+  VariationFieldClass.prototype,
+  'allowAllPantones',
+);
+
 const merchi = new Merchi();
 
 function ensureVariationOptionFlags(variation: any) {
@@ -162,6 +174,13 @@ export function buildEmptyVariationFromField(field: any) {
   const fieldEnt = new merchi.VariationField();
   fieldEnt.fromJson({ ...field }, { makeDirty: false });
   const variationJson = fieldEnt.buildEmptyVariation().toJson();
+  if (
+    variationJson?.variationField &&
+    field?.allowAllPantones != null &&
+    variationJson.variationField.allowAllPantones == null
+  ) {
+    variationJson.variationField.allowAllPantones = Boolean(field.allowAllPantones);
+  }
   ensureVariationOptionFlags(variationJson);
   return variationJson;
 }
