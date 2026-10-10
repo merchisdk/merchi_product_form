@@ -36,13 +36,19 @@ export function searchPantoneColours(query: string, limit = 40): PantoneColour[]
   if (!raw) return [];
   const spaced = raw.replace(/[_-]/g, ' ').replace(/\s+/g, ' ');
   const compact = spaced.replace(/\s/g, '');
-  const matches: PantoneColour[] = [];
+  const ranked: { colour: PantoneColour; rank: number }[] = [];
   for (const colour of PANTONE_COLOURS) {
     const code = colour.code.toLowerCase();
-    if (code.includes(spaced) || code.replace(/\s/g, '').includes(compact)) {
-      matches.push(colour);
-      if (matches.length >= limit) break;
-    }
+    const tight = code.replace(/\s/g, '');
+    if (!code.includes(spaced) && !tight.includes(compact)) continue;
+    const rank =
+      code.startsWith(spaced) || tight.startsWith(compact)
+        ? 0
+        : code.split(' ').some((part) => part.startsWith(spaced))
+          ? 1
+          : 2;
+    ranked.push({ colour, rank });
   }
-  return matches;
+  ranked.sort((left, right) => left.rank - right.rank);
+  return ranked.slice(0, limit).map((item) => item.colour);
 }
