@@ -10,6 +10,7 @@ import {
 } from './types';
 import { DEFAULT_DRAFT_FONT, cssFontFamily } from './draftFonts';
 import { productHasGroups } from './products';
+import { pantoneByCode } from './pantoneColours';
 
 export function productHasDraftTemplates(product: any): boolean {
   return Array.isArray(product?.draftTemplates) && product.draftTemplates.length > 0;
@@ -170,6 +171,7 @@ export function canvasKindForFieldType(
     case FieldType.COLOUR_PICKER:
     case FieldType.COLOUR_SELECT:
     case FieldType.COLOUR_EXTRACT:
+    case FieldType.PANTONE_COLOUR_SELECT:
       return 'rect';
     default:
       return null;
@@ -233,6 +235,9 @@ export function variationCanvasContent(variation: any): {
 
   if (type === FieldType.COLOUR_PICKER) {
     return { kind, fill: normaliseCssColour(variation?.value) || '#000000' };
+  }
+  if (type === FieldType.PANTONE_COLOUR_SELECT && field?.allowAllPantones) {
+    return { kind, fill: pantoneByCode(variation?.value)?.hex || '#cccccc' };
   }
   const ids = parseSelectedOptionIds(variation.value);
   const option = ids.length ? optionById(variation, ids[0]) : null;
