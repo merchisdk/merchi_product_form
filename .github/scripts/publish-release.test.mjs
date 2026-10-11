@@ -16,4 +16,6 @@ test('concurrent manual version collision preserves manual release',async()=>{as
 test('success verifies exact version despite stale versions list',async()=>assert.equal((await publishRelease(input,fixture())).published,true));
 test('lost success response reconciles registry',async()=>assert.equal((await publishRelease(input,fixture({status:1}))).published,true));
 test('delayed visibility retries reads without republishing',async()=>{const io=fixture({delay:3});assert.equal((await publishRelease(input,io)).published,true);assert.equal(io.calls,1);assert.equal(io.waits,3);});
-test('persistent registry failure is bounded and never republishes',async()=>{const io=fixture({status:1,delay:99});await assert.rejects(publishRelease(input,io),/Could not verify/);assert.equal(io.calls,1);assert.equal(io.reads,7);});
+test('persistent registry failure is bounded and never republishes',async()=>{const io=fixture({status:1,delay:99});await assert.rejects(publishRelease(input,io),/Could not verify/);assert.equal(io.calls,1);assert.equal(io.reads,31);});
+
+test("npm processing beyond thirty seconds only retries verification", async () => { const io = fixture({delay:20}); assert.equal((await publishRelease(input, io)).published, true); assert.equal(io.calls, 1); assert.equal(io.waits, 20); });
