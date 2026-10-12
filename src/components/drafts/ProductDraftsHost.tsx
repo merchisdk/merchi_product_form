@@ -14,7 +14,8 @@ import { isProductLeadForm } from '../utils';
 import {
   ArtworkPath,
   TemplateUpload,
-  clearDrafts,
+  clearDraftWork,
+  clearOtherProductDrafts,
   completeGroupCount,
   loadArtworkPath,
   loadDrafts,
@@ -101,8 +102,10 @@ export function ProductDraftsCta() {
 
   React.useEffect(() => {
     if (!product?.id) return;
+    clearOtherProductDrafts(product.id);
     setArtworkPath(loadArtworkPath(product.id));
     setUploads(loadTemplateUploads(product.id));
+    setDraftRevision((value) => value + 1);
   }, [product?.id]);
 
   if (!allowed || isProductLeadForm(product)) return null;
@@ -118,8 +121,7 @@ export function ProductDraftsCta() {
       'This will clear your saved artwork. Start again from scratch?',
     );
     if (!confirmed) return;
-    clearDrafts(product.id);
-    saveTemplateUploads(product.id, []);
+    clearDraftWork(product.id);
     setUploads([]);
     setJob({
       ...job,

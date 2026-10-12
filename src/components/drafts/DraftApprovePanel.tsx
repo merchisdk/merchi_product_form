@@ -1,5 +1,11 @@
 import React, { useState } from 'react';
 import { useMerchiFormContext } from '../../context/MerchiProductFormProvider';
+import {
+  CheckoutDesignInput,
+  collectDesignerInputs,
+  packDesignInputNotes,
+} from '../../utils/designerInputs';
+import { clearDraftWork } from '../../utils/draftStorage';
 import { DraftTemplateData, RenderedDraftPreview, MerchiFile } from '../../utils/types';
 
 function DraftPreview({ templateData }: { templateData: RenderedDraftPreview }) {
@@ -32,13 +38,18 @@ async function uploadBase64Image(
   }
 
   // Create a Blob from the binary data
-  const blob = new Blob([bytes], { type: 'image/png' });
+  const mimeMatch = typeof base64 === 'string'
+    ? /^data:([^;,]+)/.exec(base64)
+    : null;
+  const blob = new Blob([bytes], { type: mimeMatch?.[1] || 'image/png' });
 
   // Create a File from the Blob
+  const mime = blob.type || 'image/png';
+  const extension = mime.split('/')[1] || 'png';
   const file = new File(
     [blob],
-    `group-${groupId}-template-${templateId}-draft-${suffix}-${Date.now()}.png`,
-    { type: 'image/png' }
+    `group-${groupId}-template-${templateId}-draft-${suffix}-${Date.now()}.${extension}`,
+    { type: mime }
   );
 
   const formData = new FormData();
@@ -138,9 +149,33 @@ export default function DraftApprovePanel({
         }
       }
 
+      const designInputs: CheckoutDesignInput[] = [];
+      for (const input of collectDesignerInputs(product, draftData)) {
+        if (input.kind === 'text') {
+          designInputs.push({
+            kind: 'text',
+            name: input.name,
+            value: input.value,
+            ...(input.textStyle ? { textStyle: input.textStyle } : {}),
+            ...(input.groupIndex != null ? { groupIndex: input.groupIndex } : {}),
+          });
+          continue;
+        }
+        if (!input.src?.startsWith('data:')) continue;
+        const uploaded = await doUpload(input.groupIndex || 0, 0, input.src, 'input');
+        designInputs.push({
+          kind: 'file',
+          name: input.name,
+          file: { id: uploaded.id as number },
+          ...(input.groupIndex != null ? { groupIndex: input.groupIndex } : {}),
+        });
+      }
+      const designInputNotes = packDesignInputNotes(designInputs);
+
       const jobData = {
         ...job,
         clientFiles: clientFiles.map(asCheckoutClientFile),
+        ...(designInputs.length ? { designInputs, designInputNotes } : {}),
         ownDrafts: [{
           accepted: Math.floor(Date.now() / 1000),
           images: draftFiles.map(f => ({ id: f.id })),
@@ -149,6 +184,7 @@ export default function DraftApprovePanel({
       setJob(jobData);
 
       await draftApproveCallback(jobData);
+      clearDraftWork(product.id);
       setIsDraftModalOpen(false);
 
     } catch (e: any) {

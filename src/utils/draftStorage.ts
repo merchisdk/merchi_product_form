@@ -36,6 +36,36 @@ export function clearDrafts(productId: number | string): void {
   window.localStorage.removeItem(draftStorageKey(productId));
 }
 
+const DRAFT_WORK_PREFIXES = [
+  'productDraftTemplate-',
+  'productArtworkPath-',
+  'productDesignMethod-',
+  'productTemplateUploads-',
+];
+
+/** Drop every draft the browser remembered for one product. */
+export function clearDraftWork(productId: number | string): void {
+  if (typeof window === 'undefined' || productId == null) return;
+  DRAFT_WORK_PREFIXES.forEach((prefix) => {
+    window.localStorage.removeItem(`${prefix}${productId}`);
+  });
+}
+
+/** Drop drafts saved for every product except the one being designed now. */
+export function clearOtherProductDrafts(productId: number | string): void {
+  if (typeof window === 'undefined' || productId == null) return;
+  const keep = String(productId);
+  const stale: string[] = [];
+  for (let index = 0; index < window.localStorage.length; index += 1) {
+    const key = window.localStorage.key(index);
+    if (!key) continue;
+    const prefix = DRAFT_WORK_PREFIXES.find((item) => key.startsWith(item));
+    if (!prefix) continue;
+    if (key.slice(prefix.length) !== keep) stale.push(key);
+  }
+  stale.forEach((key) => window.localStorage.removeItem(key));
+}
+
 export type ArtworkPath = 'self' | 'service';
 
 export function artworkPathKey(productId: number | string): string {
