@@ -35,6 +35,7 @@ import {
   upsertGroupTemplateDraft,
 } from '../../utils/draftStorage';
 import { exportDraftPngs, templateImageSources } from '../../utils/draftExport';
+import { productAllowsAdditionalDesignObjects } from '../../utils/designerInputs';
 import {
   DraftCanvasHandle,
   DraftCanvasObject,
@@ -113,6 +114,7 @@ export default function DraftDesignerSheet({
     product,
   } = useMerchiFormContext();
   const formValues = hookForm.watch();
+  const allowAdditionalObjects = productAllowsAdditionalDesignObjects(product);
   const hasGroups = productHasVariationGroups(product);
   const groupCount = designGroupCount(product, formValues);
   const [groupIndex, setGroupIndex] = useState(initialGroupIndex);
@@ -559,27 +561,31 @@ export default function DraftDesignerSheet({
           ) : null}
 
           <nav className='merchi-product-draft-toolbar' aria-label='Design tools'>
-            <button
-              type='button'
-              onClick={() => {
-                setLayersOpen(false);
-                addText();
-              }}
-            >
-              <FaFont />
-              <span>Text</span>
-            </button>
-            <button
-              type='button'
-              onClick={() => {
-                setLayersOpen(false);
-                setEditingTextId(null);
-                fileInputRef.current?.click();
-              }}
-            >
-              <FaImage />
-              <span>Image</span>
-            </button>
+            {allowAdditionalObjects ? (
+              <button
+                type='button'
+                onClick={() => {
+                  setLayersOpen(false);
+                  addText();
+                }}
+              >
+                <FaFont />
+                <span>Text</span>
+              </button>
+            ) : null}
+            {allowAdditionalObjects ? (
+              <button
+                type='button'
+                onClick={() => {
+                  setLayersOpen(false);
+                  setEditingTextId(null);
+                  fileInputRef.current?.click();
+                }}
+              >
+                <FaImage />
+                <span>Image</span>
+              </button>
+            ) : null}
             <button
               type='button'
               onClick={() => {
