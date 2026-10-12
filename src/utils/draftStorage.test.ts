@@ -5,6 +5,7 @@ import {
   draftStorageKey,
   isPreviewComplete,
   checkoutClientFiles,
+  templateCheckoutJob,
   loadArtworkPath,
   loadDesignMethod,
   loadDrafts,
@@ -64,6 +65,15 @@ test('template uploads are remembered and shaped for checkout', () => {
   expect(checkoutClientFiles(loadTemplateUploads(44))).toEqual([
     { file: { id: 9 }, objectId: '9' },
   ]);
+  const quoted = { quantity: 100, ownDrafts: [] as unknown[] };
+  const withUpload = templateCheckoutJob(quoted, loadTemplateUploads(44));
+  expect(withUpload.clientFiles).toEqual([{ file: { id: 9 }, objectId: '9' }]);
+  expect(withUpload.ownDrafts).toEqual([
+    { accepted: expect.any(Number), images: [{ id: 9 }] },
+  ]);
+  const withoutUpload = templateCheckoutJob(quoted, []);
+  expect(withoutUpload.clientFiles).toEqual([]);
+  expect(withoutUpload.ownDrafts).toBeUndefined();
   saveTemplateUploads(44, []);
   saveDesignMethod(44, 'designer');
 });
