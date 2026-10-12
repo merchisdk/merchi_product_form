@@ -5,6 +5,7 @@ import {
   collectDesignerInputs,
   packDesignInputNotes,
 } from '../../utils/designerInputs';
+import { clearDraftWork } from '../../utils/draftStorage';
 import { DraftTemplateData, RenderedDraftPreview, MerchiFile } from '../../utils/types';
 
 function DraftPreview({ templateData }: { templateData: RenderedDraftPreview }) {
@@ -183,6 +184,7 @@ export default function DraftApprovePanel({
       setJob(jobData);
 
       await draftApproveCallback(jobData);
+      clearDraftWork(product.id);
       setIsDraftModalOpen(false);
 
     } catch (e: any) {

@@ -1,6 +1,8 @@
 import {
   artworkPathKey,
   clearDrafts,
+  clearDraftWork,
+  clearOtherProductDrafts,
   completeGroupCount,
   draftStorageKey,
   isPreviewComplete,
@@ -40,6 +42,33 @@ test('clearDrafts removes saved artwork for a product', () => {
   expect(loadDrafts(44)).toHaveLength(1);
   clearDrafts(44);
   expect(loadDrafts(44)).toEqual([]);
+});
+
+test('clearDraftWork removes the canvas, uploads, and design choices', () => {
+  if (typeof window === 'undefined' || !window.localStorage) return;
+  saveDrafts(44, [{ groupIndex: 0, productId: 44, templateData: [], previews: [] }]);
+  saveArtworkPath(44, 'service');
+  saveDesignMethod(44, 'templates');
+  saveTemplateUploads(44, [{ id: 9, name: 'front.png' }]);
+  clearDraftWork(44);
+  expect(loadDrafts(44)).toEqual([]);
+  expect(loadArtworkPath(44)).toBe('self');
+  expect(loadDesignMethod(44)).toBe('designer');
+  expect(loadTemplateUploads(44)).toEqual([]);
+});
+
+test('clearOtherProductDrafts keeps only the product being designed', () => {
+  if (typeof window === 'undefined' || !window.localStorage) return;
+  saveDrafts(44, [{ groupIndex: 0, productId: 44, templateData: [], previews: [] }]);
+  saveDrafts(45, [{ groupIndex: 0, productId: 45, templateData: [], previews: [] }]);
+  saveTemplateUploads(45, [{ id: 2, name: 'back.png' }]);
+  saveDesignMethod(45, 'templates');
+  clearOtherProductDrafts(44);
+  expect(loadDrafts(44)).toHaveLength(1);
+  expect(loadDrafts(45)).toEqual([]);
+  expect(loadTemplateUploads(45)).toEqual([]);
+  expect(loadDesignMethod(45)).toBe('designer');
+  clearDraftWork(44);
 });
 
 test('artwork path defaults to self and can switch to the free design service', () => {
