@@ -87,10 +87,15 @@ function clipName(value: string, fallback: string): string {
   return name.length > NAME_LIMIT ? name.slice(0, NAME_LIMIT).trim() : name;
 }
 
+export function productAllowsAdditionalDesignObjects(product: any): boolean {
+  return product?.allowAdditionalDesignObjects !== false;
+}
+
 export function collectDesignerInputs(
   product: any,
   drafts: DraftTemplateData[],
 ): DesignerInput[] {
+  if (!productAllowsAdditionalDesignObjects(product)) return [];
   const grouped = productHasVariationGroups(product);
   const inputs: DesignerInput[] = [];
   for (const draft of drafts || []) {

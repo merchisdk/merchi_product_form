@@ -79,6 +79,13 @@ test('collectDesignerInputs keeps only text and images the customer added', () =
   ]);
 });
 
+test('collectDesignerInputs drops extra text and images when the product disallows them', () => {
+  expect(collectDesignerInputs(
+    { ...plainProduct, allowAdditionalDesignObjects: false },
+    drafts(),
+  )).toEqual([]);
+});
+
 test('collectDesignerInputs records the variation group when the product has groups', () => {
   const [text] = collectDesignerInputs(groupedProduct, drafts());
   expect(text.groupIndex).toBe(0);
