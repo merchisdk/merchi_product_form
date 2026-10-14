@@ -20,20 +20,31 @@ test('templateImageSources prefers the public file view and resolves relative UR
   ]);
 });
 
-test('templateDownloadHref prefers the file download URL', () => {
+test('templateDownloadHref uses a stable public download link', () => {
   expect(templateDownloadHref({
     file: {
       id: 44,
+      viewUrl: '/testfiles/abc/',
+      downloadUrl: 'https://bucket.s3.amazonaws.com/file?X-Amz-Expires=604800',
+    },
+  }, 'http://127.0.0.1:5000/v6/')).toBe(
+    'http://127.0.0.1:5000/v6/public-files/44/download/',
+  );
+});
+
+test('templateDownloadHref keeps a direct download URL when the file has no id', () => {
+  expect(templateDownloadHref({
+    file: {
       viewUrl: '/testfiles/abc/',
       downloadUrl: '/files/44/download/',
     },
   }, 'http://127.0.0.1:5000/v6/')).toBe('http://127.0.0.1:5000/files/44/download/');
 });
 
-test('templateDownloadHref falls back to the public view', () => {
+test('templateDownloadHref falls back to the public view when nothing else is available', () => {
   expect(templateDownloadHref({
-    file: { id: 44, viewUrl: '/testfiles/abc/' },
-  }, 'http://127.0.0.1:5000/v6/')).toBe('http://127.0.0.1:5000/v6/public-files/44/view/');
+    file: { viewUrl: '/testfiles/abc/' },
+  }, 'http://127.0.0.1:5000/v6/')).toBe('http://127.0.0.1:5000/testfiles/abc/');
 });
 
 test('wrapLines keeps a short phrase on one line', () => {

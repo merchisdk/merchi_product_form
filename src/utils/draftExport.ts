@@ -36,6 +36,13 @@ export function templateImageSources(template: any, apiUrl?: string): string[] {
 export function templateDownloadHref(template: any, apiUrl?: string): string {
   const file = template?.file;
   if (!file) return '';
+  // Presigned S3 download URLs expire. Public storefronts cache the product
+  // payload for longer than that lifetime, so a file id always downloads
+  // through the API, which signs a fresh URL on each request.
+  if (apiUrl && file.id != null && file.id !== '') {
+    const base = String(apiUrl).replace(/\/?$/, '/');
+    return `${base}public-files/${encodeURIComponent(String(file.id))}/download/`;
+  }
   const preferred = file.downloadUrl || file.cachedDownloadUrl;
   if (preferred) return resolveFileUrl(String(preferred), apiUrl);
   return templateImageSources(template, apiUrl)[0] || '';
