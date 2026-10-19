@@ -104,6 +104,7 @@ interface Props {
   inputType?: string;
   name: string;
   variation: any;
+  afterOptions?: React.ReactNode;
 }
 
 export const VariationSelectElements: React.FC<Props> = ({
@@ -111,6 +112,7 @@ export const VariationSelectElements: React.FC<Props> = ({
   inputType = 'image',
   name,
   variation,
+  afterOptions,
 }) => {
   const { selectableOptions = [] } = variation;
   const isImage = inputType === 'image';
@@ -142,6 +144,7 @@ export const VariationSelectElements: React.FC<Props> = ({
           />
         ))}
       </div>
+      {afterOptions}
       <VariationError name={name} />
     </div>
   );
@@ -151,6 +154,7 @@ interface FieldProps {
   disabled?: boolean;
   name: string;
   variation: any;
+  afterOptions?: React.ReactNode;
 }
 
 export const VariationSelectImage = (props: FieldProps) => (

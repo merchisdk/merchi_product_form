@@ -6,10 +6,16 @@ import VariationLabel from './VariationLabel';
 import { VariationSelectColour } from './VariationSelectElements';
 import { useMerchiFormContext } from '../context/MerchiProductFormProvider';
 import { quoteAfterFieldChange } from './quoteAfterFieldChange';
+import { sortByPosition, splitSelectedOptions } from './utils';
 import {
+  PANTONE_COLOURS,
   pantoneByCode,
   searchPantoneColours,
 } from '../utils/pantoneColours';
+import {
+  PantoneColourBrowser,
+  type PantoneBrowserSwatch,
+} from './PantoneColourBrowser';
 
 interface Props {
   disabled?: boolean;
@@ -17,11 +23,67 @@ interface Props {
   variation: any;
 }
 
+const LIBRARY_SWATCHES: PantoneBrowserSwatch[] = PANTONE_COLOURS.map((colour) => ({
+  key: colour.code,
+  code: colour.code,
+  hex: colour.hex,
+  book: colour.book,
+}));
+
+function isCheckedFlag(value: any) {
+  return typeof value === 'boolean' ? value : value === 'true';
+}
+
+function allowsMultiple(variation: any) {
+  const field = variation?.variationField || {};
+  return isCheckedFlag(field.multipleSelect) || isCheckedFlag(field.sellerProductEditable);
+}
+
+function ViewAllColoursButton({
+  disabled,
+  onClick,
+}: {
+  disabled?: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type='button'
+      className='merchi-pantone-view-all'
+      disabled={disabled}
+      onClick={onClick}
+    >
+      View all colours
+    </button>
+  );
+}
+
+function optionSwatches(variation: any): PantoneBrowserSwatch[] {
+  return sortByPosition(variation?.selectableOptions || [])
+    .map((option: any) => {
+      const id = option?.optionId ?? option?.id;
+      if (id == null || id === '') return null;
+      const code = String(option.value || '');
+      const known = pantoneByCode(code);
+      const unavailable =
+        option?.isVisible === false ||
+        (option?.available === false && option?.isVisible !== false);
+      return {
+        key: String(id),
+        code: known?.code || code || 'Colour',
+        hex: known?.hex || option?.colour || '#cccccc',
+        book: known?.book,
+        disabled: unavailable,
+      };
+    })
+    .filter(Boolean) as PantoneBrowserSwatch[];
+}
+
 export function VariationPantoneSelect({ disabled, name, variation }: Props) {
   const allowAll = Boolean(variation?.variationField?.allowAllPantones);
   if (!allowAll) {
     return (
-      <VariationSelectColour
+      <PantoneLimitedSelect
         disabled={disabled}
         name={name}
         variation={variation}
@@ -37,17 +99,71 @@ export function VariationPantoneSelect({ disabled, name, variation }: Props) {
   );
 }
 
+function PantoneLimitedSelect({ disabled, name, variation }: Props) {
+  const { control, getQuote } = useMerchiFormContext();
+  const { field } = useController({ name: `${name}.value`, control });
+  const [browserOpen, setBrowserOpen] = React.useState(false);
+  const swatches = React.useMemo(() => optionSwatches(variation), [variation]);
+  const multiple = allowsMultiple(variation);
+  const selectedKeys = splitSelectedOptions(field.value).map(String).filter(Boolean);
+
+  const choose = (optionId: string) => {
+    let updatedIds = [...selectedKeys];
+    if (multiple) {
+      updatedIds = updatedIds.includes(optionId)
+        ? updatedIds.filter((existingId) => existingId !== optionId)
+        : [...updatedIds, optionId];
+    } else {
+      updatedIds = [optionId];
+    }
+    quoteAfterFieldChange(
+      field.onChange,
+      getQuote,
+      updatedIds.filter(Boolean).join(',')
+    );
+    if (!multiple) setBrowserOpen(false);
+  };
+
+  return (
+    <VariationSelectColour
+      disabled={disabled}
+      name={name}
+      variation={variation}
+      afterOptions={
+        <>
+          <ViewAllColoursButton
+            disabled={disabled}
+            onClick={() => setBrowserOpen(true)}
+          />
+          <PantoneColourBrowser
+            open={browserOpen}
+            title='Pantone colours'
+            description='These are the Pantone colours available for this option. Swatches are screen approximations.'
+            swatches={swatches}
+            selectedKeys={selectedKeys}
+            onClose={() => setBrowserOpen(false)}
+            onSelect={(swatch) => {
+              if (!swatch.disabled) choose(swatch.key);
+            }}
+          />
+        </>
+      }
+    />
+  );
+}
+
 function PantoneLibrarySelect({ disabled, name, variation }: Props) {
   const { classNameInput, control, getQuote } = useMerchiFormContext();
   const { field } = useController({ name: `${name}.value`, control });
   const [open, setOpen] = React.useState(false);
+  const [browserOpen, setBrowserOpen] = React.useState(false);
   const [query, setQuery] = React.useState('');
   const [activeIndex, setActiveIndex] = React.useState(0);
   const rootRef = React.useRef<HTMLDivElement>(null);
   const listId = React.useId();
   const selected = pantoneByCode(field.value);
   const matches = searchPantoneColours(query, 20);
-  const showList = open && query.trim().length > 0;
+  const showList = open && query.trim().length > 0 && !browserOpen;
 
   React.useEffect(() => {
     setActiveIndex(0);
@@ -63,7 +179,9 @@ function PantoneLibrarySelect({ disabled, name, variation }: Props) {
   React.useEffect(() => {
     if (!open) return;
     const onPointerDown = (event: MouseEvent) => {
-      if (!rootRef.current?.contains(event.target as Node)) {
+      const target = event.target as HTMLElement | null;
+      if (target?.closest('.merchi-pantone-browser')) return;
+      if (!rootRef.current?.contains(target as Node)) {
         setOpen(false);
         setQuery('');
       }
@@ -76,6 +194,7 @@ function PantoneLibrarySelect({ disabled, name, variation }: Props) {
     quoteAfterFieldChange(field.onChange, getQuote, code);
     setQuery('');
     setOpen(false);
+    setBrowserOpen(false);
   };
 
   const onKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
@@ -234,6 +353,24 @@ function PantoneLibrarySelect({ disabled, name, variation }: Props) {
           </ul>
         )}
       </div>
+      <ViewAllColoursButton
+        disabled={disabled}
+        onClick={() => {
+          setOpen(false);
+          setQuery('');
+          setBrowserOpen(true);
+        }}
+      />
+      <PantoneColourBrowser
+        open={browserOpen}
+        title='All Pantone colours'
+        description='Scroll the library or search for a code. Swatches are screen approximations.'
+        swatches={LIBRARY_SWATCHES}
+        selectedKeys={selected ? [selected.code] : []}
+        showBooks
+        onClose={() => setBrowserOpen(false)}
+        onSelect={(swatch) => choose(swatch.code)}
+      />
       <VariationError name={name} />
     </div>
   );
